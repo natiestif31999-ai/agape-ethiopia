@@ -4,7 +4,7 @@ import AppHeader from "@/components/layout/AppHeader";
 import TabPanel from "@/components/TabPanel";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Home",
   description: "Agape Ethiopia Beneficiary Management System dashboard for managing registrations, assessments, and equipment tracking.",
 };
 

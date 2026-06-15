@@ -12,10 +12,10 @@ export default function AppHeader() {
           <Link href="/beneficiaries" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
             Beneficiaries
           </Link>
-          <Link href="/beneficiaries/new" className="rounded-full btn-primary px-4 py-2 transition">
+          <Link href="/beneficiaries/new" className="rounded-full bg-emerald-700 px-4 py-2 text-white transition hover:bg-emerald-800">
             New registration
           </Link>
-          <div className="flex items-center gap-2 rounded-full bg-[var(--brand-primary-600)]/10 px-4 py-2 text-[var(--brand-primary)] shadow-sm">
+          <div className="flex items-center gap-2 rounded-full bg-emerald-700/10 px-4 py-2 text-emerald-900 shadow-sm">
             <Image src="/agape-logo.jpg" alt="Agape Ethiopia accent mark" width={24} height={24} className="rounded-full" />
             Live dashboard
           </div>
