@@ -18,11 +18,13 @@ const siteDescription = "Agape Ethiopia Beneficiary Management System for managi
 
 export const metadata: Metadata = {
   title: {
-    default: `Dashboard | ${siteTitle}`,
+    default: `Home | ${siteTitle}`,
     template: `%s | ${siteTitle}`,
   },
   description: siteDescription,
   applicationName: siteTitle,
+  themeColor: "#0f766e",
+  metadataBase: new URL(siteUrl),
   keywords: ["beneficiary management", "Ethiopia", "mobility assistance", "wheelchairs", "equipment tracking"],
   authors: [{ name: "Agape Ethiopia" }],
   creator: "Agape Ethiopia",
@@ -30,7 +32,9 @@ export const metadata: Metadata = {
     icon: [
       { url: "/agape-logo.png", sizes: "any" },
       { url: "/agape-logo.png", sizes: "192x192", type: "image/png" },
+      { url: "/agape-logo.png", sizes: "512x512", type: "image/png" },
     ],
+    shortcut: "/agape-logo.png",
     apple: "/agape-logo.png",
   },
   openGraph: {
@@ -41,10 +45,10 @@ export const metadata: Metadata = {
     siteName: siteTitle,
     images: [
       {
-        url: `${siteUrl}/agape-logo.png`,
+        url: `${siteUrl}/final.png`,
         width: 1200,
         height: 630,
-        alt: "Agape Ethiopia Logo",
+        alt: "Agape Ethiopia impact illustration",
       },
     ],
   },
@@ -52,11 +56,10 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
-    images: [`${siteUrl}/agape-logo.png`],
+    images: [`${siteUrl}/final.png`],
   },
   robots: "index, follow",
   viewport: "width=device-width, initial-scale=1",
-  metadataBase: new URL(siteUrl),
 };
 
 export default function RootLayout({
@@ -68,6 +71,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/agape-logo.png" sizes="any" />
+        <link rel="shortcut icon" href="/agape-logo.png" />
         <link rel="apple-touch-icon" href="/agape-logo.png" />
         <meta name="theme-color" content="#0f766e" />
       </head>
