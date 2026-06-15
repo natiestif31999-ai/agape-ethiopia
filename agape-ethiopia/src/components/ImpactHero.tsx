@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function ImpactHero() {
   const [requestCount, setRequestCount] = useState(0);
@@ -11,6 +11,7 @@ export default function ImpactHero() {
     let mounted = true;
 
     async function load() {
+      const supabase = getSupabaseClient();
       const [requestsResult, donationsResult] = await Promise.all([
         supabase.from("requests").select("*").limit(100),
         supabase.from("donations").select("*").limit(100),

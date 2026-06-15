@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function DonationForm() {
   const [donorName, setDonorName] = useState("");
@@ -12,6 +12,7 @@ export default function DonationForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Saving donation...");
+    const supabase = getSupabaseClient();
 
     const { error } = await supabase.from("donations").insert({
       donor_name: donorName,

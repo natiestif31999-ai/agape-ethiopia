@@ -1,13 +1,22 @@
+import AppHeader from "@/components/layout/AppHeader";
+import BeneficiaryRegistrationForm from "@/components/BeneficiaryRegistrationForm";
+
 export default function NewBeneficiaryPage() {
   return (
-    <main className="p-6">
-      <h1 className="text-3xl font-bold">
-        Register Beneficiary
-      </h1>
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h1 className="text-3xl font-bold text-slate-900">Register Beneficiary</h1>
+          <p className="mt-3 text-slate-600">
+            Capture beneficiary registration details to build the Agape Ethiopia record repository.
+          </p>
+        </section>
 
-      <p className="mt-4">
-        Agape Ethiopia Beneficiary Registration Form
-      </p>
-    </main>
+        <div className="mt-8">
+          <BeneficiaryRegistrationForm />
+        </div>
+      </main>
+    </>
   );
 }

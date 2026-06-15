@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function RequestPortal() {
   const [beneficiaryName, setBeneficiaryName] = useState("");
@@ -12,6 +12,7 @@ export default function RequestPortal() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Submitting request...");
+    const supabase = getSupabaseClient();
 
     const { error } = await supabase.from("requests").insert({
       beneficiary_name: beneficiaryName,

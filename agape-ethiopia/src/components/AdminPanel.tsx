@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 type RequestRecord = {
   id: string;
@@ -25,6 +25,7 @@ export default function AdminPanel() {
     let mounted = true;
 
     async function load() {
+      const supabase = getSupabaseClient();
       const [requestsResult, donationsResult] = await Promise.all([
         supabase.from("requests").select("*").order("created_at", { ascending: false }).limit(10),
         supabase.from("donations").select("*").order("created_at", { ascending: false }).limit(10),
@@ -47,7 +48,8 @@ export default function AdminPanel() {
   }, []);
 
   async function handleStatusChange(requestId: string, status: string) {
-    const { error } = await supabase.from("requests").update({ status }).eq("id", requestId);
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.from("requests").update({ status } as never).eq("id", requestId);
     if (error) {
       console.warn("Status update failed:", error.message);
       return;
