@@ -69,7 +69,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/agape-logo.png" sizes="any" />
         <link rel="apple-touch-icon" href="/agape-logo.png" />
-        <meta name="theme-color" content="#0066FF" />
+        <meta name="theme-color" content="#0f766e" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

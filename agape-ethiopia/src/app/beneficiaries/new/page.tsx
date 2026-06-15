@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import BeneficiaryRegistrationForm from "@/components/BeneficiaryRegistrationForm";
+
+export const metadata: Metadata = {
+  title: "Registration",
+  description: "Register a new beneficiary in the Agape Ethiopia system.",
+};
 
 export default function NewBeneficiaryPage() {
   return (

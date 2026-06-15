@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import BeneficiaryProfile from "@/components/BeneficiaryProfile";
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const id = params.id;
+  return {
+    title: `Beneficiary ${id}`,
+    description: `Profile and history for beneficiary ${id}`,
+  };
+}
 
 export default async function BeneficiaryPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;

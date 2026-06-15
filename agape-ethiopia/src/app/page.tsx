@@ -70,6 +70,19 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Illustration / Impact image */}
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <div className="flex items-center gap-6">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-slate-900">Our Reach</h3>
+              <p className="mt-2 text-sm text-slate-700">Visualizing our recent outreach and beneficiary impact.</p>
+            </div>
+            <div className="hidden sm:block w-48">
+              <Image src="/final.png" alt="Agape Ethiopia impact visual" width={320} height={180} className="rounded-xl object-cover shadow-md" />
+            </div>
+          </div>
+        </section>
+
         {/* Main Dashboard */}
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.35em] text-blue-600">Dashboard Overview</p>

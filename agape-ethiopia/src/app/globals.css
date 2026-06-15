@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Agape Ethiopia brand palette (derived from logo and imagery) */
+  --brand-primary: #0f766e; /* deep teal/emerald */
+  --brand-primary-600: #0ea5a4;
+  --brand-accent: #0b84a5; /* complementary blue */
+  --brand-amber: #f59e0b;
+  --brand-danger: #dc2626;
+  --muted: #6b7280;
 }
 
 @theme inline {
@@ -24,3 +32,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Utility classes for consistent branding */
+.brand-primary {
+  background-color: var(--brand-primary);
+  color: white;
+}
+
+.btn-primary {
+  background-color: var(--brand-primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-primary-600);
+}
+
+.text-brand {
+  color: var(--brand-primary);
+}
+
+.muted { color: var(--muted); }
