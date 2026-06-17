@@ -18,50 +18,100 @@ export default function BeneficiaryRegistrationForm() {
   const [houseNumber, setHouseNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Ready to register a beneficiary.");
+  const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Saving beneficiary record...");
-    const supabase = getSupabaseClient();
+    setIsSaving(true);
 
-    const normalizedRegistrationNumber = registrationNumber.trim() || `AGAPE-${Date.now()}`;
-    const payload = {
-      registration_number: normalizedRegistrationNumber,
-      registration_date: registrationDate || new Date().toISOString().slice(0, 10),
-      first_name: firstName.trim(),
-      middle_name: middleName.trim(),
-      last_name: lastName.trim(),
-      date_of_birth: dateOfBirth,
-      gender,
-      phone: phone.trim(),
-      region: region.trim(),
-      kifle_ketema: kifleKetema.trim(),
-      kebele: kebele.trim(),
-      house_number: houseNumber.trim(),
-      notes: notes.trim(),
-    };
+    try {
+      // Log: Before initialization
+      console.log("[REGISTRATION] Starting form submission...");
 
-    const { error } = await supabase.from("beneficiaries").insert(payload);
+      let supabase;
+      try {
+        supabase = getSupabaseClient();
+        console.log("[REGISTRATION] Supabase client initialized:", !!supabase);
+      } catch (initError) {
+        console.error("[REGISTRATION] Failed to initialize Supabase client:", initError);
+        setStatus(`Error: Failed to initialize Supabase - ${initError instanceof Error ? initError.message : String(initError)}`);
+        return;
+      }
 
-    if (error) {
-      setStatus(`Save failed: ${error.message}`);
-      return;
+      const normalizedRegistrationNumber = registrationNumber.trim() || `AGAPE-${Date.now()}`;
+      const payload = {
+        registration_number: normalizedRegistrationNumber,
+        registration_date: registrationDate || new Date().toISOString().slice(0, 10),
+        first_name: firstName.trim(),
+        middle_name: middleName.trim(),
+        last_name: lastName.trim(),
+        date_of_birth: dateOfBirth,
+        gender,
+        phone: phone.trim(),
+        region: region.trim(),
+        kifle_ketema: kifleKetema.trim(),
+        kebele: kebele.trim(),
+        house_number: houseNumber.trim(),
+        notes: notes.trim(),
+      };
+
+      // Log: Before insert
+      console.log("[REGISTRATION] Payload prepared:", payload);
+      console.log("[REGISTRATION] Attempting to insert into 'beneficiaries' table...");
+
+      const insertPromise = supabase.from("beneficiaries").insert([payload]).select();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase request timed out after 20 seconds.")), 20000)
+      );
+
+      const result = await Promise.race([insertPromise, timeoutPromise]);
+      const { data, error } = result as {
+        data: unknown;
+        error: { code?: string; message: string } | null;
+      };
+
+      // Log: After insert
+      console.log("[REGISTRATION] Insert response - Data:", data, "Error:", error);
+
+      if (error) {
+        console.error("[REGISTRATION] Insert failed:", error);
+        setStatus(`Save failed: ${error.code ? `[${error.code}] ` : ""}${error.message}`);
+        return;
+      }
+
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        console.warn("[REGISTRATION] Insert succeeded but no data returned");
+        setStatus("Beneficiary registered successfully! (ID auto-generated)");
+      } else if (Array.isArray(data)) {
+        console.log("[REGISTRATION] Insert succeeded with data:", data[0]);
+        const firstItem = data[0] as Record<string, unknown>;
+        setStatus(`Beneficiary registered successfully! (ID: ${firstItem.id ?? "N/A"})`);
+      } else {
+        console.log("[REGISTRATION] Insert succeeded with data object:", data);
+        setStatus("Beneficiary registered successfully!");
+      }
+
+      // Clear form
+      setRegistrationNumber("");
+      setRegistrationDate("");
+      setFirstName("");
+      setMiddleName("");
+      setLastName("");
+      setDateOfBirth("");
+      setGender("");
+      setPhone("");
+      setRegion("");
+      setKifleKetema("");
+      setKebele("");
+      setHouseNumber("");
+      setNotes("");
+    } catch (unexpectedError) {
+      console.error("[REGISTRATION] Unexpected error:", unexpectedError);
+      setStatus(`Unexpected error: ${unexpectedError instanceof Error ? unexpectedError.message : String(unexpectedError)}`);
+    } finally {
+      setIsSaving(false);
     }
-
-    setRegistrationNumber("");
-    setRegistrationDate("");
-    setFirstName("");
-    setMiddleName("");
-    setLastName("");
-    setDateOfBirth("");
-    setGender("");
-    setPhone("");
-    setRegion("");
-    setKifleKetema("");
-    setKebele("");
-    setHouseNumber("");
-    setNotes("");
-    setStatus("Beneficiary registered successfully in Supabase.");
   }
 
   return (
@@ -214,8 +264,12 @@ export default function BeneficiaryRegistrationForm() {
           />
         </label>
 
-        <button type="submit" className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white md:col-span-2">
-          Register beneficiary
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white md:col-span-2 disabled:cursor-not-allowed disabled:bg-slate-400"
+        >
+          {isSaving ? "Saving beneficiary..." : "Register beneficiary"}
         </button>
 
         <p className="text-sm text-slate-500 md:col-span-2">{status}</p>
