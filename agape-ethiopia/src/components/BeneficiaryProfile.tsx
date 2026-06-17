@@ -5,20 +5,22 @@ import type { ReactNode } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import BeneficiaryAssessmentForm from "@/components/BeneficiaryAssessmentForm";
 import EquipmentAssignmentForm from "@/components/EquipmentAssignmentForm";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 type BeneficiaryDetails = {
   id: string;
   registration_number?: string;
   registration_date?: string;
   first_name?: string;
-  middle_name?: string;
-  last_name?: string;
+  fathers_name?: string;
+  grandfathers_name?: string;
   date_of_birth?: string;
   gender?: string;
   phone?: string;
   region?: string;
   kifle_ketema?: string;
-  kebele?: string;
+  woreda_zone?: string;
+  photo_url?: string;
   house_number?: string;
   notes?: string;
 };
@@ -42,6 +44,7 @@ type EquipmentRecord = {
 
 export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: string }) {
   const [beneficiary, setBeneficiary] = useState<BeneficiaryDetails | null>(null);
+  const { t } = useLanguage();
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [equipment, setEquipment] = useState<EquipmentRecord[]>([]);
   const [status, setStatus] = useState("Loading beneficiary profile...");
@@ -59,7 +62,7 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
       supabase
         .from("beneficiaries")
         .select(
-          "id,registration_number,registration_date,first_name,middle_name,last_name,date_of_birth,gender,phone,region,kifle_ketema,kebele,house_number,notes"
+          "id,registration_number,registration_date,first_name,fathers_name,grandfathers_name,date_of_birth,gender,phone,region,kifle_ketema,woreda_zone,house_number,notes,photo_url"
         )
         .eq("id", beneficiaryId)
         .single(),
@@ -124,24 +127,34 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
             {renderSection(
               "Registration details",
               <div className="grid gap-3">
-                {[
-                  ["Registration number", beneficiary.registration_number],
-                  ["Registration date", beneficiary.registration_date],
-                  ["Name", [beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name].filter(Boolean).join(" ")],
-                  ["Date of birth", beneficiary.date_of_birth],
-                  ["Gender", beneficiary.gender],
-                  ["Phone", beneficiary.phone],
-                  ["Region", beneficiary.region],
-                  ["Kifle Ketema", beneficiary.kifle_ketema],
-                  ["Kebele", beneficiary.kebele],
-                  ["House number", beneficiary.house_number],
-                  ["Notes", beneficiary.notes],
-                ].map(([label, value]) => (
-                  <div key={label} className="grid gap-1 rounded-2xl bg-white p-4 shadow-sm">
-                    <p className="text-sm uppercase tracking-[0.25em] text-slate-500">{label}</p>
-                    <p className="text-base font-medium text-slate-900">{value || "—"}</p>
-                  </div>
-                ))}
+                {(() => {
+                  const fullName = [beneficiary.first_name, beneficiary.fathers_name, beneficiary.grandfathers_name]
+                    .filter(Boolean)
+                    .join(" ");
+
+                  return (
+                    <>
+                      {[
+                        ["Registration number", beneficiary.registration_number],
+                        ["Registration date", beneficiary.registration_date],
+                        [t("firstName"), fullName || "—"],
+                        ["Date of birth", beneficiary.date_of_birth],
+                        [t("gender"), beneficiary.gender],
+                        [t("phone"), beneficiary.phone],
+                        [t("region"), beneficiary.region],
+                        [t("kifleKetema"), beneficiary.kifle_ketema],
+                        [t("woredaZone"), beneficiary.woreda_zone],
+                        [t("houseNumber"), beneficiary.house_number],
+                        [t("notes"), beneficiary.notes],
+                      ].map(([label, value]) => (
+                        <div key={label} className="grid gap-1 rounded-2xl bg-white p-4 shadow-sm">
+                          <p className="text-sm uppercase tracking-[0.25em] text-slate-500">{label}</p>
+                          <p className="text-base font-medium text-slate-900">{value || "—"}</p>
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
               </div>
             )}
 

@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import BeneficiaryRegistrationForm from "@/components/BeneficiaryRegistrationForm";
+import { requireStaff } from "@/lib/auth/serverAuth";
 
 export const metadata: Metadata = {
   title: "Registration",
   description: "Register a new beneficiary in the Agape Ethiopia system.",
 };
 
-export default function NewBeneficiaryPage() {
+export default async function NewBeneficiaryPage() {
+  try {
+    await requireStaff();
+  } catch (err) {
+    redirect("/login");
+  }
+
   return (
     <>
       <AppHeader />

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 import type { FormEvent } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
@@ -9,11 +10,12 @@ type Beneficiary = {
   id: string;
   registration_number?: string;
   first_name?: string;
-  middle_name?: string;
-  last_name?: string;
+  fathers_name?: string;
+  grandfathers_name?: string;
   phone?: string;
   region?: string;
-  kebele?: string;
+  woreda_zone?: string;
+  photo_url?: string;
   created_at?: string;
 };
 
@@ -25,7 +27,8 @@ export default function BeneficiarySearch() {
   const [results, setResults] = useState<Beneficiary[]>([]);
   const [equipmentSummary, setEquipmentSummary] = useState<EquipmentSummary>({});
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("Search beneficiaries by name, reg. number, phone, region, kebele or equipment type.");
+  const { t } = useLanguage();
+  const [status, setStatus] = useState(t("searchPlaceholder") || "Search beneficiaries by name, reg. number, phone, region, woreda/zone or equipment type.");
 
   useEffect(() => {
     void loadRecentBeneficiaries();
@@ -38,7 +41,7 @@ export default function BeneficiarySearch() {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("beneficiaries")
-      .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele")
+      .select("id,registration_number,first_name,fathers_name,grandfathers_name,phone,region,woreda_zone,photo_url")
       .order("created_at", { ascending: false })
       .limit(25);
 
@@ -72,16 +75,16 @@ export default function BeneficiarySearch() {
         const orFilter = [
           `registration_number.ilike.%${trimmedSearch}%`,
           `first_name.ilike.%${trimmedSearch}%`,
-          `middle_name.ilike.%${trimmedSearch}%`,
-          `last_name.ilike.%${trimmedSearch}%`,
+          `fathers_name.ilike.%${trimmedSearch}%`,
+          `grandfathers_name.ilike.%${trimmedSearch}%`,
           `phone.ilike.%${trimmedSearch}%`,
           `region.ilike.%${trimmedSearch}%`,
-          `kebele.ilike.%${trimmedSearch}%`,
+          `woreda_zone.ilike.%${trimmedSearch}%`,
         ].join(",");
 
         const { data, error } = await supabase
           .from("beneficiaries")
-          .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele")
+          .select("id,registration_number,first_name,fathers_name,grandfathers_name,phone,region,woreda_zone,photo_url")
           .or(orFilter)
           .order("created_at", { ascending: false })
           .limit(50);
@@ -105,7 +108,7 @@ export default function BeneficiarySearch() {
         if (assignmentIds.length > 0) {
           const { data, error } = await supabase
             .from("beneficiaries")
-            .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele")
+            .select("id,registration_number,first_name,fathers_name,grandfathers_name,phone,region,woreda_zone,photo_url")
             .in("id", assignmentIds)
             .order("created_at", { ascending: false })
             .limit(50);
@@ -169,10 +172,8 @@ export default function BeneficiarySearch() {
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-900">Beneficiary Search</h2>
-          <p className="mt-2 text-slate-600">
-            Search the beneficiary repository by name, registration number, phone, region, kebele, or assigned equipment.
-          </p>
+          <h2 className="text-2xl font-semibold text-slate-900">{t("searchBeneficiaries")}</h2>
+          <p className="mt-2 text-slate-600">{t("searchPlaceholder")}</p>
         </div>
         <Link href="/beneficiaries/new" className="inline-flex rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800">
           New beneficiary
@@ -185,7 +186,7 @@ export default function BeneficiarySearch() {
           <input
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Name, reg. number, phone, region, kebele"
+            placeholder={t("searchPlaceholder")}
             className="rounded-xl border border-slate-300 px-4 py-3"
           />
         </label>
@@ -215,7 +216,7 @@ export default function BeneficiarySearch() {
               <th className="px-4 py-3">Registration #</th>
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Region</th>
-              <th className="px-4 py-3">Kebele</th>
+              <th className="px-4 py-3">{t("woredaZone")}</th>
               <th className="px-4 py-3">Equipment</th>
             </tr>
           </thead>
@@ -223,14 +224,21 @@ export default function BeneficiarySearch() {
             {results.map((beneficiary) => (
               <tr key={beneficiary.id}>
                 <td className="px-4 py-3">
-                  <Link href={`/beneficiaries/${beneficiary.id}`} className="font-semibold text-slate-900 hover:text-emerald-700">
-                    {[beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name].filter(Boolean).join(" ") || "Unknown beneficiary"}
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    {beneficiary.photo_url ? (
+                      <img src={beneficiary.photo_url} alt="photo" className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-slate-100" />
+                    )}
+                    <Link href={`/beneficiaries/${beneficiary.id}`} className="font-semibold text-slate-900 hover:text-emerald-700">
+                      {[beneficiary.first_name, beneficiary.fathers_name, beneficiary.grandfathers_name].filter(Boolean).join(" ") || "Unknown beneficiary"}
+                    </Link>
+                  </div>
                 </td>
                 <td className="px-4 py-3">{beneficiary.registration_number ?? "—"}</td>
                 <td className="px-4 py-3">{beneficiary.phone ?? "—"}</td>
                 <td className="px-4 py-3">{beneficiary.region ?? "—"}</td>
-                <td className="px-4 py-3">{beneficiary.kebele ?? "—"}</td>
+                <td className="px-4 py-3">{beneficiary.woreda_zone ?? "—"}</td>
                 <td className="px-4 py-3">{equipmentSummary[beneficiary.id] ?? "—"}</td>
               </tr>
             ))}

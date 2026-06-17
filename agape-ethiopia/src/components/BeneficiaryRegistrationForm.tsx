@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 export default function BeneficiaryRegistrationForm() {
-  const [registrationNumber, setRegistrationNumber] = useState("");
+  const { t } = useLanguage();
+
   const [registrationDate, setRegistrationDate] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [fathersName, setFathersName] = useState("");
+  const [grandfathersName, setGrandfathersName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [gender, setGender] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
   const [kifleKetema, setKifleKetema] = useState("");
-  const [kebele, setKebele] = useState("");
+  const [woredaZone, setWoredaZone] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [houseNumber, setHouseNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Ready to register a beneficiary.");
@@ -39,19 +42,33 @@ export default function BeneficiaryRegistrationForm() {
         return;
       }
 
-      const normalizedRegistrationNumber = registrationNumber.trim() || `AGAPE-${Date.now()}`;
-      const payload = {
-        registration_number: normalizedRegistrationNumber,
+      // Validate image if present
+      if (photoFile) {
+        const allowed = ["jpg", "jpeg", "png", "webp"];
+        const ext = photoFile.name.split(".").pop()?.toLowerCase() ?? "";
+        if (!allowed.includes(ext)) {
+          setStatus(t("invalidFileType") || "Invalid image type.");
+          setIsSaving(false);
+          return;
+        }
+        if (photoFile.size > 3 * 1024 * 1024) {
+          setStatus(t("invalidFileSize") || "Image too large.");
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      const payload: Record<string, unknown> = {
         registration_date: registrationDate || new Date().toISOString().slice(0, 10),
         first_name: firstName.trim(),
-        middle_name: middleName.trim(),
-        last_name: lastName.trim(),
+        fathers_name: fathersName.trim(),
+        grandfathers_name: grandfathersName.trim(),
         date_of_birth: dateOfBirth,
         gender,
         phone: phone.trim(),
         region: region.trim(),
         kifle_ketema: kifleKetema.trim(),
-        kebele: kebele.trim(),
+        woreda_zone: woredaZone.trim(),
         house_number: houseNumber.trim(),
         notes: notes.trim(),
       };
@@ -64,6 +81,22 @@ export default function BeneficiaryRegistrationForm() {
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Supabase request timed out after 20 seconds.")), 20000)
       );
+
+      // If photo present, upload first and include URL in payload
+      if (photoFile) {
+        const fileExt = photoFile.name.split(".").pop() ?? "jpg";
+        const filePath = `beneficiaries/${Date.now()}_${Math.random().toString(36).slice(2, 9)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from("beneficiary-photos").upload(filePath, photoFile as File);
+        if (uploadError) {
+          console.error("[REGISTRATION] Photo upload failed:", uploadError);
+          setStatus(`Photo upload failed: ${uploadError.message}`);
+          setIsSaving(false);
+          return;
+        }
+
+        const { data: publicData } = await supabase.storage.from("beneficiary-photos").getPublicUrl(filePath);
+        payload.photo_url = publicData?.publicUrl ?? null;
+      }
 
       const result = await Promise.race([insertPromise, timeoutPromise]);
       const { data, error } = result as {
@@ -93,19 +126,19 @@ export default function BeneficiaryRegistrationForm() {
       }
 
       // Clear form
-      setRegistrationNumber("");
       setRegistrationDate("");
       setFirstName("");
-      setMiddleName("");
-      setLastName("");
+      setFathersName("");
+      setGrandfathersName("");
       setDateOfBirth("");
       setGender("");
       setPhone("");
       setRegion("");
       setKifleKetema("");
-      setKebele("");
+      setWoredaZone("");
       setHouseNumber("");
       setNotes("");
+      setPhotoFile(null);
     } catch (unexpectedError) {
       console.error("[REGISTRATION] Unexpected error:", unexpectedError);
       setStatus(`Unexpected error: ${unexpectedError instanceof Error ? unexpectedError.message : String(unexpectedError)}`);
@@ -116,20 +149,15 @@ export default function BeneficiaryRegistrationForm() {
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-semibold text-slate-900">Beneficiary Registration</h2>
+      <h2 className="text-2xl font-semibold text-slate-900">{t("registerBeneficiary")}</h2>
       <p className="mt-2 text-slate-600">
         Capture registration details for Agape Ethiopia beneficiaries and preserve records for future assessment and assignment tracking.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-4 lg:grid-cols-2">
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Registration number
-          <input
-            value={registrationNumber}
-            onChange={(event) => setRegistrationNumber(event.target.value)}
-            className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Optional auto-generated ID"
-          />
+          {t("registrationNumber")}
+          <input value={t("autoGeneratedOnly") || "Auto-generated on save"} disabled className="rounded-xl border border-slate-300 bg-slate-100 px-4 py-3" />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
@@ -154,20 +182,20 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Middle name
+          {t("fathersName")}
           <input
-            value={middleName}
-            onChange={(event) => setMiddleName(event.target.value)}
+            value={fathersName}
+            onChange={(event) => setFathersName(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
             placeholder="Example: Bekele"
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Last name
+          {t("grandfathersName")}
           <input
-            value={lastName}
-            onChange={(event) => setLastName(event.target.value)}
+            value={grandfathersName}
+            onChange={(event) => setGrandfathersName(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
             placeholder="Example: Tadesse"
             required
@@ -186,7 +214,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Gender
+          {t("gender")}
           <select
             value={gender}
             onChange={(event) => setGender(event.target.value)}
@@ -194,9 +222,8 @@ export default function BeneficiaryRegistrationForm() {
             required
           >
             <option value="">Select gender</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-            <option value="other">Other</option>
+            <option value="male">{t("male")}</option>
+            <option value="female">{t("female")}</option>
           </select>
         </label>
 
@@ -234,13 +261,23 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Kebele
+          {t("woredaZone")}
           <input
-            value={kebele}
-            onChange={(event) => setKebele(event.target.value)}
+            value={woredaZone}
+            onChange={(event) => setWoredaZone(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Kebele"
+            placeholder={t("woredaZone")}
             required
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("uploadPhotoLabel")}
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => setPhotoFile(e.target.files ? e.target.files[0] : null)}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-3"
           />
         </label>
 

@@ -1,13 +1,21 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import BeneficiarySearch from "@/components/BeneficiarySearch";
+import { requireStaff } from "@/lib/auth/serverAuth";
 
 export const metadata: Metadata = {
   title: "Beneficiaries",
   description: "Search and manage beneficiary records, view assessment history, and track equipment assignments.",
 };
 
-export default function BeneficiariesPage() {
+export default async function BeneficiariesPage() {
+  try {
+    await requireStaff();
+  } catch (err) {
+    redirect("/login");
+  }
+
   return (
     <>
       <AppHeader />
