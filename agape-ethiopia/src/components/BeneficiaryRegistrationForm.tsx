@@ -73,14 +73,9 @@ export default function BeneficiaryRegistrationForm() {
         notes: notes.trim(),
       };
 
-      // Log: Before insert
+      // Log: Before submit
       console.log("[REGISTRATION] Payload prepared:", payload);
-      console.log("[REGISTRATION] Attempting to insert into 'beneficiaries' table...");
-
-      const insertPromise = supabase.from("beneficiaries").insert([payload]).select();
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Supabase request timed out after 20 seconds.")), 20000)
-      );
+      console.log("[REGISTRATION] Attempting to submit beneficiary record...");
 
       // If photo present, upload first and include URL in payload
       if (photoFile) {
@@ -98,31 +93,33 @@ export default function BeneficiaryRegistrationForm() {
         payload.photo_url = publicData?.publicUrl ?? null;
       }
 
-      const result = await Promise.race([insertPromise, timeoutPromise]);
-      const { data, error } = result as {
-        data: unknown;
-        error: { code?: string; message: string } | null;
-      };
+      const response = await fetch("/api/beneficiaries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      // Log: After insert
-      console.log("[REGISTRATION] Insert response - Data:", data, "Error:", error);
+      const responseBody = await response.json().catch(() => null);
 
-      if (error) {
-        console.error("[REGISTRATION] Insert failed:", error);
-        setStatus(`Save failed: ${error.code ? `[${error.code}] ` : ""}${error.message}`);
+      // Log: After submit
+      console.log("[REGISTRATION] Submit response - Status:", response.status, "Body:", responseBody);
+
+      if (!response.ok) {
+        const message = responseBody?.error || `Request failed with status ${response.status}`;
+        console.error("[REGISTRATION] Submit failed:", message);
+        setStatus(`Save failed: ${message}`);
         return;
       }
 
-      if (!data || (Array.isArray(data) && data.length === 0)) {
-        console.warn("[REGISTRATION] Insert succeeded but no data returned");
+      const insertedRecord = responseBody?.data as Record<string, unknown> | undefined;
+      if (!insertedRecord) {
+        console.warn("[REGISTRATION] Submit succeeded but no saved record data was returned");
         setStatus("Beneficiary registered successfully! (ID auto-generated)");
-      } else if (Array.isArray(data)) {
-        console.log("[REGISTRATION] Insert succeeded with data:", data[0]);
-        const firstItem = data[0] as Record<string, unknown>;
-        setStatus(`Beneficiary registered successfully! (ID: ${firstItem.id ?? "N/A"})`);
       } else {
-        console.log("[REGISTRATION] Insert succeeded with data object:", data);
-        setStatus("Beneficiary registered successfully!");
+        console.log("[REGISTRATION] Submit succeeded with data:", insertedRecord);
+        setStatus(`Beneficiary registered successfully! (ID: ${insertedRecord.id ?? "N/A"})`);
       }
 
       // Clear form
