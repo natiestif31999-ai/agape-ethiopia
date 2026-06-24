@@ -4,9 +4,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let supabaseInstance: any = null;
@@ -14,27 +12,18 @@ let supabaseInstance: any = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function initializeSupabaseClient(): any {
   if (typeof window === "undefined") {
-    console.log("[SUPABASE] Server-side environment - returning null");
     return null;
   }
 
-  // Log environment variable availability
-  console.log("[SUPABASE] Environment check:");
-  console.log("[SUPABASE] - NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "✓ Set" : "✗ Missing");
-  console.log("[SUPABASE] - NEXT_PUBLIC_SUPABASE_ANON_KEY:", supabaseAnonKey ? "✓ Set" : "✗ Missing");
+  const config = getSupabaseConfig();
+  const configError = getSupabaseConfigError(config);
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    const missing = [];
-    if (!supabaseUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
-    if (!supabaseAnonKey) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
-    console.error("[SUPABASE] Missing environment variables:", missing.join(", "));
+  if (configError) {
     return null;
   }
 
   try {
-    const client = createClient(supabaseUrl, supabaseAnonKey);
-    console.log("[SUPABASE] Client created successfully for:", supabaseUrl);
-    return client;
+    return createClient(config.url, config.anonKey);
   } catch (error) {
     console.error("[SUPABASE] Failed to create client:", error);
     return null;

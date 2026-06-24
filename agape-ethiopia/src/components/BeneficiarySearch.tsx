@@ -10,11 +10,11 @@ type Beneficiary = {
   id: string;
   registration_number?: string;
   first_name?: string;
-  fathers_name?: string;
-  grandfathers_name?: string;
+  middle_name?: string;
+  last_name?: string;
   phone?: string;
   region?: string;
-  woreda_zone?: string;
+  kebele?: string;
   photo_url?: string;
   created_at?: string;
 };
@@ -28,7 +28,7 @@ export default function BeneficiarySearch() {
   const [equipmentSummary, setEquipmentSummary] = useState<EquipmentSummary>({});
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
-  const [status, setStatus] = useState(t("searchPlaceholder") || "Search beneficiaries by name, reg. number, phone, region, woreda/zone or equipment type.");
+  const [status, setStatus] = useState(t("searchPlaceholder") || "Search beneficiaries by name, reg. number, phone, region, kebele or equipment type.");
 
   useEffect(() => {
     void loadRecentBeneficiaries();
@@ -41,7 +41,7 @@ export default function BeneficiarySearch() {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("beneficiaries")
-      .select("id,registration_number,first_name,fathers_name,grandfathers_name,phone,region,woreda_zone,photo_url")
+      .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url")
       .order("created_at", { ascending: false })
       .limit(25);
 
@@ -75,16 +75,16 @@ export default function BeneficiarySearch() {
         const orFilter = [
           `registration_number.ilike.%${trimmedSearch}%`,
           `first_name.ilike.%${trimmedSearch}%`,
-          `fathers_name.ilike.%${trimmedSearch}%`,
-          `grandfathers_name.ilike.%${trimmedSearch}%`,
+          `middle_name.ilike.%${trimmedSearch}%`,
+          `last_name.ilike.%${trimmedSearch}%`,
           `phone.ilike.%${trimmedSearch}%`,
           `region.ilike.%${trimmedSearch}%`,
-          `woreda_zone.ilike.%${trimmedSearch}%`,
+          `kebele.ilike.%${trimmedSearch}%`,
         ].join(",");
 
         const { data, error } = await supabase
           .from("beneficiaries")
-          .select("id,registration_number,first_name,fathers_name,grandfathers_name,phone,region,woreda_zone,photo_url")
+          .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url")
           .or(orFilter)
           .order("created_at", { ascending: false })
           .limit(50);
@@ -94,21 +94,21 @@ export default function BeneficiarySearch() {
       }
 
       if (trimmedEquipmentType) {
-        const { data: assignments, error: assignmentError } = await supabase
-          .from("equipment_assignments")
+        const { data: distributions, error: distributionError } = await supabase
+          .from("equipment_distributions")
           .select("beneficiary_id,equipment_type")
           .ilike("equipment_type", `%${trimmedEquipmentType}%`)
           .limit(200);
 
-        if (assignmentError) throw assignmentError;
+        if (distributionError) throw distributionError;
 
-        const assignmentList = (assignments ?? []) as Array<{ beneficiary_id?: string; equipment_type?: string }>;
-        const assignmentIds = Array.from(new Set(assignmentList.flatMap((item) => (item.beneficiary_id ? [item.beneficiary_id] : []))));
+        const distributionList = (distributions ?? []) as Array<{ beneficiary_id?: string; equipment_type?: string }>;
+        const assignmentIds = Array.from(new Set(distributionList.flatMap((item) => (item.beneficiary_id ? [item.beneficiary_id] : []))));
 
         if (assignmentIds.length > 0) {
           const { data, error } = await supabase
             .from("beneficiaries")
-            .select("id,registration_number,first_name,fathers_name,grandfathers_name,phone,region,woreda_zone,photo_url")
+            .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url")
             .in("id", assignmentIds)
             .order("created_at", { ascending: false })
             .limit(50);
@@ -129,15 +129,15 @@ export default function BeneficiarySearch() {
       beneficiaryIds = beneficiaryCandidates.map((item) => item.id);
 
       if (beneficiaryIds.length > 0) {
-        const { data: assignments, error: assignmentError } = await supabase
-          .from("equipment_assignments")
+        const { data: distributions, error: distributionError } = await supabase
+          .from("equipment_distributions")
           .select("beneficiary_id,equipment_type")
           .in("beneficiary_id", beneficiaryIds)
           .limit(200);
 
-        if (assignmentError) throw assignmentError;
+        if (distributionError) throw distributionError;
 
-        const assignmentList = (assignments ?? []) as Array<{ beneficiary_id?: string; equipment_type?: string }>;
+        const assignmentList = (distributions ?? []) as Array<{ beneficiary_id?: string; equipment_type?: string }>;
         const summary: EquipmentSummary = {};
         assignmentList.forEach((assignment) => {
           const beneficiaryId = assignment.beneficiary_id;
@@ -216,7 +216,7 @@ export default function BeneficiarySearch() {
               <th className="px-4 py-3">Registration #</th>
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Region</th>
-              <th className="px-4 py-3">{t("woredaZone")}</th>
+              <th className="px-4 py-3">Kebele</th>
               <th className="px-4 py-3">Equipment</th>
             </tr>
           </thead>
@@ -231,14 +231,14 @@ export default function BeneficiarySearch() {
                       <div className="h-10 w-10 rounded-full bg-slate-100" />
                     )}
                     <Link href={`/beneficiaries/${beneficiary.id}`} className="font-semibold text-slate-900 hover:text-emerald-700">
-                      {[beneficiary.first_name, beneficiary.fathers_name, beneficiary.grandfathers_name].filter(Boolean).join(" ") || "Unknown beneficiary"}
+                      {[beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name].filter(Boolean).join(" ") || "Unknown beneficiary"}
                     </Link>
                   </div>
                 </td>
                 <td className="px-4 py-3">{beneficiary.registration_number ?? "—"}</td>
                 <td className="px-4 py-3">{beneficiary.phone ?? "—"}</td>
                 <td className="px-4 py-3">{beneficiary.region ?? "—"}</td>
-                <td className="px-4 py-3">{beneficiary.woreda_zone ?? "—"}</td>
+                <td className="px-4 py-3">{beneficiary.kebele ?? "—"}</td>
                 <td className="px-4 py-3">{equipmentSummary[beneficiary.id] ?? "—"}</td>
               </tr>
             ))}

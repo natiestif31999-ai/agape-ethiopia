@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import BeneficiaryAssessmentForm from "@/components/BeneficiaryAssessmentForm";
-import EquipmentAssignmentForm from "@/components/EquipmentAssignmentForm";
+import EquipmentDistributionForm from "@/components/EquipmentDistributionForm";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 
 type BeneficiaryDetails = {
@@ -12,14 +12,14 @@ type BeneficiaryDetails = {
   registration_number?: string;
   registration_date?: string;
   first_name?: string;
-  fathers_name?: string;
-  grandfathers_name?: string;
+  middle_name?: string;
+  last_name?: string;
   date_of_birth?: string;
   gender?: string;
   phone?: string;
   region?: string;
   kifle_ketema?: string;
-  woreda_zone?: string;
+  kebele?: string;
   photo_url?: string;
   house_number?: string;
   notes?: string;
@@ -36,9 +36,12 @@ type AssessmentRecord = {
 
 type EquipmentRecord = {
   id: string;
-  issue_date?: string;
+  distribution_date?: string;
   equipment_type?: string;
-  size?: string;
+  equipment_size?: string;
+  distribution_location?: string;
+  received_by?: string;
+  signature_confirmed?: boolean;
   notes?: string;
 };
 
@@ -62,7 +65,7 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
       supabase
         .from("beneficiaries")
         .select(
-          "id,registration_number,registration_date,first_name,fathers_name,grandfathers_name,date_of_birth,gender,phone,region,kifle_ketema,woreda_zone,house_number,notes,photo_url"
+          "id,registration_number,registration_date,first_name,middle_name,last_name,date_of_birth,gender,phone,region,kifle_ketema,kebele,house_number,notes,photo_url"
         )
         .eq("id", beneficiaryId)
         .single(),
@@ -73,10 +76,10 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
         .order("assessment_date", { ascending: false })
         .limit(20),
       supabase
-        .from("equipment_assignments")
-        .select("id,issue_date,equipment_type,size,notes")
+        .from("equipment_distributions")
+        .select("id,distribution_date,equipment_type,equipment_size,distribution_location,received_by,signature_confirmed,notes")
         .eq("beneficiary_id", beneficiaryId)
-        .order("issue_date", { ascending: false })
+        .order("distribution_date", { ascending: false })
         .limit(20),
     ]);
 
@@ -128,7 +131,7 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
               "Registration details",
               <div className="grid gap-3">
                 {(() => {
-                  const fullName = [beneficiary.first_name, beneficiary.fathers_name, beneficiary.grandfathers_name]
+                  const fullName = [beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name]
                     .filter(Boolean)
                     .join(" ");
 
@@ -143,7 +146,7 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
                         [t("phone"), beneficiary.phone],
                         [t("region"), beneficiary.region],
                         [t("kifleKetema"), beneficiary.kifle_ketema],
-                        [t("woredaZone"), beneficiary.woreda_zone],
+                        ["Kebele", beneficiary.kebele],
                         [t("houseNumber"), beneficiary.house_number],
                         [t("notes"), beneficiary.notes],
                       ].map(([label, value]) => (
@@ -181,25 +184,27 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
 
           <div className="space-y-6">
             {renderSection(
-              "Equipment assignments",
+              "Equipment distributions",
               equipment.length > 0 ? (
                 <div className="space-y-4">
                   {equipment.map((item) => (
                     <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-sm text-slate-500">{item.issue_date || "Unknown issue date"}</p>
+                      <p className="text-sm text-slate-500">{item.distribution_date || "Unknown distribution date"}</p>
                       <p className="mt-1 text-lg font-semibold text-slate-900">{item.equipment_type || "Equipment item"}</p>
-                      <p className="mt-2 text-sm text-slate-600">Size: {item.size || "Not specified"}</p>
+                      <p className="mt-2 text-sm text-slate-600">Size: {item.equipment_size || "Not specified"}</p>
+                      <p className="mt-2 text-sm text-slate-600">Location: {item.distribution_location || "Not recorded"}</p>
+                      <p className="mt-2 text-sm text-slate-600">Received by: {item.received_by || "Unknown"}</p>
                       <p className="mt-2 text-sm text-slate-500">{item.notes || "No notes provided."}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">No equipment assignments found for this beneficiary.</p>
+                <p className="text-sm text-slate-500">No equipment distributions found for this beneficiary.</p>
               )
             )}
 
             <BeneficiaryAssessmentForm beneficiaryId={beneficiaryId} onCreated={loadProfile} />
-            <EquipmentAssignmentForm beneficiaryId={beneficiaryId} onCreated={loadProfile} />
+            <EquipmentDistributionForm beneficiaryId={beneficiaryId} onCreated={loadProfile} />
           </div>
         </div>
       ) : (

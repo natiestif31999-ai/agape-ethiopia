@@ -1,14 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Session } from "@supabase/supabase-js";
+import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const config = getSupabaseConfig();
+const configError = getSupabaseConfigError(config);
 
-export const supabase = createClient(supabaseUrl ?? "", supabaseAnonKey ?? "");
+export const supabase = configError ? null : createClient(config.url, config.anonKey);
 
 export async function getSession(): Promise<Session | null> {
-  const supabaseClient = createClient(supabaseUrl ?? "", supabaseAnonKey ?? "", {
+  if (!supabase) {
+    return null;
+  }
+
+  const supabaseClient = createClient(config.url, config.anonKey, {
     global: {
       headers: {
         Authorization: await cookies().then((cookieStore) => {
@@ -33,6 +38,10 @@ export async function getSession(): Promise<Session | null> {
 }
 
 export async function getUserRole(userId: string): Promise<string | null> {
+  if (!supabase) {
+    return null;
+  }
+
   const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
   if (error || !data) {
     return null;

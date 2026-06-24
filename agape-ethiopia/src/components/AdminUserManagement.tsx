@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createBrowserClient } from "@supabase/auth-helpers-nextjs";
+import { getSupabaseConfig, hasSupabaseAnonConfig } from "@/lib/supabase/env";
 
 type UserProfile = {
   id: string;
@@ -13,18 +14,30 @@ type UserProfile = {
 const roles = ["Admin", "Staff"] as const;
 
 export default function AdminUserManagement() {
-  const [supabase] = useState(() =>
-    createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
-    )
-  );
+  const [supabase] = useState(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    const config = getSupabaseConfig();
+    if (!hasSupabaseAnonConfig(config)) {
+      return null;
+    }
+
+    return createBrowserClient(config.url, config.anonKey);
+  });
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
+    if (!supabase) {
+      setStatus("Supabase is not configured.");
+      setLoading(false);
+      return;
+    }
+
     const { data, error } = await supabase.from("users").select("id,email,role,is_disabled").order("created_at", { ascending: false });
     if (error) {
       setStatus(error.message);
@@ -40,6 +53,11 @@ export default function AdminUserManagement() {
   }, [loadUsers]);
 
   async function updateUser(userId: string, updates: Partial<UserProfile>) {
+    if (!supabase) {
+      setStatus("Supabase is not configured.");
+      return;
+    }
+
     const { error } = await supabase.from("users").update(updates).eq("id", userId);
     if (error) {
       setStatus(error.message);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
 
 const ADMIN_PATHS = ["/admin", "/api/admin"];
 const STAFF_PATHS = ["/beneficiaries", "/api/beneficiaries"];
@@ -11,27 +12,30 @@ function matchesPath(pathname: string, patterns: string[]) {
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-    {
-      cookies: {
-        getAll: async () => {
-          const cookieHeader = req.headers.get("cookie") || "";
-          return cookieHeader
-            .split("; ")
-            .filter(Boolean)
-            .map((cookie) => {
-              const [name, ...rest] = cookie.split("=");
-              return { name, value: rest.join("=") };
-            });
-        },
-        setAll: async () => {
-          // Middleware does not set cookies here.
-        },
+  const config = getSupabaseConfig();
+  const configError = getSupabaseConfigError(config);
+
+  if (configError) {
+    return res;
+  }
+
+  const supabase = createServerClient(config.url, config.anonKey, {
+    cookies: {
+      getAll: async () => {
+        const cookieHeader = req.headers.get("cookie") || "";
+        return cookieHeader
+          .split("; ")
+          .filter(Boolean)
+          .map((cookie) => {
+            const [name, ...rest] = cookie.split("=");
+            return { name, value: rest.join("=") };
+          });
       },
-    }
-  );
+      setAll: async () => {
+        // Middleware does not set cookies here.
+      },
+    },
+  });
 
   const {
     data: { session },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 
@@ -9,21 +9,21 @@ export default function BeneficiaryRegistrationForm() {
 
   const [registrationDate, setRegistrationDate] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [fathersName, setFathersName] = useState("");
-  const [grandfathersName, setGrandfathersName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [gender, setGender] = useState("");
   const [phone, setPhone] = useState("");
   const [region, setRegion] = useState("");
   const [kifleKetema, setKifleKetema] = useState("");
-  const [woredaZone, setWoredaZone] = useState("");
+  const [kebele, setKebele] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [houseNumber, setHouseNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Ready to register a beneficiary.");
   const [isSaving, setIsSaving] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Saving beneficiary record...");
     setIsSaving(true);
@@ -61,14 +61,14 @@ export default function BeneficiaryRegistrationForm() {
       const payload: Record<string, unknown> = {
         registration_date: registrationDate || new Date().toISOString().slice(0, 10),
         first_name: firstName.trim(),
-        fathers_name: fathersName.trim(),
-        grandfathers_name: grandfathersName.trim(),
+        middle_name: middleName.trim(),
+        last_name: lastName.trim(),
         date_of_birth: dateOfBirth,
         gender,
         phone: phone.trim(),
         region: region.trim(),
         kifle_ketema: kifleKetema.trim(),
-        woreda_zone: woredaZone.trim(),
+        kebele: kebele.trim(),
         house_number: houseNumber.trim(),
         notes: notes.trim(),
       };
@@ -125,14 +125,14 @@ export default function BeneficiaryRegistrationForm() {
       // Clear form
       setRegistrationDate("");
       setFirstName("");
-      setFathersName("");
-      setGrandfathersName("");
+      setMiddleName("");
+      setLastName("");
       setDateOfBirth("");
       setGender("");
       setPhone("");
       setRegion("");
       setKifleKetema("");
-      setWoredaZone("");
+      setKebele("");
       setHouseNumber("");
       setNotes("");
       setPhotoFile(null);
@@ -179,20 +179,20 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          {t("fathersName")}
+          Middle name
           <input
-            value={fathersName}
-            onChange={(event) => setFathersName(event.target.value)}
+            value={middleName}
+            onChange={(event) => setMiddleName(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
             placeholder="Example: Bekele"
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          {t("grandfathersName")}
+          Last name
           <input
-            value={grandfathersName}
-            onChange={(event) => setGrandfathersName(event.target.value)}
+            value={lastName}
+            onChange={(event) => setLastName(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
             placeholder="Example: Tadesse"
             required
@@ -258,12 +258,12 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          {t("woredaZone")}
+          Kebele
           <input
-            value={woredaZone}
-            onChange={(event) => setWoredaZone(event.target.value)}
+            value={kebele}
+            onChange={(event) => setKebele(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder={t("woredaZone")}
+            placeholder="Kebele"
             required
           />
         </label>
