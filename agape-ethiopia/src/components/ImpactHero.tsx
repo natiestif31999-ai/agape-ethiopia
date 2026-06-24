@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function ImpactHero() {
   const [requestCount, setRequestCount] = useState(0);
@@ -11,22 +10,24 @@ export default function ImpactHero() {
     let mounted = true;
 
     async function load() {
-      const supabase = getSupabaseClient();
-      const [requestsResult, donationsResult] = await Promise.all([
-        supabase.from("requests").select("*").limit(100),
-        supabase.from("donations").select("*").limit(100),
-      ]);
+      try {
+        const [requestsResponse, donationsResponse] = await Promise.all([fetch("/api/requests"), fetch("/api/donations")]);
+        const [requestsResult, donationsResult] = await Promise.all([requestsResponse.json().catch(() => ({ data: [] })), donationsResponse.json().catch(() => ({ data: [] }))]);
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (requestsResult.error) console.warn("Impact requests load failed:", requestsResult.error.message);
-      if (donationsResult.error) console.warn("Impact donations load failed:", donationsResult.error.message);
-
-      setRequestCount(requestsResult.data?.length ?? 0);
-      setDonationCount(donationsResult.data?.length ?? 0);
+        setRequestCount(requestsResult?.data?.length ?? 0);
+        setDonationCount(donationsResult?.data?.length ?? 0);
+      } catch (error) {
+        if (mounted) {
+          console.warn("Impact summary load failed:", error);
+          setRequestCount(0);
+          setDonationCount(0);
+        }
+      }
     }
 
-    load();
+    void load();
     return () => {
       mounted = false;
     };

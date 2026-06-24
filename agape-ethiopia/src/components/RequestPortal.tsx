@@ -1,35 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function RequestPortal() {
   const [beneficiaryName, setBeneficiaryName] = useState("");
   const [itemNeeded, setItemNeeded] = useState("");
   const [needDetails, setNeedDetails] = useState("");
-  const [status, setStatus] = useState("Ready to submit a live beneficiary request.");
+  const [status, setStatus] = useState("Ready to submit a beneficiary request.");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Submitting request...");
-    const supabase = getSupabaseClient();
 
-    const { error } = await supabase.from("requests").insert({
-      beneficiary_name: beneficiaryName,
-      item_needed: itemNeeded,
-      need_details: needDetails,
-      status: "pending",
-    });
+    try {
+      const response = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          beneficiary_name: beneficiaryName,
+          item_needed: itemNeeded,
+          need_details: needDetails,
+          status: "pending",
+        }),
+      });
 
-    if (error) {
-      setStatus(`Submission failed: ${error.message}`);
-      return;
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        setStatus(result?.error ? `Submission failed: ${result.error}` : "Submission failed.");
+        return;
+      }
+
+      setBeneficiaryName("");
+      setItemNeeded("");
+      setNeedDetails("");
+      setStatus("Request saved successfully.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Submission failed.");
     }
-
-    setBeneficiaryName("");
-    setItemNeeded("");
-    setNeedDetails("");
-    setStatus("Request saved to the live Supabase requests table.");
   }
 
   return (

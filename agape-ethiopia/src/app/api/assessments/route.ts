@@ -19,9 +19,12 @@ export async function POST(req: Request) {
     assessor_name,
     assessment_date,
     notes,
+    measurements,
+    wheelchair_fit,
+    recommendations,
   } = body;
 
-  if (!beneficiary_id || !assessor_name || !recommended_equipment || !recommended_size) {
+  if (!beneficiary_id || !assessor_name) {
     return NextResponse.json({ error: "Missing required assessment fields." }, { status: 400 });
   }
 
@@ -29,6 +32,9 @@ export async function POST(req: Request) {
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
+
+  const measurementSummary = [measurements, [hip_width, seat_depth, back_height].filter(Boolean).join(" | ")].filter(Boolean).join("\n") || null;
+  const recommendationSummary = recommendations || [recommended_equipment, recommended_size].filter(Boolean).join(" / ") || null;
 
   const { data, error } = await supabase.from("assessments").insert([
     {
@@ -41,6 +47,9 @@ export async function POST(req: Request) {
       assessor_name: assessor_name?.trim() ?? null,
       assessment_date: assessment_date ? new Date(assessment_date) : new Date(),
       notes: notes?.trim() ?? null,
+      measurements: measurementSummary,
+      wheelchair_fit: wheelchair_fit?.trim() ?? null,
+      recommendations: recommendationSummary,
     },
   ]).select().single();
 

@@ -1,35 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function DonationForm() {
   const [donorName, setDonorName] = useState("");
   const [itemType, setItemType] = useState("");
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState("Ready to save a live donation record.");
+  const [status, setStatus] = useState("Ready to save a donation record.");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Saving donation...");
-    const supabase = getSupabaseClient();
 
-    const { error } = await supabase.from("donations").insert({
-      donor_name: donorName,
-      item_type: itemType,
-      notes,
-      status: "new",
-    });
+    try {
+      const response = await fetch("/api/donations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          donor_name: donorName,
+          item_type: itemType,
+          notes,
+          status: "available",
+        }),
+      });
 
-    if (error) {
-      setStatus(`Save failed: ${error.message}`);
-      return;
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        setStatus(result?.error ? `Save failed: ${result.error}` : "Save failed.");
+        return;
+      }
+
+      setDonorName("");
+      setItemType("");
+      setNotes("");
+      setStatus("Donation saved successfully.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Save failed.");
     }
-
-    setDonorName("");
-    setItemType("");
-    setNotes("");
-    setStatus("Donation saved to the live Supabase donations table.");
   }
 
   return (

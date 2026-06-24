@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 type RequestRecord = {
   id: string;
@@ -25,37 +24,51 @@ export default function AdminPanel() {
     let mounted = true;
 
     async function load() {
-      const supabase = getSupabaseClient();
-      const [requestsResult, donationsResult] = await Promise.all([
-        supabase.from("requests").select("*").order("created_at", { ascending: false }).limit(10),
-        supabase.from("donations").select("*").order("created_at", { ascending: false }).limit(10),
-      ]);
+      try {
+        const [requestsResponse, donationsResponse] = await Promise.all([
+          fetch("/api/requests"),
+          fetch("/api/donations"),
+        ]);
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (requestsResult.error) console.warn("Admin requests load failed:", requestsResult.error.message);
-      if (donationsResult.error) console.warn("Admin donations load failed:", donationsResult.error.message);
-
-      setRequests(requestsResult.data ?? []);
-      setDonations(donationsResult.data ?? []);
-      setLoading(false);
+        const [requestsResult, donationsResult] = await Promise.all([requestsResponse.json().catch(() => ({ data: [] })), donationsResponse.json().catch(() => ({ data: [] }))]);
+        setRequests(requestsResult?.data ?? []);
+        setDonations(donationsResult?.data ?? []);
+      } catch (error) {
+        console.warn("Admin data load failed:", error);
+        if (mounted) {
+          setRequests([]);
+          setDonations([]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
 
-    load();
+    void load();
     return () => {
       mounted = false;
     };
   }, []);
 
   async function handleStatusChange(requestId: string, status: string) {
-    const supabase = getSupabaseClient();
-    const { error } = await supabase.from("requests").update({ status } as never).eq("id", requestId);
-    if (error) {
-      console.warn("Status update failed:", error.message);
-      return;
-    }
+    try {
+      const response = await fetch(`/api/requests/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
 
-    setRequests((current) => current.map((item) => (item.id === requestId ? { ...item, status } : item)));
+      if (!response.ok) {
+        console.warn("Status update failed");
+        return;
+      }
+
+      setRequests((current) => current.map((item) => (item.id === requestId ? { ...item, status } : item)));
+    } catch (error) {
+      console.warn("Status update failed:", error);
+    }
   }
 
   const openRequests = requests.filter((item) => item.status !== "matched" && item.status !== "delivered").length;
