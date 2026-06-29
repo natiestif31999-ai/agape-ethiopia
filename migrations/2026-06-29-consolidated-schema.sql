@@ -5,6 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 ALTER TABLE IF EXISTS beneficiaries
   ADD COLUMN IF NOT EXISTS registration_number text,
   ADD COLUMN IF NOT EXISTS registration_date date DEFAULT CURRENT_DATE,
+  ADD COLUMN IF NOT EXISTS date_of_birth date,
   ADD COLUMN IF NOT EXISTS middle_name text,
   ADD COLUMN IF NOT EXISTS last_name text,
   ADD COLUMN IF NOT EXISTS kebele text,
