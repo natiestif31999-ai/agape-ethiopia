@@ -94,6 +94,21 @@ export default function HomePage() {
           </p>
         </section>
 
+        <section className="grid gap-6 lg:grid-cols-3">
+          <a href="/register" className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm transition hover:border-emerald-400 hover:shadow-md">
+            <h3 className="text-xl font-semibold text-slate-900">Self registration</h3>
+            <p className="mt-2 text-sm text-slate-700">Beneficiaries can submit their full profile, contact details, and photo directly.</p>
+          </a>
+          <a href="/dashboard/staff" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
+            <h3 className="text-xl font-semibold text-slate-900">Staff panel</h3>
+            <p className="mt-2 text-sm text-slate-700">Staff can save, review, edit, and manage beneficiary registrations and workflow actions.</p>
+          </a>
+          <a href="/admin" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md">
+            <h3 className="text-xl font-semibold text-slate-900">Admin panel</h3>
+            <p className="mt-2 text-sm text-slate-700">Administrators can manage users, site content, and the wider system from one place.</p>
+          </a>
+        </section>
+
         <TabPanel />
       </main>
     </>
