@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required beneficiary fields." }, { status: 400 });
   }
 
-  if (!['male', 'female', 'other'].includes(gender)) {
+  if (!['male', 'female'].includes(gender)) {
     return NextResponse.json({ error: "Invalid gender value." }, { status: 400 });
   }
 
