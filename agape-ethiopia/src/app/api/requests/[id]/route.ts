@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStaff } from "@/lib/auth/serverAuth";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabaseBrowser";
+import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const profile = await requireStaff();
@@ -11,7 +10,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params;
   const body = await req.json();
 
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }

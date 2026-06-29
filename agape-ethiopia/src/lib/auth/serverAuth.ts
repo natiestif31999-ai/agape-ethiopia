@@ -11,7 +11,7 @@ export type AppUserProfile = {
   is_disabled: boolean;
 };
 
-function getSupabaseServerClient() {
+export function getSupabaseServerClient() {
   const config = getSupabaseConfig();
   const configError = getSupabaseConfigError(config);
 

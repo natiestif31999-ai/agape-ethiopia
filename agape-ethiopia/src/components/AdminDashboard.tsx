@@ -54,11 +54,13 @@ export default function AdminDashboard() {
         console.warn("Settings load failed", settingsResult.error.message);
       }
 
+      const settingsRows = (settingsResult.data ?? []) as SiteSetting[];
+
       setProfiles(profilesResult.data ?? []);
       setBeneficiaries(beneficiariesResult.data ?? []);
-      setSettings(settingsResult.data ?? []);
+      setSettings(settingsRows);
 
-      const map = Object.fromEntries((settingsResult.data ?? []).map((setting) => [setting.key, setting.value]));
+      const map = Object.fromEntries(settingsRows.map((setting) => [setting.key, setting.value]));
       setTitle(map.title ?? "Agape Mobility Ethiopia");
       setHeroText(map.hero_text ?? "Supporting mobility and dignity for vulnerable communities.");
       setButtonLabel(map.button_label ?? "Register now");

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStaff } from "@/lib/auth/serverAuth";
+import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
 export async function GET(req: Request) {
   const profile = await requireStaff();
@@ -11,8 +11,7 @@ export async function GET(req: Request) {
   const search = url.searchParams.get("search")?.trim() ?? "";
   const limit = Number(url.searchParams.get("limit") ?? 25);
 
-  const { getSupabaseBrowserClient } = await import("@/lib/auth/supabaseBrowser");
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
@@ -76,8 +75,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid gender value." }, { status: 400 });
   }
 
-  const { getSupabaseBrowserClient } = await import("@/lib/auth/supabaseBrowser");
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }

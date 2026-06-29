@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import type { FormEvent } from "react";
@@ -226,7 +227,7 @@ export default function BeneficiarySearch() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     {beneficiary.photo_url ? (
-                      <img src={beneficiary.photo_url} alt="photo" className="h-10 w-10 rounded-full object-cover" />
+                      <Image src={beneficiary.photo_url} alt="beneficiary portrait" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-slate-100" />
                     )}

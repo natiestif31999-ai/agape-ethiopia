@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStaff } from "@/lib/auth/serverAuth";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabaseBrowser";
+import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
 export async function POST(req: Request) {
   const profile = await requireStaff();
@@ -24,7 +23,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required distribution fields." }, { status: 400 });
   }
 
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }

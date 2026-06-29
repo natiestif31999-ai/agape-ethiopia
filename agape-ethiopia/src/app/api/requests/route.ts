@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStaff } from "@/lib/auth/serverAuth";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabaseBrowser";
+import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
 export async function GET(req: Request) {
   const profile = await requireStaff();
@@ -11,7 +10,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const statusFilter = url.searchParams.get("status")?.trim();
 
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
@@ -42,7 +41,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required request fields." }, { status: 400 });
   }
 
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }

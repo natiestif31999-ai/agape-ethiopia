@@ -23,7 +23,9 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
         const { data, error } = await supabase.from("site_settings").select("key,value");
         if (!mounted) return;
         if (!error) {
-          const mapped = Object.fromEntries((data ?? []).map((item) => [item.key, item.value]));
+          const mapped = Object.fromEntries(
+            (data ?? []).map((item: { key: string; value: string }) => [item.key, item.value])
+          );
           setSettings(mapped);
         }
       } catch (error) {

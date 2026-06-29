@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStaff } from "@/lib/auth/serverAuth";
-import { getSupabaseBrowserClient } from "@/lib/auth/supabaseBrowser";
+import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
 export async function GET() {
   const profile = await requireStaff();
@@ -8,7 +7,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
@@ -34,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing required donation fields." }, { status: 400 });
   }
 
-  const supabase = getSupabaseBrowserClient();
+  const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
