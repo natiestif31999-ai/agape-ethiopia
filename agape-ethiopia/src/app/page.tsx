@@ -20,7 +20,7 @@ export default function HomePage() {
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.35em] text-blue-600">Agape Ethiopia</p>
               <h1 className="mt-3 text-4xl font-bold text-slate-900 md:text-5xl">
-                No More Crawling on the Floor
+                No More Crawling on the Floor 
               </h1>
               <p className="mt-4 max-w-2xl text-base text-slate-700 md:text-lg">
                  Your support brings hope, restores dignity,and changes lives in Ethiopia.  </p>
