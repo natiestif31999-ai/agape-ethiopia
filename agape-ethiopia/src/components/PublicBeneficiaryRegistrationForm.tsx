@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { getSupabaseClient } from "@/lib/supabase/client";
 
 export default function PublicBeneficiaryRegistrationForm() {
   const [firstName, setFirstName] = useState("");
@@ -28,61 +27,40 @@ export default function PublicBeneficiaryRegistrationForm() {
     setStatusMessage("Saving your registration request...");
 
     try {
-      const supabase = getSupabaseClient();
-
       if (!firstName.trim() || !lastName.trim() || !gender || !phone.trim() || !region.trim() || !kebele.trim()) {
         setStatusMessage("Please complete the required beneficiary details before submitting.");
         setIsSubmitting(false);
         return;
       }
 
-      let photoUrl: string | null = null;
+      const formData = new FormData();
+      formData.append("first_name", firstName.trim());
+      formData.append("middle_name", middleName.trim());
+      formData.append("last_name", lastName.trim());
+      formData.append("date_of_birth", dateOfBirth);
+      formData.append("gender", gender);
+      formData.append("phone", phone.trim());
+      formData.append("region", region.trim());
+      formData.append("kifle_ketema", kifleKetema.trim());
+      formData.append("kebele", kebele.trim());
+      formData.append("house_number", houseNumber.trim());
+      formData.append("disability_type", disabilityType.trim());
+      formData.append("referral_source", referralSource.trim());
+      formData.append("notes", notes.trim());
       if (photoFile) {
-        const allowed = ["jpg", "jpeg", "png", "webp"];
-        const extension = photoFile.name.split(".").pop()?.toLowerCase() ?? "";
-        if (!allowed.includes(extension)) {
-          setStatusMessage("Please upload a JPG, PNG, or WebP photo.");
-          setIsSubmitting(false);
-          return;
-        }
-
-        if (photoFile.size > 3 * 1024 * 1024) {
-          setStatusMessage("Please upload a photo smaller than 3MB.");
-          setIsSubmitting(false);
-          return;
-        }
-
-        const filePath = `self-registrations/${Date.now()}_${Math.random().toString(36).slice(2, 9)}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from("beneficiary-photos").upload(filePath, photoFile);
-        if (!uploadError) {
-          const { data: publicData } = supabase.storage.from("beneficiary-photos").getPublicUrl(filePath);
-          photoUrl = publicData?.publicUrl ?? null;
-        }
+        formData.append("photo", photoFile);
       }
 
-      const { error } = await supabase.from("beneficiaries").insert([
-        {
-          registration_date: new Date().toISOString().slice(0, 10),
-          first_name: firstName.trim(),
-          middle_name: middleName.trim() || null,
-          last_name: lastName.trim(),
-          date_of_birth: dateOfBirth || null,
-          gender,
-          phone: phone.trim(),
-          region: region.trim(),
-          kifle_ketema: kifleKetema.trim() || null,
-          kebele: kebele.trim(),
-          house_number: houseNumber.trim() || null,
-          disability_type: disabilityType.trim() || null,
-          referral_source: referralSource.trim() || null,
-          notes: notes.trim() || null,
-          photo_url: photoUrl,
-          status: "pending",
-        },
-      ]);
+      const response = await fetch("/api/public-registration", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (error) {
-        setStatusMessage(`Submission failed: ${error.message}`);
+      const responseBody = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const message = responseBody?.errors?.[0] || responseBody?.error || "Unable to submit registration.";
+        setStatusMessage(message);
         return;
       }
 
@@ -100,7 +78,7 @@ export default function PublicBeneficiaryRegistrationForm() {
       setReferralSource("");
       setNotes("");
       setPhotoFile(null);
-      setStatusMessage("Your registration was submitted successfully. A staff member will review it shortly.");
+      setStatusMessage(responseBody?.message || "Your registration was submitted successfully. A staff member will review it shortly.");
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : "Submission failed.");
     } finally {
