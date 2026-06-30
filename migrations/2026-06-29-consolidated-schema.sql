@@ -5,19 +5,31 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 ALTER TABLE IF EXISTS beneficiaries
   ADD COLUMN IF NOT EXISTS registration_number text,
   ADD COLUMN IF NOT EXISTS registration_date date DEFAULT CURRENT_DATE,
-  ADD COLUMN IF NOT EXISTS date_of_birth date,
+
   ADD COLUMN IF NOT EXISTS first_name text,
   ADD COLUMN IF NOT EXISTS middle_name text,
   ADD COLUMN IF NOT EXISTS last_name text,
+
+  ADD COLUMN IF NOT EXISTS date_of_birth date,
+  ADD COLUMN IF NOT EXISTS gender text,
+
+  ADD COLUMN IF NOT EXISTS phone text,
+
+  ADD COLUMN IF NOT EXISTS region text,
+  ADD COLUMN IF NOT EXISTS kifle_ketema text,
   ADD COLUMN IF NOT EXISTS kebele text,
   ADD COLUMN IF NOT EXISTS house_number text,
-  ADD COLUMN IF NOT EXISTS photo_url text,
+
   ADD COLUMN IF NOT EXISTS disability_type text,
   ADD COLUMN IF NOT EXISTS referral_source text,
+
+  ADD COLUMN IF NOT EXISTS photo_url text,
+
+  ADD COLUMN IF NOT EXISTS notes text,
+
   ADD COLUMN IF NOT EXISTS status text DEFAULT 'registered',
   ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now(),
   ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
-
 CREATE TABLE IF NOT EXISTS assessments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   beneficiary_id uuid REFERENCES beneficiaries(id) ON DELETE CASCADE,
