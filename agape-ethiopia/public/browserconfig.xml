@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+  <msapplication>
+    <tile>
+      <!-- Windows tile size: 70x70 -->
+      <square70x70logo src="/app-icons/icon-192.png"/>
+      <!-- Windows tile size: 150x150 -->
+      <square150x150logo src="/app-icons/icon-192.png"/>
+      <!-- Windows tile size: 310x310 -->
+      <square310x310logo src="/app-icons/icon-512.png"/>
+      <!-- Tile background color -->
+      <TileColor>#0f766e</TileColor>
+    </tile>
+    <!-- Windows phone settings -->
+    <notification>
+      <polling-uri src="/browserconfig.xml"/>
+      <polling-uri2 src="/browserconfig.xml"/>
+      <polling-uri3 src="/browserconfig.xml"/>
+      <polling-uri4 src="/browserconfig.xml"/>
+      <polling-uri5 src="/browserconfig.xml"/>
+      <frequency>30</frequency>
+      <cycle>1</cycle>
+    </notification>
+  </msapplication>
+</browserconfig>

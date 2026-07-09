@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LanguageProvider } from "@/components/layout/LanguageProvider";
 import { SupabaseProvider } from "@/components/layout/SupabaseProvider";
-import "./globals.css";
 import ServiceWorker from "@/components/ServiceWorker";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,20 +57,36 @@ export const metadata: Metadata = {
 
   creator: "Agape Ethiopia",
 
-  manifest: "/manifest.webmanifest",
+  alternates: {
+    manifest: "/manifest.webmanifest",
+  },
 
   icons: {
     icon: [
       {
-        url: "/agape-logo.png",
+        url: "/app-icons/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/app-icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
       },
     ],
 
-    shortcut: "/agape-logo.png",
+    shortcut: ["/app-icons/icon-192.png"],
 
     apple: [
       {
-        url: "/agape-logo.png",
+        url: "/app-icons/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/app-icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
       },
     ],
   },
@@ -103,11 +119,37 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: siteTitle,
+  },
+
+  formatDetection: {
+    telephone: false,
+  },
+
+  category: "productivity",
+
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": siteTitle,
+    "theme-color": "#0f766e",
+    "msapplication-TileColor": "#0f766e",
+    "msapplication-config": "/browserconfig.xml",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
   themeColor: "#0f766e",
 };
 
@@ -122,11 +164,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ServiceWorker />
-        
         <LanguageProvider>
           <SupabaseProvider>{children}</SupabaseProvider>
         </LanguageProvider>
-        
       </body>
     </html>
   );

@@ -1,0 +1,17 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.agapeethiopia",
+      "sha256_cert_fingerprints": []
+    }
+  },
+  {
+    "relation": ["web_manifest_index"],
+    "target": {
+      "namespace": "web",
+      "site": "https://agape-ethiopia.example.com"
+    }
+  }
+]
