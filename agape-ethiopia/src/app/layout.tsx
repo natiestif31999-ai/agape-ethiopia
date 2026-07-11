@@ -57,10 +57,6 @@ export const metadata: Metadata = {
 
   creator: "Agape Ethiopia",
 
-  alternates: {
-    manifest: "/manifest.webmanifest",
-  },
-
   icons: {
     icon: [
       {
@@ -160,6 +156,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.webmanifest" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
