@@ -33,3 +33,4 @@ export function getSupabaseConfigError(config: SupabaseConfig = getSupabaseConfi
 export function getSupabaseServiceRoleKey(config: SupabaseConfig = getSupabaseConfig()) {
   return config.serviceRoleKey;
 }
+export const dynamic = "force-dynamic";

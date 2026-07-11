@@ -1,0 +1,20 @@
+# Agape Ethiopia PWA Robots Configuration
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /register/
+Disallow: /dashboard/
+
+# Allow specific search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap location
+Sitemap: https://agape-ethiopia.example.com/sitemap.xml
