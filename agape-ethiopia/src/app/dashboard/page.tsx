@@ -19,7 +19,7 @@ const actions = [
 export default async function DashboardPage() {
   try {
     await requireStaff();
-  } catch (err) {
+  } catch {
     redirect("/login");
   }
 

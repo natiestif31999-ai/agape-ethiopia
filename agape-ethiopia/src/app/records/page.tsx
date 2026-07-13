@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function BeneficiaryRecordsPage() {
   try {
     await requireStaff();
-  } catch (err) {
+  } catch {
     redirect("/login");
   }
 

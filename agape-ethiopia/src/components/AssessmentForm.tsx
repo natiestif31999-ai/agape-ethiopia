@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useLanguage } from "@/components/layout/LanguageProvider";
 import type { Assessment } from "@/lib/types";
 
 export default function AssessmentForm({
@@ -10,7 +9,6 @@ export default function AssessmentForm({
 }: {
   beneficiaryId?: string;
 }) {
-  const { t } = useLanguage();
   const [selectedBeneficiary, setSelectedBeneficiary] = useState(beneficiaryId ?? "");
   const [hipWidth, setHipWidth] = useState("");
   const [seatDepth, setSeatDepth] = useState("");
