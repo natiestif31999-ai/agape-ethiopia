@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   try {
     await requireAdmin();
-  } catch (err) {
+  } catch {
     redirect("/login");
   }
 

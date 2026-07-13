@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useLanguage } from "@/components/layout/LanguageProvider";
 import type { EquipmentDistribution } from "@/lib/types";
 
 export default function EquipmentDistributionForm({
@@ -12,7 +11,6 @@ export default function EquipmentDistributionForm({
   beneficiaryId?: string;
   onCreated?: () => void;
 }) {
-  const { t } = useLanguage();
   const [selectedBeneficiary, setSelectedBeneficiary] = useState(beneficiaryId ?? "");
   const [equipmentType, setEquipmentType] = useState("");
   const [equipmentSize, setEquipmentSize] = useState("");
