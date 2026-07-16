@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
 type UserProfile = {
@@ -26,16 +27,21 @@ type SiteSetting = {
 };
 
 export default function AdminDashboard() {
+  function capitalize(s?: string) {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [beneficiaries, setBeneficiaries] = useState<BeneficiaryRecord[]>([]);
   const [settings, setSettings] = useState<SiteSetting[]>([]);
+  const { t } = useLanguage();
   const [title, setTitle] = useState("");
   const [heroText, setHeroText] = useState("");
   const [buttonLabel, setButtonLabel] = useState("");
   const [primaryColor, setPrimaryColor] = useState("");
-  const [statusMessage, setStatusMessage] = useState("Loading admin overview...");
+  const [statusMessage, setStatusMessage] = useState(t("loading") + "");
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       const supabase = getSupabaseClient();
       const [profilesResult, beneficiariesResult, settingsResult] = await Promise.all([
@@ -61,19 +67,19 @@ export default function AdminDashboard() {
       setSettings(settingsRows);
 
       const map = Object.fromEntries(settingsRows.map((setting) => [setting.key, setting.value]));
-      setTitle(map.title ?? "Agape Mobility Ethiopia");
-      setHeroText(map.hero_text ?? "Supporting mobility and dignity for vulnerable communities.");
-      setButtonLabel(map.button_label ?? "Register now");
+      setTitle(map.title ?? t("applicationName"));
+      setHeroText(map.hero_text ?? t("adminCenterDescription"));
+      setButtonLabel(map.button_label ?? t("registerBeneficiary"));
       setPrimaryColor(map.primary_color ?? "#0f766e");
-      setStatusMessage("Admin overview loaded.");
-    } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : "Unable to load admin overview.");
+      setStatusMessage(t("applicationsLoaded"));
+      } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : t("unableToLoadApplicationsShort"));
     }
-  }
+  }, [t]);
 
   useEffect(() => {
     void loadData();
-  }, []);
+  }, [loadData]);
 
   async function saveSettings(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -101,71 +107,71 @@ export default function AdminDashboard() {
         }
       }
 
-      setStatusMessage("Settings saved successfully.");
+      setStatusMessage(t("settings.saved"));
       await loadData();
     } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : "Unable to save settings.");
+      setStatusMessage(error instanceof Error ? error.message : t("settings.saveFailed"));
     }
   }
 
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-semibold text-slate-900">Master admin dashboard</h1>
-        <p className="mt-2 text-slate-600">Manage users, oversee beneficiary applications, and update site settings.</p>
+        <h1 className="text-3xl font-semibold text-slate-900">{t("adminCenter")}</h1>
+        <p className="mt-2 text-slate-600">{t("adminCenterDescription")}</p>
         <p className="mt-4 text-sm text-slate-500">{statusMessage}</p>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">Users</h2>
+          <h2 className="text-xl font-semibold text-slate-900">{t("users")}</h2>
           <div className="mt-4 space-y-3">
             {profiles.map((profile) => (
               <div key={profile.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold text-slate-900">{profile.email || "Unknown profile"}</p>
-                <p className="mt-1 text-sm text-slate-600">Role: {profile.role || "Staff"}</p>
+                <p className="font-semibold text-slate-900">{profile.email || t("unknownProfile")}</p>
+                <p className="mt-1 text-sm text-slate-600">{t("role")}: {profile.role || t("roleStaff")}</p>
               </div>
             ))}
-            {profiles.length === 0 && <p className="text-sm text-slate-500">No users found yet.</p>}
+            {profiles.length === 0 && <p className="text-sm text-slate-500">{t("noUsersFound")}</p>}
           </div>
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-900">Beneficiary overview</h2>
+          <h2 className="text-xl font-semibold text-slate-900">{t("beneficiary") + " " + t("overview")}</h2>
           <div className="mt-4 space-y-3">
             {beneficiaries.map((beneficiary) => (
               <div key={beneficiary.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold text-slate-900">{[beneficiary.first_name, beneficiary.last_name].filter(Boolean).join(" ") || "Unnamed beneficiary"}</p>
-                <p className="mt-1 text-sm text-slate-600">Phone: {beneficiary.phone || "—"}</p>
-                <p className="text-sm text-slate-600">Location: {beneficiary.region || "—"}</p>
-                <p className="text-sm text-slate-600">Status: {beneficiary.status || "pending"}</p>
+                <p className="font-semibold text-slate-900">{[beneficiary.first_name, beneficiary.last_name].filter(Boolean).join(" ") || t("unnamed")}</p>
+                <p className="mt-1 text-sm text-slate-600">{t("phone")}: {beneficiary.phone || "—"}</p>
+                <p className="text-sm text-slate-600">{t("location")}: {beneficiary.region || "—"}</p>
+                <p className="text-sm text-slate-600">{t("status")}: {beneficiary.status ? t("status" + capitalize(beneficiary.status)) || beneficiary.status : t("statusPending")}</p>
               </div>
             ))}
-            {beneficiaries.length === 0 && <p className="text-sm text-slate-500">No beneficiaries found yet.</p>}
+            {beneficiaries.length === 0 && <p className="text-sm text-slate-500">{t("noRecords")}</p>}
           </div>
         </div>
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Site settings</h2>
+        <h2 className="text-xl font-semibold text-slate-900">{t("settings")}</h2>
         <form onSubmit={saveSettings} className="mt-4 grid gap-4 md:grid-cols-2">
           <label className="grid gap-1 text-sm font-medium text-slate-700">
-            Website title
+            {t("applicationName")}
             <input value={title} onChange={(event) => setTitle(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" />
           </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700">
-            Hero text
+            {t("adminCenterDescription")}
             <input value={heroText} onChange={(event) => setHeroText(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" />
           </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700">
-            Button label
+            {t("buttonLabel")}
             <input value={buttonLabel} onChange={(event) => setButtonLabel(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" />
           </label>
           <label className="grid gap-1 text-sm font-medium text-slate-700">
             Primary color
             <input value={primaryColor} onChange={(event) => setPrimaryColor(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" />
           </label>
-          <button type="submit" className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white md:col-span-2">Save site settings</button>
+          <button type="submit" className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white md:col-span-2">{t("saveChanges")}</button>
         </form>
       </section>
     </div>

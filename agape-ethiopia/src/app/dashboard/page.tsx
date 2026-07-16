@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { requireStaff } from "@/lib/auth/serverAuth";
+import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
+import LocalizedActionCard from "@/components/LocalizedActionCard";
 
 export const metadata: Metadata = {
   title: "Operational Dashboard",
@@ -9,11 +11,11 @@ export const metadata: Metadata = {
 };
 
 const actions = [
-  { href: "/beneficiaries/new", title: "Register Beneficiary", description: "Add a new beneficiary record." },
-  { href: "/records", title: "Search Beneficiary", description: "Search existing beneficiaries." },
-  { href: "/assessments", title: "New Assessment", description: "Record wheelchair assessment measurements." },
-  { href: "/distributions", title: "Distribute Equipment", description: "Record equipment distribution events." },
-  { href: "/reports", title: "Distribution Reports", description: "View operational reports and summaries." },
+  { href: "/beneficiaries/new", titleKey: "action.registerBeneficiary.title", descKey: "action.registerBeneficiary.desc" },
+  { href: "/records", titleKey: "action.searchBeneficiary.title", descKey: "action.searchBeneficiary.desc" },
+  { href: "/assessments", titleKey: "action.newAssessment.title", descKey: "action.newAssessment.desc" },
+  { href: "/distributions", titleKey: "action.distributeEquipment.title", descKey: "action.distributeEquipment.desc" },
+  { href: "/reports", titleKey: "action.reports.title", descKey: "action.reports.desc" },
 ];
 
 export default async function DashboardPage() {
@@ -28,17 +30,12 @@ export default async function DashboardPage() {
       <AppHeader />
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
         <section className="rounded-3xl border border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-blue-50 p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-700">Operations</p>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900">Operational Actions</h1>
-          <p className="mt-3 text-slate-700">Use the core workflow actions to register beneficiaries, capture assessments, and record distributions.</p>
+          <LocalizedSectionHeader titleKey="operations" subtitleKey="operationalActions" descriptionKey="operationsDescription" />
         </section>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {actions.map((action) => (
-            <a key={action.href} href={action.href} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
-              <h2 className="text-xl font-semibold text-slate-900">{action.title}</h2>
-              <p className="mt-3 text-slate-600">{action.description}</p>
-            </a>
+            <LocalizedActionCard key={action.href} href={action.href} titleKey={action.titleKey} descKey={action.descKey} />
           ))}
         </div>
       </main>

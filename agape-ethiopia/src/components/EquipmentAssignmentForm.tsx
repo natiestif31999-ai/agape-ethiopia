@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 import type { FormEvent } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
@@ -15,11 +16,12 @@ export default function EquipmentAssignmentForm({
   const [equipmentType, setEquipmentType] = useState("");
   const [size, setSize] = useState("");
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState("Ready to add equipment assignment.");
+  const { t } = useLanguage();
+  const [status, setStatus] = useState(t("assignmentReady"));
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("Saving equipment assignment...");
+    setStatus(t("savingAssignment"));
     const supabase = getSupabaseClient();
 
     const { error } = await supabase.from("equipment_assignments").insert({
@@ -31,7 +33,7 @@ export default function EquipmentAssignmentForm({
     });
 
     if (error) {
-      setStatus(`Save failed: ${error.message}`);
+      setStatus(t("saveFailed") + " " + error.message);
       return;
     }
 
@@ -39,18 +41,18 @@ export default function EquipmentAssignmentForm({
     setEquipmentType("");
     setSize("");
     setNotes("");
-    setStatus("Equipment assignment saved successfully.");
+    setStatus(t("assignmentSaved"));
     onCreated();
   }
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-xl font-semibold text-slate-900">Add equipment assignment</h3>
-      <p className="mt-2 text-slate-600">Track issued mobility equipment for this beneficiary.</p>
+      <h3 className="text-xl font-semibold text-slate-900">{t("addEquipmentAssignment")}</h3>
+      <p className="mt-2 text-slate-600">{t("trackAssignedEquipment")}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-4 lg:grid-cols-2">
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Issue date
+          {t("issueDate")}
           <input
             type="date"
             value={issueDate}
@@ -60,43 +62,43 @@ export default function EquipmentAssignmentForm({
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Equipment type
+          {t("equipmentType")}
           <select
             value={equipmentType}
             onChange={(event) => setEquipmentType(event.target.value)}
             className="rounded-xl border border-slate-300 bg-white px-4 py-3"
             required
           >
-            <option value="">Select equipment</option>
-            <option value="Wheelchair">Wheelchair</option>
-            <option value="Crutches">Crutches</option>
-            <option value="Walker">Walker</option>
-            <option value="Other">Other</option>
+            <option value="">{t("selectEquipment")}</option>
+            <option value="Wheelchair">{t("adultWheelchair")}</option>
+            <option value="Crutches">{t("crutches")}</option>
+            <option value="Walker">{t("walker")}</option>
+            <option value="Other">{t("other")}</option>
           </select>
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Size
+          {t("size")}
           <input
             value={size}
             onChange={(event) => setSize(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Small / Medium / Large"
+            placeholder={`${t("sizeSmall")} / ${t("sizeMedium")} / ${t("sizeLarge")}`}
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700 lg:col-span-2">
-          Notes
+          {t("notes")}
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             className="min-h-24 rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Condition, special needs, delivery details"
+            placeholder={t("assignmentNotesPlaceholder")}
           />
         </label>
 
         <button type="submit" className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white lg:col-span-2">
-          Save assignment
+          {t("saveChanges")}
         </button>
 
         <p className="text-sm text-slate-500 lg:col-span-2">{status}</p>

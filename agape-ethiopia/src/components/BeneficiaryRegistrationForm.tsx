@@ -20,12 +20,12 @@ export default function BeneficiaryRegistrationForm() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [houseNumber, setHouseNumber] = useState("");
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState("Ready to register a beneficiary.");
+  const [status, setStatus] = useState(t("registrationReady"));
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("Saving beneficiary record...");
+    setStatus(t("savingRecord"));
     setIsSaving(true);
 
     try {
@@ -146,10 +146,8 @@ export default function BeneficiaryRegistrationForm() {
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-semibold text-slate-900">{t("registerBeneficiary")}</h2>
-      <p className="mt-2 text-slate-600">
-        Capture registration details for Agape Ethiopia beneficiaries and preserve records for future assessment and assignment tracking.
-      </p>
+          <h2 className="text-2xl font-semibold text-slate-900">{t("registerBeneficiary")}</h2>
+      <p className="mt-2 text-slate-600">{t("registerDescription")}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-4 lg:grid-cols-2">
         <label className="grid gap-1 text-sm font-medium text-slate-700">
@@ -158,7 +156,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Registration date
+          {t("registrationDate")}
           <input
             value={registrationDate}
             onChange={(event) => setRegistrationDate(event.target.value)}
@@ -168,39 +166,39 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          First name
+          {t("firstName")}
           <input
             value={firstName}
             onChange={(event) => setFirstName(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Example: Amanuel"
+            placeholder={t("exampleFirstName")}
             required
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Middle name
+          {t("middleName")}
           <input
             value={middleName}
             onChange={(event) => setMiddleName(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Example: Bekele"
+            placeholder={t("exampleMiddleName")}
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Last name
+          {t("lastName")}
           <input
             value={lastName}
             onChange={(event) => setLastName(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Example: Tadesse"
+            placeholder={t("exampleLastName")}
             required
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Date of birth
+          {t("dateOfBirth")}
           <input
             value={dateOfBirth}
             onChange={(event) => setDateOfBirth(event.target.value)}
@@ -218,7 +216,7 @@ export default function BeneficiaryRegistrationForm() {
             className="rounded-xl border border-slate-300 bg-white px-4 py-3"
             required
           >
-            <option value="">Select gender</option>
+            <option value="">{t("selectGender")}</option>
             <option value="male">{t("male")}</option>
             <option value="female">{t("female")}</option>
           </select>
@@ -231,7 +229,7 @@ export default function BeneficiaryRegistrationForm() {
             onChange={(event) => setPhone(event.target.value)}
             type="tel"
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Example: +251 9xx xxx xxx"
+            placeholder={t("examplePhone")}
             required
           />
         </label>
@@ -242,7 +240,7 @@ export default function BeneficiaryRegistrationForm() {
             value={region}
             onChange={(event) => setRegion(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Addis Ababa, Oromia, Amhara"
+            placeholder={t("exampleRegion")}
             required
           />
         </label>
@@ -253,7 +251,7 @@ export default function BeneficiaryRegistrationForm() {
             value={kifleKetema}
             onChange={(event) => setKifleKetema(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Neighborhood or sub-city"
+            placeholder={t("exampleNeighborhood")}
           />
         </label>
 
@@ -263,7 +261,7 @@ export default function BeneficiaryRegistrationForm() {
             value={kebele}
             onChange={(event) => setKebele(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Kebele"
+            placeholder={t("exampleKebele")}
             required
           />
         </label>
@@ -284,7 +282,7 @@ export default function BeneficiaryRegistrationForm() {
             value={houseNumber}
             onChange={(event) => setHouseNumber(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="House number"
+            placeholder={t("exampleHouseNumber")}
           />
         </label>
 
@@ -294,7 +292,7 @@ export default function BeneficiaryRegistrationForm() {
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             className="min-h-24 rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Optional disability, access, or support details."
+            placeholder={t("notesPlaceholder")}
           />
         </label>
 
@@ -303,7 +301,7 @@ export default function BeneficiaryRegistrationForm() {
           disabled={isSaving}
           className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white md:col-span-2 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          {isSaving ? "Saving beneficiary..." : "Register beneficiary"}
+          {isSaving ? t("savingRecord") : t("registerBeneficiary")}
         </button>
 
         <p className="text-sm text-slate-500 md:col-span-2">{status}</p>

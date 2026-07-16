@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 export default function PublicBeneficiaryRegistrationForm() {
+  const { t } = useLanguage();
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -18,17 +20,17 @@ export default function PublicBeneficiaryRegistrationForm() {
   const [referralSource, setReferralSource] = useState("");
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [statusMessage, setStatusMessage] = useState("Share your details and we will review your request.");
+  const [statusMessage, setStatusMessage] = useState(t("register.public.ready"));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    setStatusMessage("Saving your registration request...");
+    setStatusMessage(t("register.public.saving"));
 
     try {
-      if (!firstName.trim() || !lastName.trim() || !gender || !phone.trim() || !region.trim() || !kebele.trim()) {
-        setStatusMessage("Please complete the required beneficiary details before submitting.");
+        if (!firstName.trim() || !lastName.trim() || !gender || !phone.trim() || !region.trim() || !kebele.trim()) {
+        setStatusMessage(t("register.public.validation.required"));
         setIsSubmitting(false);
         return;
       }
@@ -59,7 +61,7 @@ export default function PublicBeneficiaryRegistrationForm() {
       const responseBody = await response.json().catch(() => null);
 
       if (!response.ok) {
-        const message = responseBody?.errors?.[0] || responseBody?.error || "Unable to submit registration.";
+        const message = responseBody?.errors?.[0] || responseBody?.error || t("register.public.error");
         setStatusMessage(message);
         return;
       }
@@ -78,9 +80,9 @@ export default function PublicBeneficiaryRegistrationForm() {
       setReferralSource("");
       setNotes("");
       setPhotoFile(null);
-      setStatusMessage(responseBody?.message || "Your registration was submitted successfully. A staff member will review it shortly.");
+      setStatusMessage(responseBody?.message || t("register.public.success"));
     } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : "Submission failed.");
+      setStatusMessage(error instanceof Error ? error.message : t("register.public.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -89,81 +91,81 @@ export default function PublicBeneficiaryRegistrationForm() {
   return (
     <form onSubmit={handleSubmit} className="mt-6 grid gap-4 lg:grid-cols-2">
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        First name
-        <input value={firstName} onChange={(event) => setFirstName(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Example: Selam" required />
+        {t("firstName")}
+        <input value={firstName} onChange={(event) => setFirstName(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleFirstName")} required />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Middle name
-        <input value={middleName} onChange={(event) => setMiddleName(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Optional" />
+        {t("fathersName")}
+        <input value={middleName} onChange={(event) => setMiddleName(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleMiddleName")} />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Last name
-        <input value={lastName} onChange={(event) => setLastName(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Example: Bekele" required />
+        {t("grandfathersName")}
+        <input value={lastName} onChange={(event) => setLastName(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleLastName")} required />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Date of birth
+        {t("dateOfBirth")}
         <input type="date" value={dateOfBirth} onChange={(event) => setDateOfBirth(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Gender
+        {t("gender")}
         <select value={gender} onChange={(event) => setGender(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3" required>
-          <option value="">Select gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
+          <option value="">{t("selectGender")}</option>
+          <option value="male">{t("male")}</option>
+          <option value="female">{t("female")}</option>
         </select>
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Phone number
-        <input value={phone} onChange={(event) => setPhone(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="+251 9xx xxx xxx" required />
+        {t("phone")}
+        <input value={phone} onChange={(event) => setPhone(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("examplePhone")} required />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Region
-        <input value={region} onChange={(event) => setRegion(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Addis Ababa, Oromia, etc." required />
+        {t("region")}
+        <input value={region} onChange={(event) => setRegion(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleRegion")} required />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Kifle Ketema
-        <input value={kifleKetema} onChange={(event) => setKifleKetema(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Neighborhood or sub-city" />
+        {t("kifleKetema")}
+        <input value={kifleKetema} onChange={(event) => setKifleKetema(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleNeighborhood")} />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Kebele
-        <input value={kebele} onChange={(event) => setKebele(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Kebele" required />
+        {t("kebele")}
+        <input value={kebele} onChange={(event) => setKebele(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleKebele")} required />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        House number
-        <input value={houseNumber} onChange={(event) => setHouseNumber(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="House number" />
+        {t("houseNumber")}
+        <input value={houseNumber} onChange={(event) => setHouseNumber(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleHouseNumber")} />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Disability or support needs
-        <input value={disabilityType} onChange={(event) => setDisabilityType(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Wheelchair, mobility support, etc." />
+        {t("notes")}
+        <input value={disabilityType} onChange={(event) => setDisabilityType(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleRegion")} />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        Referral source
-        <input value={referralSource} onChange={(event) => setReferralSource(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Clinic, family, community leader" />
+        {t("referralSource")}
+        <input value={referralSource} onChange={(event) => setReferralSource(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("referralSourcePlaceholder")} />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700 lg:col-span-2">
-        Photo
+        {t("uploadPhotoLabel")}
         <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setPhotoFile(event.target.files ? event.target.files[0] : null)} className="rounded-xl border border-slate-300 bg-white px-4 py-3" />
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700 lg:col-span-2">
-        Notes
-        <textarea value={notes} onChange={(event) => setNotes(event.target.value)} className="min-h-24 rounded-xl border border-slate-300 px-4 py-3" placeholder="Tell us more about the support you need." />
+        {t("notes")}
+        <textarea value={notes} onChange={(event) => setNotes(event.target.value)} className="min-h-24 rounded-xl border border-slate-300 px-4 py-3" placeholder={t("notesPlaceholder")} />
       </label>
 
       <button type="submit" disabled={isSubmitting} className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white lg:col-span-2 disabled:cursor-not-allowed disabled:bg-slate-400">
-        {isSubmitting ? "Submitting..." : "Submit registration"}
+        {isSubmitting ? t("register.public.submitting") : t("register.public.submit")}
       </button>
 
       <p className="text-sm text-slate-500 lg:col-span-2">{statusMessage}</p>

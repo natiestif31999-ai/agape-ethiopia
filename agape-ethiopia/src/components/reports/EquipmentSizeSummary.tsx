@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 type DistributionRecord = {
   id: string;
@@ -10,6 +11,7 @@ type DistributionRecord = {
 };
 
 export default function EquipmentSizeSummary() {
+  const { t } = useLanguage();
   const [summary, setSummary] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +34,7 @@ export default function EquipmentSizeSummary() {
 
       const counts: Record<string, number> = {};
       (data ?? []).forEach((item: DistributionRecord) => {
-        const key = `${item.equipment_type ?? "Unknown"} - ${item.equipment_size ?? "Unknown"}`;
+        const key = `${item.equipment_type ?? t("unknown")} - ${item.equipment_size ?? t("unknown")}`;
         counts[key] = (counts[key] ?? 0) + 1;
       });
 
@@ -44,17 +46,17 @@ export default function EquipmentSizeSummary() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-xl font-semibold text-slate-900">Equipment Size Distribution Summary</h3>
-      <p className="mt-2 text-slate-600">Summary of distributed equipment by type and size.</p>
+      <h3 className="text-xl font-semibold text-slate-900">{t("equipment.sizeSummary.title")}</h3>
+      <p className="mt-2 text-slate-600">{t("equipment.sizeSummary.description")}</p>
       <div className="mt-4 grid gap-3">
         {loading ? (
-          <p className="text-slate-500">Loading summary...</p>
+          <p className="text-slate-500">{t("equipment.sizeSummary.loading")}</p>
         ) : Object.keys(summary).length === 0 ? (
-          <p className="text-slate-500">No distribution data available.</p>
+          <p className="text-slate-500">{t("equipment.sizeSummary.empty")}</p>
         ) : (
           Object.entries(summary).map(([key, count]) => (
             <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">

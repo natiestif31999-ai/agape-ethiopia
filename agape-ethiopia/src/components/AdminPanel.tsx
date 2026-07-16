@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 type RequestRecord = {
   id: string;
@@ -16,6 +17,7 @@ type DonationRecord = {
 };
 
 export default function AdminPanel() {
+  const { t } = useLanguage();
   const [requests, setRequests] = useState<RequestRecord[]>([]);
   const [donations, setDonations] = useState<DonationRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,17 +78,17 @@ export default function AdminPanel() {
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-semibold text-slate-900">Admin Center</h2>
-      <p className="mt-2 text-slate-600">Review urgent requests, mark items as matched, and manage logistics queues.</p>
+      <h2 className="text-2xl font-semibold text-slate-900">{t("adminCenter")}</h2>
+      <p className="mt-2 text-slate-600">{t("adminCenterDescription")}</p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <article className="rounded-2xl bg-emerald-50 p-4">
-          <p className="text-sm text-emerald-700">Open requests</p>
-          <p className="mt-2 text-3xl font-semibold text-emerald-950">{loading ? "..." : openRequests}</p>
+          <p className="text-sm text-emerald-700">{t("openRequests")}</p>
+          <p className="mt-2 text-3xl font-semibold text-emerald-950">{loading ? t("loading") : openRequests}</p>
         </article>
         <article className="rounded-2xl bg-amber-50 p-4">
-          <p className="text-sm text-amber-700">Available wheelchairs</p>
-          <p className="mt-2 text-3xl font-semibold text-amber-950">{loading ? "..." : availableWheelchairs}</p>
+          <p className="text-sm text-amber-700">{t("availableWheelchairs")}</p>
+          <p className="mt-2 text-3xl font-semibold text-amber-950">{loading ? t("loading") : availableWheelchairs}</p>
         </article>
       </div>
 
@@ -94,21 +96,21 @@ export default function AdminPanel() {
         <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
           <thead className="bg-slate-50 text-slate-700">
             <tr>
-              <th className="px-4 py-3">Beneficiary</th>
-              <th className="px-4 py-3">Item</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">{t("beneficiary")}</th>
+              <th className="px-4 py-3">{t("item")}</th>
+              <th className="px-4 py-3">{t("status")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
             {requests.map((request) => (
               <tr key={request.id}>
-                <td className="px-4 py-3">{request.beneficiary_name ?? "Unnamed"}</td>
-                <td className="px-4 py-3">{request.item_needed ?? "—"}</td>
+                <td className="px-4 py-3">{request.beneficiary_name ?? t("unnamed")}</td>
+                <td className="px-4 py-3">{request.item_needed ?? t("unknown")}</td>
                 <td className="px-4 py-3">
                   <select defaultValue={request.status ?? "pending"} onChange={(event) => handleStatusChange(request.id, event.target.value)} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm">
-                    <option value="pending">Pending</option>
-                    <option value="matched">Matched</option>
-                    <option value="delivered">Delivered</option>
+                    <option value="pending">{t("statusPending")}</option>
+                    <option value="matched">{t("statusMatched")}</option>
+                    <option value="delivered">{t("statusDelivered")}</option>
                   </select>
                 </td>
               </tr>

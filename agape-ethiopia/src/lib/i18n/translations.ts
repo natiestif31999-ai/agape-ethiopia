@@ -18,6 +18,29 @@ export const translations: Record<Locale, TranslationDictionary> = {
     newRegistration: "New registration",
     registerBeneficiary: "Register beneficiary",
     beneficiaryRegistry: "Beneficiary Registry",
+    // Homepage / hero
+    heroTitle: "No More Crawling on the Floor",
+    heroSubtitle: "Your support brings hope, restores dignity, and changes lives in Ethiopia.",
+    beneficiaryRegistration: "Beneficiary Registration",
+    equipmentTracking: "Equipment Tracking",
+    assessmentManagement: "Assessment Management",
+    ourMission: "Our Mission",
+    ourMissionTitle: "Our Mission",
+    ourMissionText: "Provide compassionate mobility assistance and comprehensive beneficiary support services across Ethiopia.",
+    ourReach: "Our Reach",
+    ourReachTitle: "Our Reach",
+    ourReachText: "Visualizing our recent outreach and beneficiary impact.",
+    operationalDashboard: "Operational Dashboard",
+    dashboardDescription: "The interface provides comprehensive tracking of impact metrics, donations, requests, and administrative oversight with real-time Supabase integration.",
+    selfRegistrationCard: "Self registration",
+    selfRegistrationTitle: "Self registration",
+    selfRegistrationText: "Beneficiaries can submit their full profile, contact details, and photo directly.",
+    staffPanelCard: "Staff panel",
+    staffPanelTitle: "Staff panel",
+    staffPanelText: "Staff can save, review, edit, and manage beneficiary registrations and workflow actions.",
+    adminPanelCard: "Admin panel",
+    adminPanelTitle: "Admin panel",
+    adminPanelText: "Administrators can manage users, site content, and the wider system from one place.",
     registrationNumber: "Registration number",
     registrationDate: "Registration date",
     firstName: "First name",
@@ -46,7 +69,6 @@ export const translations: Record<Locale, TranslationDictionary> = {
     uploadPhoto: "Upload photo",
     selectLanguage: "Language",
     login: "Login",
-    email: "Email",
     password: "Password",
     signIn: "Sign in",
     signOut: "Sign out",
@@ -68,9 +90,275 @@ export const translations: Record<Locale, TranslationDictionary> = {
     liveDashboard: "Live dashboard",
     languageUpdated: "Language updated.",
     applicationName: "Agape Ethiopia",
+    applicationTagline: "Mobility Management System",
     searchPlaceholder: "Name, reg. number, phone, region, kebele",
     roleStaff: "Staff",
     roleAdmin: "Administrator",
+    adminPanel: "Admin panel",
+    adminCenter: "Admin Center",
+    adminCenterDescription: "Review urgent requests, mark items as matched, and manage logistics queues.",
+    openRequests: "Open requests",
+    availableWheelchairs: "Available wheelchairs",
+    beneficiary: "Beneficiary",
+    item: "Item",
+    status: "Status",
+    unnamed: "Unnamed",
+    statusPending: "Pending",
+    statusMatched: "Matched",
+    statusDelivered: "Delivered",
+    users: "Users",
+    usersDescription: "Manage application accounts and assign roles for administrators and staff.",
+    unknownProfile: "Unknown profile",
+    overview: "Overview",
+    buttonLabel: "Button label",
+    supabaseNotConfigured: "Supabase is not configured.",
+    email: "Email",
+    role: "Role",
+    access: "Access",
+    actions: "Actions",
+    disabled: "Disabled",
+    active: "Active",
+    enable: "Enable",
+    disable: "Disable",
+    noUsersFound: "No users found.",
+    assessmentReady: "Ready to add a new assessment.",
+    savingAssessment: "Saving assessment...",
+    saveAssessment: "Save assessment",
+    
+    assessmentSaved: "Assessment saved successfully.",
+    newAssessment: "New Assessment",
+    assessmentDescription: "Capture structured wheelchair measurement data for a beneficiary.",
+    beneficiaryId: "Beneficiary ID",
+    beneficiaryIdPlaceholder: "Beneficiary UUID",
+    hipWidth: "Hip Width",
+    hipWidthPlaceholder: "Hip width",
+    measurements: "Measurements",
+    measurementsPlaceholder: "Height, seat depth, etc.",
+    wheelchairFitting: "Wheelchair fitting",
+    wheelchairFittingPlaceholder: "Fitting information",
+    recommendations: "Recommendations",
+    recommendationsPlaceholder: "Recommended device, follow-up actions, or referrals",
+    seatDepth: "Seat Depth",
+    seatDepthPlaceholder: "Seat depth",
+    backHeight: "Back Height",
+    backHeightPlaceholder: "Back height",
+    recommendedEquipment: "Recommended equipment",
+    selectEquipment: "Select equipment",
+    adultWheelchair: "Adult Wheelchair",
+    childrenWheelchair: "Children Wheelchair",
+    crutches: "Crutches",
+    walker: "Walker",
+    other: "Other",
+    recommendedSize: "Recommended size",
+    selectSize: "Select size",
+    sizeSmall: "Small",
+    sizeMedium: "Medium",
+    sizeLarge: "Large",
+    sizeXL: "Extra Large",
+    assessorName: "Assessor name",
+    assessorNamePlaceholder: "Assessor name",
+    assessmentDate: "Assessment date",
+    additionalAssessmentNotes: "Additional assessment notes",
+    equipmentPlaceholder: "Wheelchair, crutches, walker",
+    kebele: "Kebele",
+    equipment: "Equipment",
+    // Equipment assignment and profile keys
+    addEquipmentAssignment: "Add equipment assignment",
+    assignmentNotesPlaceholder: "Condition, special needs, delivery details",
+    assignmentReady: "Ready to add equipment assignment.",
+    assignmentSaved: "Equipment assignment saved successfully.",
+    issueDate: "Issue date",
+    mobilityAssessment: "Mobility assessment",
+    notRecorded: "Not recorded",
+    notSpecified: "Not specified",
+    noAssessmentsFound: "No assessments found for this beneficiary.",
+    noBeneficiarySelected: "No beneficiary selected.",
+    noEquipmentDistributionsFound: "No equipment distributions found for this beneficiary.",
+    noNotesProvided: "No notes provided.",
+    receivedBy: "Received by",
+    registrationDetails: "Registration details",
+    registerDescription: "Capture registration details for Agape Ethiopia beneficiaries and preserve records for future assessment and assignment tracking.",
+    registrationReady: "Ready to register a beneficiary.",
+    selectGender: "Select gender",
+    size: "Size",
+    unknownDate: "Unknown date",
+    unknown: "Unknown",
+    unableToLoadBeneficiary: "Unable to load beneficiary:",
+    trackAssignedEquipment: "Track issued mobility equipment for this beneficiary.",
+    exampleFirstName: "Example: Amanuel",
+    exampleMiddleName: "Example: Bekele",
+    exampleLastName: "Example: Tadesse",
+    examplePhone: "Example: +251 9xx xxx xxx",
+    exampleRegion: "Addis Ababa, Oromia, Amhara",
+    exampleNeighborhood: "Neighborhood or sub-city",
+    exampleKebele: "Kebele",
+    exampleHouseNumber: "House number",
+    notesPlaceholder: "Optional disability, access, or support details.",
+    unknownBeneficiary: "Unknown beneficiary",
+    searching: "Searching beneficiaries...",
+    foundRecords: "Found {{count}} beneficiary record(s).",
+    foundRecordsPrefix: "Found",
+    loadingApplications: "Loading applications...",
+    unableToLoadApplications: "Unable to load applications:",
+    applicationsLoaded: "Applications loaded.",
+    unableToLoadApplicationsShort: "Unable to load applications.",
+    unableToUpdateStatus: "Unable to update status:",
+    statusUpdated: "Status updated to",
+    unableToSaveChanges: "Unable to save changes:",
+    beneficiaryUpdated: "Beneficiary details updated.",
+    staffReviewDashboard: "Staff review dashboard",
+    staffReviewDescription: "Review registrations and approve or reject each case.",
+    allStatuses: "All statuses",
+    statusApproved: "Approved",
+    statusRejected: "Rejected",
+    edit: "Edit",
+    approve: "Approve",
+    reject: "Reject",
+    location: "Location",
+    needs: "Needs",
+    saveChanges: "Save changes",
+    cancel: "Cancel",
+    saving: "Saving...",
+    noApplicationsMatch: "No applications match this filter.",
+    distribution: "Distribution",
+    equipmentDistribution: "Equipment Distribution",
+    operationalReports: "Operational Reports",
+    // Dashboard actions and labels
+    operations: "Operations",
+    operationalActions: "Operational Actions",
+    operationsDescription: "Use the core workflow actions to register beneficiaries, capture assessments, and record distributions.",
+    "action.registerBeneficiary.title": "Register Beneficiary",
+    "action.registerBeneficiary.desc": "Add a new beneficiary record.",
+    "action.searchBeneficiary.title": "Search Beneficiary",
+    "action.searchBeneficiary.desc": "Search existing beneficiaries.",
+    "action.newAssessment.title": "New Assessment",
+    "action.newAssessment.desc": "Record wheelchair assessment measurements.",
+    "action.distributeEquipment.title": "Distribute Equipment",
+    "action.distributeEquipment.desc": "Record equipment distribution events.",
+    "action.reports.title": "Distribution Reports",
+    "action.reports.desc": "View operational reports and summaries.",
+    "offline.title": "You're Offline",
+    "offline.message": "It looks like you've lost your internet connection. Some features may not be available right now.",
+    "offline.whatYouCanDoTitle": "What you can do:",
+    "offline.checkConnection": "Check your internet connection",
+    "offline.viewCached": "View previously cached pages",
+    "offline.reviewSaved": "Review saved information",
+    "offline.tryAgain": "Try Again",
+    "offline.goBack": "Go Back",
+    "offline.reconnectInfo": "Your app will work normally once you reconnect to the internet.",
+    "offline.icon": "📡",
+    "register.title": "Beneficiary registration",
+    "register.description": "Submit your support request and it will be reviewed by the Agape Mobility Ethiopia team.",
+    "impact.header": "Master Home",
+    "impact.title": "Matching mobility support to urgent requests in real time.",
+    "impact.description": "Agape Ethiopia’s dashboard turns incoming donations and beneficiary requests into a live logistics flow for wheelchairs, mobility aids, and urgent support coordination.",
+    "impact.insightLabel": "Live matching insight",
+    "impact.pendingRequestsSymbol": "pending requests →",
+    "impact.donationRecords": "donation records",
+    "impact.insightDescription": "This is the live operational snapshot the admin panel uses to prioritize next matching actions.",
+    "impact.statRequestsLabel": "urgent mobility requests",
+    "impact.statDonationsLabel": "donation records in flight",
+    "impact.liveLabel": "Live",
+    "impact.syncStatusLabel": "Supabase sync status",
+    // Additional localized keys added in batch
+    "beneficiaries.totalRegisteredLabel": "Total registered",
+    "beneficiaries.totalRegisteredTitle": "Manage all beneficiaries",
+    "beneficiaries.assessmentsLabel": "Assessments",
+    "beneficiaries.assessmentsTitle": "Track mobility evaluations",
+    "beneficiaries.equipmentLabel": "Equipment",
+    "beneficiaries.equipmentTitle": "Monitor assignments & history",
+
+    "coreServices.title": "Core Services",
+    "coreServices.text": "Beneficiary registration, mobility assessments, equipment distribution, and impact tracking.",
+
+    "impactDriven.title": "Impact Driven",
+    "impactDriven.text": "Transparent reporting, data-driven decisions, and measurable community impact.",
+
+    "beneficiaryReport.title": "Beneficiary Report",
+    "beneficiaryReport.description": "Recent beneficiaries with registration and location details.",
+
+    "distributionReport.title": "Distribution Report",
+    "distributionReport.description": "Recent equipment distributions and recipient details.",
+
+    "report.regNumber": "Reg. #",
+    "report.name": "Name",
+    "report.region": "Region",
+    "report.kebele": "Kebele",
+    "report.date": "Date",
+    "report.beneficiary": "Beneficiary",
+    "report.equipment": "Equipment",
+    "report.size": "Size",
+    "report.loadingBeneficiaries": "Loading beneficiaries...",
+    "report.noBeneficiaries": "No beneficiaries found.",
+    "report.loadingDistributions": "Loading distribution records...",
+    "report.noDistributions": "No distribution records found.",
+    // Equipment size summary
+    "equipment.sizeSummary.title": "Equipment Size Distribution Summary",
+    "equipment.sizeSummary.description": "Summary of distributed equipment by type and size.",
+    "equipment.sizeSummary.loading": "Loading summary...",
+    "equipment.sizeSummary.empty": "No distribution data available.",
+
+    // Request portal
+    "request.title": "Request Portal",
+    "request.description": "Log urgent mobility requests from beneficiaries and track matching progress.",
+    "request.ready": "Ready to submit a beneficiary request.",
+    "request.submitting": "Submitting request...",
+    "request.submitFailed": "Submission failed:",
+    "request.success": "Request saved successfully.",
+    "request.create": "Create request",
+    "request.beneficiaryName": "Beneficiary name",
+    "request.exampleName": "Example: Selam Bekele",
+    "request.itemNeeded": "Item needed",
+    "request.exampleItem": "Wheelchair",
+    "request.details": "Need details",
+    "request.detailsPlaceholder": "Describe urgency and delivery context.",
+
+    // Equipment distribution form
+    "equipment.distribution.title": "Distribute Equipment",
+    "equipment.distribution.description": "Record wheelchair distribution events for beneficiaries.",
+    "equipment.distribution.ready": "Ready to record equipment distribution.",
+    "equipment.distribution.saving": "Saving distribution...",
+    "equipment.distribution.save": "Save distribution",
+    "equipment.distribution.saveFailed": "Save failed:",
+    "equipment.distribution.saved": "Equipment distribution saved successfully.",
+    "equipment.fields.beneficiaryId": "Beneficiary ID",
+    "equipment.placeholder.beneficiaryId": "Beneficiary UUID",
+    "equipment.fields.type": "Equipment type",
+    "equipment.placeholder.selectEquipment": "Select equipment",
+    "equipment.fields.size": "Equipment size",
+    "equipment.placeholder.selectSize": "Select size",
+    "equipment.fields.distributionDate": "Distribution date",
+    "equipment.fields.signatureConfirmed": "Signature confirmed",
+    "equipment.placeholder.notes": "Delivery details or beneficiary observations",
+    "equipment.placeholder.distributionLocation": "Distribution location",
+    "equipment.placeholder.receivedBy": "Recipient or staff name",
+    // Donation form
+    "donation.title": "Donation Form",
+    "donation.description": "Capture donor details and inventory updates that sync into the live donations table.",
+    "donation.status.ready": "Ready to save a donation record.",
+    "donation.status.saving": "Saving donation...",
+    "donation.status.saveFailed": "Save failed:",
+    "donation.status.saved": "Donation saved successfully.",
+    "donation.donorName": "Donor name",
+    "donation.itemType": "Item type",
+    "donation.notes": "Notes",
+    "donation.placeholder.donorName": "Example: Addis Relief Fund",
+    "donation.placeholder.itemType": "Wheelchair, walker, mattress",
+    "donation.placeholder.notes": "Add delivery notes, urgency, or logistics details.",
+    "donation.save": "Save donation",
+    // Public registration messages
+    "register.public.ready": "Share your details and we will review your request.",
+    "register.public.saving": "Saving your registration request...",
+    "register.public.validation.required": "Please complete the required beneficiary details before submitting.",
+    "register.public.error": "Unable to submit registration.",
+    "register.public.success": "Your registration was submitted successfully. A staff member will review it shortly.",
+    "register.public.submitting": "Submitting...",
+    "register.public.submit": "Submit registration",
+    "referralSource": "Referral source",
+    "referralSourcePlaceholder": "Clinic, family, community leader",
+    // Validation
+    "validation.validBeneficiaryIdRequired": "A valid beneficiary ID is required to display profile details.",
+    
   },
   am: {
     home: "ዋና ገጽ",
@@ -131,6 +419,166 @@ export const translations: Record<Locale, TranslationDictionary> = {
     searchPlaceholder: "ስም, የምዝገባ ቁጥር, ስልክ, ክልል, ወረዳ/ዞን",
     roleStaff: "ሠራተኛ",
     roleAdmin: "አስተዳደር",
+    adminPanel: "የአስተዳደር ፓነል",
+    adminCenter: "የአስተዳደር ማዕከል",
+    adminCenterDescription: "አስቸኳይ ትዕዛዞችን ይመልከቱ፣ ዕቃዎችን ይቀርቡ እና የሎጂስቲክስ ቅደም ተከተው ይያዙ።",
+    openRequests: "ትእዛዛዎች",
+    availableWheelchairs: "አሁን ያሉ የእግር መታጠቢያዎች",
+    beneficiary: "ተጠቃሚ",
+    item: "ዕቃ",
+    status: "ሁኔታ",
+    unnamed: "ያልታወቀ",
+    statusPending: "በሂደት ላይ",
+    statusMatched: "ተዛማኝ",
+    statusDelivered: "ተልኳል",
+    users: "ተጠቃሚዎች",
+    usersDescription: "የመተግበሪያ ሂሳቦችን ይስተዳድሩና ለአስተዳደርና ሠራተኞች ሚና ይሰጡ።",
+    unknownProfile: "ያልታወቀ ፕሮፋይል",
+    overview: "እይታ",
+    buttonLabel: "የአዝራሪ መለያ",
+    supabaseNotConfigured: "Supabase አልተቀመጠም።",
+    role: "ሚና",
+    access: "የመዳረሻ",
+    actions: "እርምጃዎች",
+    disabled: "ተዘግቷል",
+    active: "ንቁ",
+    enable: "እንዲሰራ",
+    disable: "ማቋረጥ",
+    noUsersFound: "ምንም ተጠቃሚ አልተገኘም።",
+    assessmentReady: "ለአዲስ ግምገማ ዝግጁ ነው።",
+    savingAssessment: "እየተያዘ ነው...",
+    saveAssessment: "ግምገማ አስቀምጥ",
+    assessmentSaved: "ግምገማው ተሳካ።",
+    newAssessment: "አዲስ ግምገማ",
+    assessmentDescription: "የዋሽን መለኪያ መረጃን ለተጠቃሚ ያከብሩ።",
+    beneficiaryId: "የተጠቃሚ መለያ",
+    beneficiaryIdPlaceholder: "UUID የተጠቃሚ",
+    hipWidth: "የኩሎት ስፋት",
+    hipWidthPlaceholder: "የኩሎት ስፋት",
+    seatDepth: "የቁልፍ ጥርጣሬ",
+    seatDepthPlaceholder: "የቁልፍ ጥርጣሬ",
+    backHeight: "የጀርባ ቁመት",
+    backHeightPlaceholder: "የጀርባ ቁመት",
+    recommendedEquipment: "የተመከረ መሣሪያ",
+    selectEquipment: "መሣሪያ ይምረጡ",
+    adultWheelchair: "የአልታለም ውስጥ ዘመናዊ ሰሌዳ",
+    childrenWheelchair: "የሕፃናት ቦታ",
+    crutches: "የእግር መደገፊያ",
+    walker: "ተመላላሽ",
+    other: "ሌላ",
+    recommendedSize: "የተመከረ መጠን",
+    selectSize: "መጠን ይምረጡ",
+    sizeSmall: "ትንሽ",
+    sizeMedium: "መካከለኛ",
+    sizeLarge: "ትልቅ",
+    sizeXL: "ትልቅ ከለላ",
+    assessorName: "የአስተካከያ ስም",
+    assessorNamePlaceholder: "የአስተካከያ ስም",
+    assessmentDate: "የግምገማ ቀን",
+    additionalAssessmentNotes: "የተጨማሪ ማስታወሻዎች",
+    equipmentPlaceholder: "የእግር መደገፊያ፣ የእግር ማዕዘን፣ የትንሽ ዕቃ",
+    kebele: "ቀበሌ",
+    equipment: "መሣሪያ",
+    unknownBeneficiary: "ያልታወቀ ተጠቃሚ",
+    searching: "ተጠቃሚዎችን እየተፈለገ ነው...",
+    foundRecords: "{{count}} ተጠቃሚ ተገኙ።",
+    foundRecordsPrefix: "ተገኙ",
+    loadingApplications: "የማመልከቻ ሂደት እየተጫነ ነው...",
+    unableToLoadApplications: "ማመልከቻዎችን መጫን አልቻልን፦",
+    applicationsLoaded: "መዝገቦች ተጫኑ።",
+    unableToLoadApplicationsShort: "መዝገቦችን ማስገባት አልቻልን።",
+    unableToUpdateStatus: "የሁኔታውን መቀየር አልቻልን፦",
+    statusUpdated: "ሁኔታ ተቀይሯል",
+    unableToSaveChanges: "ለይወን ማስቀመጥ አልቻልን፦",
+    beneficiaryUpdated: "የተጠቃሚ ዝርዝር ተሻሽሏል።",
+    staffReviewDashboard: "የሠራተኞች ጥናታዊ ዳሽቦርድ",
+    staffReviewDescription: "ምዝገቦችን ይመልከቱ እና እያንዳንዱን ክስተት ይፈትሹ።",
+    allStatuses: "ሁሉም ሁኔታዎች",
+    statusApproved: "የተረጋገጠ",
+    statusRejected: "የተቋረጠ",
+    edit: "ያስተካክሉ",
+    approve: "ይፈቀዱ",
+    reject: "ይቋረጡ",
+    location: "ቦታ",
+    needs: "የሚያስፈልጉ",
+    saveChanges: "ለይወን ይያዙ",
+    cancel: "ሰርዝ",
+    saving: "እየተቀረጸ ነው...",
+    noApplicationsMatch: "ምንም ማመልከቻዎች አልተሳሰቡም።",
+    // Equipment assignment and profile keys (Amharic placeholders)
+    addEquipmentAssignment: "እቃ ማስተካከያ ያክሉ",
+    assignmentNotesPlaceholder: "ሁኔታ, ልዩ ፍላጎቶች, የትላልቅ ዝርዝሮች",
+    assignmentReady: "ለእቃ ማስተካከያ ዝግጁ ነው።",
+    assignmentSaved: "የእቃ ማስተካከያ ተቀምጧል።",
+    issueDate: "የማቅረብ ቀን",
+    mobilityAssessment: "የእድሜ ግምገማ",
+    notRecorded: "አልተመዘገበም",
+    notSpecified: "አልተገለፀም",
+    noAssessmentsFound: "ለዚህ ተጠቃሚ የግምገማ መዝገቦች አልተገኙም።",
+    noBeneficiarySelected: "ምንም ተጠቃሚ አልተመረጠም።",
+    noEquipmentDistributionsFound: "ለዚህ ተጠቃሚ የእቃ እድር መዝገቦች አልተገኙም።",
+    noNotesProvided: "ምንም ማስታወሻ አልተሰጠም።",
+    receivedBy: "ተቀባይ",
+    registrationDetails: "የምዝገባ ዝርዝሮች",
+    registerDescription: "የተጠቃሚ ምዝገቦችን አከብሩ እና ለወደፊት ግምገማ እና ማስመዝገብ አስቀምጡ።",
+    registrationReady: "ለምዝገባ ዝግጁ ነው።",
+    selectGender: "ጾታ ይምረጡ",
+    size: "መጠን",
+    unknownDate: "ያልታወቀ ቀን",
+    unknown: "ያልታወቀ",
+    unableToLoadBeneficiary: "የተጠቃሚን መረጃ ማስመዝገብ አልቻልን፦",
+    trackAssignedEquipment: "ለዚህ ተጠቃሚ የተሰጠ የእቃ መረጃ ይከታተሉ።",
+    exampleFirstName: "ለምሳሌ: Amanuel",
+    exampleMiddleName: "ለምሳሌ: Bekele",
+    exampleLastName: "ለምሳሌ: Tadesse",
+    examplePhone: "ለምሳሌ: +251 9xx xxx xxx",
+    exampleRegion: "Addis Ababa, Oromia, Amhara",
+    exampleNeighborhood: "ጎረቤት ወይም ንዑስ ከተማ",
+    exampleKebele: "ከበሌ",
+    exampleHouseNumber: "የቤት ቁጥር",
+    notesPlaceholder: "እንደ ምሳሌ፡ የሕክምና እና የድጋፍ ዝርዝሮች",
+    "action.registerBeneficiary.title": "ተጠቃሚ ይመዝግቡ",
+    "action.registerBeneficiary.desc": "አዲስ የተጠቃሚ መረጃ ያክሉ።",
+    "action.searchBeneficiary.title": "ተጠቃሚ ፈልግ",
+    "action.searchBeneficiary.desc": "ያለፉ ተጠቃሚዎችን ይፈልጉ።",
+    "action.newAssessment.title": "አዲስ ግምገማ",
+    "action.newAssessment.desc": "የዋሽን መለኪያ ይቅርበዋል።",
+    "action.distributeEquipment.title": "እቃ ይስጡ",
+    "action.distributeEquipment.desc": "የእቃ ስርዓት ይመዝግቡ።",
+    "action.reports.title": "የእቃ ሪፖርቶች",
+    "action.reports.desc": "የእቃ እይታ እና ማጠቃለያዎችን ይመልከቱ።",
+    // placeholders for keys added in English
+    "beneficiaries.totalRegisteredLabel": "Total registered",
+    "beneficiaries.totalRegisteredTitle": "Manage all beneficiaries",
+    "beneficiaries.assessmentsLabel": "Assessments",
+    "beneficiaries.assessmentsTitle": "Track mobility evaluations",
+    "beneficiaries.equipmentLabel": "Equipment",
+    "beneficiaries.equipmentTitle": "Monitor assignments & history",
+
+    "coreServices.title": "Core Services",
+    "coreServices.text": "Beneficiary registration, mobility assessments, equipment distribution, and impact tracking.",
+
+    "impactDriven.title": "Impact Driven",
+    "impactDriven.text": "Transparent reporting, data-driven decisions, and measurable community impact.",
+
+    "beneficiaryReport.title": "Beneficiary Report",
+    "beneficiaryReport.description": "Recent beneficiaries with registration and location details.",
+
+    "distributionReport.title": "Distribution Report",
+    "distributionReport.description": "Recent equipment distributions and recipient details.",
+
+    "report.regNumber": "Reg. #",
+    "report.name": "Name",
+    "report.region": "Region",
+    "report.kebele": "Kebele",
+    "report.date": "Date",
+    "report.beneficiary": "Beneficiary",
+    "report.equipment": "Equipment",
+    "report.size": "Size",
+    "report.loadingBeneficiaries": "Loading beneficiaries...",
+    "report.noBeneficiaries": "No beneficiaries found.",
+    "report.loadingDistributions": "Loading distribution records...",
+    "report.noDistributions": "No distribution records found.",
   },
   om: {
     home: "Mana",
@@ -191,6 +639,77 @@ export const translations: Record<Locale, TranslationDictionary> = {
     searchPlaceholder: "Maqaa, lakkoofsa galmee, bilbila, naannoo, kebele",
     roleStaff: "Hojjetaa",
     roleAdmin: "Bulchaa",
+    adminPanel: "Bulchiinsa",
+    adminCenter: "Bulchiinsa"
+    ,unknownProfile: "Unknown profile"
+    ,overview: "Ol'aantummaa"
+    ,buttonLabel: "Button label"
+    // Equipment assignment and profile keys (Oromo placeholders)
+    ,addEquipmentAssignment: "Add equipment assignment"
+    ,assignmentNotesPlaceholder: "Condition, special needs, delivery details"
+    ,assignmentReady: "Ready to add equipment assignment."
+    ,assignmentSaved: "Equipment assignment saved successfully."
+    ,issueDate: "Issue date"
+    ,mobilityAssessment: "Mobility assessment"
+    ,notRecorded: "Not recorded"
+    ,notSpecified: "Not specified"
+    ,noAssessmentsFound: "No assessments found for this beneficiary."
+    ,noBeneficiarySelected: "No beneficiary selected."
+    ,noEquipmentDistributionsFound: "No equipment distributions found for this beneficiary."
+    ,noNotesProvided: "No notes provided."
+    ,receivedBy: "Received by"
+    ,registrationDetails: "Registration details"
+    ,registerDescription: "Capture registration details for Agape Ethiopia beneficiaries and preserve records for future assessment and assignment tracking."
+    ,registrationReady: "Ready to register a beneficiary."
+    ,selectGender: "Select gender"
+    ,size: "Size"
+    ,unknownDate: "Unknown date"
+    ,unknown: "Unknown"
+    ,unableToLoadBeneficiary: "Unable to load beneficiary:"
+    ,trackAssignedEquipment: "Track issued mobility equipment for this beneficiary."
+    ,exampleFirstName: "Example: Amanuel"
+    ,exampleMiddleName: "Example: Bekele"
+    ,exampleLastName: "Example: Tadesse"
+    ,examplePhone: "Example: +251 9xx xxx xxx"
+    ,exampleRegion: "Addis Ababa, Oromia, Amhara"
+    ,exampleNeighborhood: "Neighborhood or sub-city"
+    ,exampleKebele: "Kebele"
+    ,exampleHouseNumber: "House number"
+    ,notesPlaceholder: "Optional disability, access, or support details."
+    // placeholders for new keys (Oromo)
+    ,"equipment.sizeSummary.title": "Equipment Size Distribution Summary"
+    ,"equipment.sizeSummary.description": "Summary of distributed equipment by type and size."
+    ,"equipment.sizeSummary.loading": "Loading summary..."
+    ,"equipment.sizeSummary.empty": "No distribution data available."
+    ,"request.title": "Request Portal"
+    ,"request.description": "Log urgent mobility requests from beneficiaries and track matching progress."
+    ,"request.ready": "Ready to submit a beneficiary request."
+    ,"request.submitting": "Submitting request..."
+    ,"request.submitFailed": "Submission failed:"
+    ,"request.success": "Request saved successfully."
+    ,"request.create": "Create request"
+    ,"request.beneficiaryName": "Beneficiary name"
+    ,"request.exampleName": "Example: Selam Bekele"
+    ,"request.itemNeeded": "Item needed"
+    ,"request.exampleItem": "Wheelchair"
+    ,"request.details": "Need details"
+    ,"request.detailsPlaceholder": "Describe urgency and delivery context."
+    ,"equipment.distribution.title": "Distribute Equipment"
+    ,"equipment.distribution.description": "Record wheelchair distribution events for beneficiaries."
+    ,"equipment.distribution.ready": "Ready to record equipment distribution."
+    ,"equipment.distribution.saving": "Saving distribution..."
+    ,"equipment.distribution.save": "Save distribution"
+    ,"equipment.distribution.saveFailed": "Save failed:"
+    ,"equipment.distribution.saved": "Equipment distribution saved successfully."
+    ,"equipment.fields.beneficiaryId": "Beneficiary ID"
+    ,"equipment.placeholder.beneficiaryId": "Beneficiary UUID"
+    ,"equipment.fields.type": "Equipment type"
+    ,"equipment.placeholder.selectEquipment": "Select equipment"
+    ,"equipment.fields.size": "Equipment size"
+    ,"equipment.placeholder.selectSize": "Select size"
+    ,"equipment.fields.distributionDate": "Distribution date"
+    ,"equipment.fields.signatureConfirmed": "Signature confirmed"
+    ,"equipment.placeholder.notes": "Delivery details or beneficiary observations"
   },
   ti: {
     home: "ቤት",
@@ -251,5 +770,75 @@ export const translations: Record<Locale, TranslationDictionary> = {
     searchPlaceholder: "ስም, የምዝገባ ቁጥር, ስልክ, ክልል, ወረዳ/ዞን",
     roleStaff: "ሰራተኛ",
     roleAdmin: "አስተዳደር",
+    adminPanel: "አስተዳደር",
+    unknownProfile: "ያልታወቀ ፕሮፋይል",
+    overview: "እይታ",
+    buttonLabel: "የአዝራሪ መለያ",
+    // Equipment assignment and profile keys (Tigrinya placeholders)
+    addEquipmentAssignment: "ኣገብሮ ንመምርሒ ሓላፍነት",
+    assignmentNotesPlaceholder: "ሁኽታ፣ ልዩ ፍላጎት፣ ዝተለዋወጠ ዝርዝር",
+    assignmentReady: "ዝገጽ ለመምርሒ ዝግጅት እዩ።",
+    assignmentSaved: "መምርሒ ብትሕትና ተቐምጣ።",
+    issueDate: "ዕለት ምለምድ",
+    mobilityAssessment: "ግምገማ ናይ እንታይ እዩ",
+    notRecorded: "ኣይተመዝገበን",
+    notSpecified: "ኣይተገለፀን",
+    noAssessmentsFound: "ንዚ ተጠቃሚ ናይ ግምገማ መዝገቦታት ኣይተገነነ።",
+    noBeneficiarySelected: "ተጠቃሚ ኣይተመረጠን",
+    noEquipmentDistributionsFound: "ንዚ ተጠቃሚ ናይ መምርሒ መዝገቦታት ኣይተገነነ።",
+    noNotesProvided: "ሓበሬታ ኣይተሰጠን",
+    receivedBy: "ብማእከል ተቐባ",
+    registrationDetails: "ዝርዝር ምዝገባ",
+    registerDescription: "ንተጠቃሚታት ምዝገባ ኣብ ማእከል ምዝገባ ኣስቀምጥ።",
+    registrationReady: "ለምዝገባ ዝገጽ እዩ።",
+    selectGender: "ጾታ ምረጽ",
+    size: "መጠን",
+    unknownDate: "ዝርርብ ዕለት ኣይተገለፀን",
+    unknown: "ዘይታወቀ",
+    unableToLoadBeneficiary: "ክንዲ የለን ኣይተርከብን:",
+    trackAssignedEquipment: "ንዚ ተጠቃሚ ዝተሰጠ መሣርሒ ንምርኣት ኣብ ክልተ ይኸውን",
+    exampleFirstName: "ምሳሌ: Amanuel",
+    exampleMiddleName: "ምሳሌ: Bekele",
+    exampleLastName: "ምሳሌ: Tadesse",
+    examplePhone: "ምሳሌ: +251 9xx xxx xxx",
+    exampleRegion: "Addis Ababa, Oromia, Amhara",
+    exampleNeighborhood: "ጎረቤት ወይ ንዑስ ከተማ",
+    exampleKebele: "ከበሌ",
+    exampleHouseNumber: "ቁጽሪ ቤት",
+    notesPlaceholder: "ምሳሌ፡ ኣብ ነገር ዝገብር ወይ ዝይተነገረ ሓበሬታ"
+    // placeholders for new keys (Tigrinya)
+    ,"equipment.sizeSummary.title": "Equipment Size Distribution Summary"
+    ,"equipment.sizeSummary.description": "Summary of distributed equipment by type and size."
+    ,"equipment.sizeSummary.loading": "Loading summary..."
+    ,"equipment.sizeSummary.empty": "No distribution data available."
+    ,"request.title": "Request Portal"
+    ,"request.description": "Log urgent mobility requests from beneficiaries and track matching progress."
+    ,"request.ready": "Ready to submit a beneficiary request."
+    ,"request.submitting": "Submitting request..."
+    ,"request.submitFailed": "Submission failed:"
+    ,"request.success": "Request saved successfully."
+    ,"request.create": "Create request"
+    ,"request.beneficiaryName": "Beneficiary name"
+    ,"request.exampleName": "Example: Selam Bekele"
+    ,"request.itemNeeded": "Item needed"
+    ,"request.exampleItem": "Wheelchair"
+    ,"request.details": "Need details"
+    ,"request.detailsPlaceholder": "Describe urgency and delivery context."
+    ,"equipment.distribution.title": "Distribute Equipment"
+    ,"equipment.distribution.description": "Record wheelchair distribution events for beneficiaries."
+    ,"equipment.distribution.ready": "Ready to record equipment distribution."
+    ,"equipment.distribution.saving": "Saving distribution..."
+    ,"equipment.distribution.save": "Save distribution"
+    ,"equipment.distribution.saveFailed": "Save failed:"
+    ,"equipment.distribution.saved": "Equipment distribution saved successfully."
+    ,"equipment.fields.beneficiaryId": "Beneficiary ID"
+    ,"equipment.placeholder.beneficiaryId": "Beneficiary UUID"
+    ,"equipment.fields.type": "Equipment type"
+    ,"equipment.placeholder.selectEquipment": "Select equipment"
+    ,"equipment.fields.size": "Equipment size"
+    ,"equipment.placeholder.selectSize": "Select size"
+    ,"equipment.fields.distributionDate": "Distribution date"
+    ,"equipment.fields.signatureConfirmed": "Signature confirmed"
+    ,"equipment.placeholder.notes": "Delivery details or beneficiary observations"
   },
 };

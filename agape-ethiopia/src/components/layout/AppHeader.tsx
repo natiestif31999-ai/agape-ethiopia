@@ -21,11 +21,11 @@ export default function AppHeader() {
             {t("home")}
           </Link>
           <Link href="/register" className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-800 transition hover:bg-emerald-100">
-            Self registration
+            {t("registerBeneficiary")}
           </Link>
           {(isStaff || isAdmin) && (
             <Link href="/dashboard/staff" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              Staff panel
+              {t("roleStaff")}
             </Link>
           )}
           {(isStaff || isAdmin) && (
@@ -40,7 +40,7 @@ export default function AppHeader() {
           )}
           {isAdmin && (
             <Link href="/admin" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              Admin panel
+              {t("adminPanel")}
             </Link>
           )}
           <div className="flex items-center gap-2 rounded-full bg-emerald-700/10 px-4 py-2 text-emerald-900 shadow-sm">

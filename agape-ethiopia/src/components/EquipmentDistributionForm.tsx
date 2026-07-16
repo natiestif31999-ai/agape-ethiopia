@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import type { EquipmentDistribution } from "@/lib/types";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 export default function EquipmentDistributionForm({
   beneficiaryId,
@@ -19,13 +20,14 @@ export default function EquipmentDistributionForm({
   const [receivedBy, setReceivedBy] = useState("");
   const [signatureConfirmed, setSignatureConfirmed] = useState(false);
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState("Ready to record equipment distribution.");
+  const { t } = useLanguage();
+  const [status, setStatus] = useState(t("equipment.distribution.ready"));
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSaving(true);
-    setStatus("Saving distribution record...");
+    setStatus(t("equipment.distribution.saving"));
 
     const payload: EquipmentDistribution = {
       beneficiary_id: selectedBeneficiary,
@@ -47,12 +49,12 @@ export default function EquipmentDistributionForm({
 
       const result = await response.json();
       if (!response.ok) {
-        setStatus(result?.error ? `Save failed: ${result.error}` : "Save failed.");
+        setStatus(result?.error ? `${t("equipment.distribution.saveFailed")} ${result.error}` : t("equipment.distribution.saveFailed"));
         setIsSaving(false);
         return;
       }
 
-      setStatus("Equipment distribution saved successfully.");
+      setStatus(t("equipment.distribution.saved"));
       setEquipmentType("");
       setEquipmentSize("");
       setDistributionDate("");
@@ -62,7 +64,7 @@ export default function EquipmentDistributionForm({
       setNotes("");
       onCreated?.();
     } catch (error) {
-      setStatus(error instanceof Error ? `Save failed: ${error.message}` : "Save failed.");
+      setStatus(error instanceof Error ? `${t("equipment.distribution.saveFailed")} ${error.message}` : t("equipment.distribution.saveFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -70,55 +72,55 @@ export default function EquipmentDistributionForm({
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-semibold text-slate-900">Distribute Equipment</h2>
-      <p className="mt-2 text-slate-600">Record wheelchair distribution events for beneficiaries.</p>
+      <h2 className="text-2xl font-semibold text-slate-900">{t("equipment.distribution.title")}</h2>
+      <p className="mt-2 text-slate-600">{t("equipment.distribution.description")}</p>
       <form onSubmit={handleSubmit} className="mt-6 grid gap-4 lg:grid-cols-2">
         <label className="grid gap-1 text-sm font-medium text-slate-700 lg:col-span-2">
-          Beneficiary ID
+          {t("equipment.fields.beneficiaryId")}
           <input
             value={selectedBeneficiary}
             onChange={(event) => setSelectedBeneficiary(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Beneficiary UUID"
+            placeholder={t("equipment.placeholder.beneficiaryId")}
             required
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Equipment type
+          {t("equipment.fields.type")}
           <select
             value={equipmentType}
             onChange={(event) => setEquipmentType(event.target.value)}
             className="rounded-xl border border-slate-300 bg-white px-4 py-3"
             required
           >
-            <option value="">Select equipment</option>
-            <option value="Adult Wheelchair">Adult Wheelchair</option>
-            <option value="Children Wheelchair">Children Wheelchair</option>
-            <option value="Crutches">Crutches</option>
-            <option value="Walker">Walker</option>
-            <option value="Other">Other</option>
+            <option value="">{t("equipment.placeholder.selectEquipment")}</option>
+            <option value="Adult Wheelchair">{t("adultWheelchair")}</option>
+            <option value="Children Wheelchair">{t("childrenWheelchair")}</option>
+            <option value="Crutches">{t("crutches")}</option>
+            <option value="Walker">{t("walker")}</option>
+            <option value="Other">{t("other")}</option>
           </select>
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Equipment size
+          {t("equipment.fields.size")}
           <select
             value={equipmentSize}
             onChange={(event) => setEquipmentSize(event.target.value)}
             className="rounded-xl border border-slate-300 bg-white px-4 py-3"
             required
           >
-            <option value="">Select size</option>
-            <option value="Small">Small</option>
-            <option value="Medium">Medium</option>
-            <option value="Large">Large</option>
-            <option value="Extra Large">Extra Large</option>
+            <option value="">{t("equipment.placeholder.selectSize")}</option>
+            <option value="Small">{t("sizeSmall")}</option>
+            <option value="Medium">{t("sizeMedium")}</option>
+            <option value="Large">{t("sizeLarge")}</option>
+            <option value="Extra Large">{t("sizeXL")}</option>
           </select>
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Distribution date
+          {t("equipment.fields.distributionDate")}
           <input
             type="date"
             value={distributionDate}
@@ -128,22 +130,22 @@ export default function EquipmentDistributionForm({
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Location
+          {t("location")}
           <input
             value={distributionLocation}
             onChange={(event) => setDistributionLocation(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Distribution location"
+            placeholder={t("equipment.placeholder.distributionLocation")}
           />
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Received by
+          {t("receivedBy")}
           <input
             value={receivedBy}
             onChange={(event) => setReceivedBy(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Recipient or staff name"
+            placeholder={t("equipment.placeholder.receivedBy")}
           />
         </label>
 
@@ -154,21 +156,21 @@ export default function EquipmentDistributionForm({
             onChange={(event) => setSignatureConfirmed(event.target.checked)}
             className="h-5 w-5 rounded border-slate-300 text-emerald-700"
           />
-          Signature confirmed
+          {t("equipment.fields.signatureConfirmed")}
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700 lg:col-span-2">
-          Notes
+          {t("notes")}
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             className="min-h-24 rounded-xl border border-slate-300 px-4 py-3"
-            placeholder="Delivery details or beneficiary observations"
+            placeholder={t("equipment.placeholder.notes")}
           />
         </label>
 
         <button type="submit" disabled={isSaving} className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white lg:col-span-2 disabled:cursor-not-allowed disabled:bg-slate-400">
-          {isSaving ? "Saving distribution..." : "Save distribution"}
+          {isSaving ? t("equipment.distribution.saving") : t("equipment.distribution.save")}
         </button>
 
         <p className="text-sm text-slate-500 lg:col-span-2">{status}</p>

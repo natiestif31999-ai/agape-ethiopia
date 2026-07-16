@@ -50,15 +50,15 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
   const { t } = useLanguage();
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [equipment, setEquipment] = useState<EquipmentRecord[]>([]);
-  const [status, setStatus] = useState("Loading beneficiary profile...");
+  const [status, setStatus] = useState(t("loadingRecord"));
 
   const loadProfile = useCallback(async () => {
     if (!beneficiaryId) {
-      setStatus("No beneficiary selected.");
+      setStatus(t("noBeneficiarySelected"));
       return;
     }
 
-    setStatus("Loading beneficiary record and history...");
+    setStatus(t("loadingRecord"));
     const supabase = getSupabaseClient();
 
     const [beneficiaryResult, assessmentResult, equipmentResult] = await Promise.all([
@@ -84,14 +84,14 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
     ]);
 
     if (beneficiaryResult.error) {
-      setStatus(`Unable to load beneficiary: ${beneficiaryResult.error.message}`);
+      setStatus(t("unableToLoadBeneficiary") + " " + beneficiaryResult.error.message);
       return;
     }
 
     setBeneficiary(beneficiaryResult.data ?? null);
     setAssessments(assessmentResult.data ?? []);
     setEquipment(equipmentResult.data ?? []);
-    setStatus("Beneficiary profile loaded.");
+    setStatus(t("profileLoaded"));
   }, [beneficiaryId]);
 
   useEffect(() => {
@@ -119,8 +119,8 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-semibold text-slate-900">Beneficiary Profile</h2>
-        <p className="mt-2 text-slate-600">View registration details, mobility assessments, and equipment assignments.</p>
+        <h2 className="text-2xl font-semibold text-slate-900">{t("beneficiaryProfile")}</h2>
+        <p className="mt-2 text-slate-600">{t("beneficiaryProfileDescription")}</p>
         <p className="mt-4 text-sm text-slate-500">{status}</p>
       </div>
 
@@ -128,7 +128,7 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
         <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
           <div className="space-y-6">
             {renderSection(
-              "Registration details",
+              t("registrationDetails"),
               <div className="grid gap-3">
                 {(() => {
                   const fullName = [beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name]
@@ -138,21 +138,21 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
                   return (
                     <>
                       {[
-                        ["Registration number", beneficiary.registration_number],
-                        ["Registration date", beneficiary.registration_date],
-                        [t("firstName"), fullName || "—"],
-                        ["Date of birth", beneficiary.date_of_birth],
+                        [t("registrationNumber"), beneficiary.registration_number],
+                        [t("registrationDate"), beneficiary.registration_date],
+                        [t("firstName"), fullName || t("unknown")],
+                        [t("dateOfBirth"), beneficiary.date_of_birth],
                         [t("gender"), beneficiary.gender],
                         [t("phone"), beneficiary.phone],
                         [t("region"), beneficiary.region],
                         [t("kifleKetema"), beneficiary.kifle_ketema],
-                        ["Kebele", beneficiary.kebele],
+                        [t("kebele"), beneficiary.kebele],
                         [t("houseNumber"), beneficiary.house_number],
                         [t("notes"), beneficiary.notes],
                       ].map(([label, value]) => (
                         <div key={label} className="grid gap-1 rounded-2xl bg-white p-4 shadow-sm">
                           <p className="text-sm uppercase tracking-[0.25em] text-slate-500">{label}</p>
-                          <p className="text-base font-medium text-slate-900">{value || "—"}</p>
+                          <p className="text-base font-medium text-slate-900">{value || t("notRecorded")}</p>
                         </div>
                       ))}
                     </>
@@ -162,44 +162,44 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
             )}
 
             {renderSection(
-              "Assessments",
+              t("assessments"),
               assessments.length > 0 ? (
                 <div className="space-y-4">
                   {assessments.map((assessment) => (
                     <div key={assessment.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-sm text-slate-500">{assessment.assessment_date || "Unknown date"}</p>
-                      <p className="mt-1 text-lg font-semibold text-slate-900">Mobility assessment</p>
-                      <p className="mt-2 text-sm text-slate-600">Measurements: {assessment.measurements || "Not recorded"}</p>
-                      <p className="mt-2 text-sm text-slate-600">Wheelchair fitting: {assessment.wheelchair_fit || "Not recorded"}</p>
-                      <p className="mt-2 text-sm text-slate-600">Recommendations: {assessment.recommendations || "Not recorded"}</p>
-                      <p className="mt-2 text-sm text-slate-500">{assessment.notes || "No additional notes."}</p>
+                      <p className="text-sm text-slate-500">{assessment.assessment_date || t("unknownDate")}</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{t("mobilityAssessment")}</p>
+                      <p className="mt-2 text-sm text-slate-600">{t("measurements")}: {assessment.measurements || t("notRecorded")}</p>
+                      <p className="mt-2 text-sm text-slate-600">{t("wheelchairFitting")}: {assessment.wheelchair_fit || t("notRecorded")}</p>
+                      <p className="mt-2 text-sm text-slate-600">{t("recommendations")}: {assessment.recommendations || t("notRecorded")}</p>
+                      <p className="mt-2 text-sm text-slate-500">{assessment.notes || t("noAdditionalNotes")}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">No assessments found for this beneficiary.</p>
+                <p className="text-sm text-slate-500">{t("noAssessmentsFound")}</p>
               )
             )}
           </div>
 
           <div className="space-y-6">
             {renderSection(
-              "Equipment distributions",
+              t("equipmentDistributions"),
               equipment.length > 0 ? (
                 <div className="space-y-4">
                   {equipment.map((item) => (
                     <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-sm text-slate-500">{item.distribution_date || "Unknown distribution date"}</p>
-                      <p className="mt-1 text-lg font-semibold text-slate-900">{item.equipment_type || "Equipment item"}</p>
-                      <p className="mt-2 text-sm text-slate-600">Size: {item.equipment_size || "Not specified"}</p>
-                      <p className="mt-2 text-sm text-slate-600">Location: {item.distribution_location || "Not recorded"}</p>
-                      <p className="mt-2 text-sm text-slate-600">Received by: {item.received_by || "Unknown"}</p>
-                      <p className="mt-2 text-sm text-slate-500">{item.notes || "No notes provided."}</p>
+                      <p className="text-sm text-slate-500">{item.distribution_date || t("unknownDate")}</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{item.equipment_type || t("item")}</p>
+                      <p className="mt-2 text-sm text-slate-600">{t("size")}: {item.equipment_size || t("notSpecified")}</p>
+                      <p className="mt-2 text-sm text-slate-600">{t("location")}: {item.distribution_location || t("notRecorded")}</p>
+                      <p className="mt-2 text-sm text-slate-600">{t("receivedBy")}: {item.received_by || t("unknown")}</p>
+                      <p className="mt-2 text-sm text-slate-500">{item.notes || t("noNotesProvided")}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">No equipment distributions found for this beneficiary.</p>
+                <p className="text-sm text-slate-500">{t("noEquipmentDistributionsFound")}</p>
               )
             )}
 
@@ -209,7 +209,7 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
         </div>
       ) : (
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">A valid beneficiary ID is required to display profile details.</p>
+          <p className="text-sm text-slate-500">{t("validation.validBeneficiaryIdRequired")}</p>
         </div>
       )}
     </div>

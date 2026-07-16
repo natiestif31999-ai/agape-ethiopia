@@ -29,7 +29,7 @@ export default function BeneficiarySearch() {
   const [equipmentSummary, setEquipmentSummary] = useState<EquipmentSummary>({});
   const [loading, setLoading] = useState(false);
   const { t } = useLanguage();
-  const [status, setStatus] = useState(t("searchPlaceholder") || "Search beneficiaries by name, reg. number, phone, region, kebele or equipment type.");
+  const [status, setStatus] = useState(t("searchPlaceholder") || "");
 
   useEffect(() => {
     void loadRecentBeneficiaries();
@@ -37,7 +37,7 @@ export default function BeneficiarySearch() {
 
   async function loadRecentBeneficiaries() {
     setLoading(true);
-    setStatus("Loading recent beneficiary records...");
+    setStatus(t("loadingRecent"));
 
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
@@ -54,14 +54,14 @@ export default function BeneficiarySearch() {
 
     setResults(data ?? []);
     setEquipmentSummary({});
-    setStatus("Showing the most recent beneficiary records.");
+    setStatus(t("showRecent"));
     setLoading(false);
   }
 
   async function searchBeneficiaries(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
-    setStatus("Searching beneficiaries...");
+    setStatus(t("searching") || "");
     setEquipmentSummary({});
 
     const trimmedSearch = searchTerm.trim();
@@ -151,11 +151,7 @@ export default function BeneficiarySearch() {
       }
 
       setResults(beneficiaryCandidates);
-      setStatus(
-        beneficiaryCandidates.length > 0
-          ? `Found ${beneficiaryCandidates.length} beneficiary record(s).`
-          : "No beneficiary records match your search."
-      );
+      setStatus(beneficiaryCandidates.length > 0 ? `${t("foundRecordsPrefix")} ${beneficiaryCandidates.length}` : t("noRecords"));
     } catch (error) {
       if (error instanceof Error) {
         setStatus(`Search failed: ${error.message}`);
@@ -177,13 +173,13 @@ export default function BeneficiarySearch() {
           <p className="mt-2 text-slate-600">{t("searchPlaceholder")}</p>
         </div>
         <Link href="/beneficiaries/new" className="inline-flex rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800">
-          New beneficiary
+          {t("newRegistration")}
         </Link>
       </div>
 
       <form onSubmit={searchBeneficiaries} className="mt-6 grid gap-4 lg:grid-cols-[2fr_1fr]">
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Search term
+          {t("searchTerm")}
           <input
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
@@ -193,17 +189,17 @@ export default function BeneficiarySearch() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Equipment type
+          {t("equipmentType")}
           <input
             value={equipmentType}
             onChange={(event) => setEquipmentType(event.target.value)}
-            placeholder="Wheelchair, crutches, walker"
+            placeholder={t("equipmentPlaceholder")}
             className="rounded-xl border border-slate-300 px-4 py-3"
           />
         </label>
 
         <button type="submit" className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white md:col-span-2 hover:bg-slate-800">
-          {loading ? "Searching..." : "Search beneficiaries"}
+          {loading ? t("loading") : t("searchBeneficiaries")}
         </button>
       </form>
 
@@ -213,12 +209,12 @@ export default function BeneficiarySearch() {
         <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
           <thead className="bg-slate-50 text-slate-700">
             <tr>
-              <th className="px-4 py-3">Beneficiary</th>
-              <th className="px-4 py-3">Registration #</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Region</th>
-              <th className="px-4 py-3">Kebele</th>
-              <th className="px-4 py-3">Equipment</th>
+              <th className="px-4 py-3">{t("beneficiary")}</th>
+              <th className="px-4 py-3">{t("registrationNumber")}</th>
+              <th className="px-4 py-3">{t("phone")}</th>
+              <th className="px-4 py-3">{t("region")}</th>
+              <th className="px-4 py-3">{t("kebele")}</th>
+              <th className="px-4 py-3">{t("equipment")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
@@ -232,13 +228,13 @@ export default function BeneficiarySearch() {
                       <div className="h-10 w-10 rounded-full bg-slate-100" />
                     )}
                     <Link href={`/beneficiaries/${beneficiary.id}`} className="font-semibold text-slate-900 hover:text-emerald-700">
-                      {[beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name].filter(Boolean).join(" ") || "Unknown beneficiary"}
+                      {[beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name].filter(Boolean).join(" ") || t("unknownBeneficiary")}
                     </Link>
                   </div>
                 </td>
-                <td className="px-4 py-3">{beneficiary.registration_number ?? "—"}</td>
-                <td className="px-4 py-3">{beneficiary.phone ?? "—"}</td>
-                <td className="px-4 py-3">{beneficiary.region ?? "—"}</td>
+                <td className="px-4 py-3">{beneficiary.registration_number ?? t("unknown")}</td>
+                <td className="px-4 py-3">{beneficiary.phone ?? t("unknown")}</td>
+                <td className="px-4 py-3">{beneficiary.region ?? t("unknown")}</td>
                 <td className="px-4 py-3">{beneficiary.kebele ?? "—"}</td>
                 <td className="px-4 py-3">{equipmentSummary[beneficiary.id] ?? "—"}</td>
               </tr>
@@ -246,7 +242,7 @@ export default function BeneficiarySearch() {
             {resultCount === 0 && !loading && (
               <tr>
                 <td className="px-4 py-6 text-slate-500" colSpan={6}>
-                  No beneficiary matches yet. Try a broader search or register a new beneficiary.
+                  {t("noRecords")}
                 </td>
               </tr>
             )}
