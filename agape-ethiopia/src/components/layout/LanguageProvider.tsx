@@ -45,7 +45,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(next);
   };
 
-  const t = (key: string) => translations[locale][key] ?? translations.en[key] ?? key;
+  const t = (key: string) => {
+    const translation = translations[locale]?.[key];
+    // If translation exists and looks valid (not garbled), use it
+    if (translation && translation.length > 0 && !/^[\u0300-\u036F]+$/.test(translation)) {
+      return translation;
+    }
+    // Otherwise fall back to English
+    return translations.en[key] ?? key;
+  };
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t, locales: supportedLocales, localeLabels }}>
