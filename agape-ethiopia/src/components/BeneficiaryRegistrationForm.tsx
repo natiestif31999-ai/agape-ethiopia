@@ -19,6 +19,8 @@ export default function BeneficiaryRegistrationForm() {
   const [kebele, setKebele] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [houseNumber, setHouseNumber] = useState("");
+  const [disabilityType, setDisabilityType] = useState("");
+  const [otherDisabilityDetail, setOtherDisabilityDetail] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState(t("registrationReady"));
   const [isSaving, setIsSaving] = useState(false);
@@ -71,6 +73,7 @@ export default function BeneficiaryRegistrationForm() {
         kebele: kebele.trim(),
         house_number: houseNumber.trim(),
         notes: notes.trim(),
+        disability_type: disabilityType === "Other" ? otherDisabilityDetail.trim() : disabilityType,
       };
 
       // Log: Before submit
@@ -223,7 +226,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Phone
+          {t("phone")}
           <input
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
@@ -235,7 +238,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Region
+          {t("region")}
           <input
             value={region}
             onChange={(event) => setRegion(event.target.value)}
@@ -246,7 +249,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Kifle Ketema
+          {t("kifleKetema")}
           <input
             value={kifleKetema}
             onChange={(event) => setKifleKetema(event.target.value)}
@@ -256,7 +259,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Kebele
+          {t("kebele")}
           <input
             value={kebele}
             onChange={(event) => setKebele(event.target.value)}
@@ -265,6 +268,42 @@ export default function BeneficiaryRegistrationForm() {
             required
           />
         </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("disabilityType")}
+          <select
+            value={disabilityType}
+            onChange={(e) => setDisabilityType(e.target.value)}
+            className="rounded-xl border border-slate-300 bg-white px-4 py-3"
+            required
+          >
+            <option value="">{t("selectDisabilityType")}</option>
+            <option value="Spinal Cord Injury">{t("Spinal Cord Injury") || "Spinal Cord Injury"}</option>
+            <option value="Cerebral Palsy">{t("Cerebral Palsy") || "Cerebral Palsy"}</option>
+            <option value="Amputation">{t("Amputation") || "Amputation"}</option>
+            <option value="Polio">{t("Polio") || "Polio"}</option>
+            <option value="Muscular Dystrophy">{t("Muscular Dystrophy") || "Muscular Dystrophy"}</option>
+            <option value="Multiple Sclerosis">{t("Multiple Sclerosis") || "Multiple Sclerosis"}</option>
+            <option value="Stroke">{t("Stroke") || "Stroke"}</option>
+            <option value="Arthritis">{t("Arthritis") || "Arthritis"}</option>
+            <option value="Congenital Disability">{t("Congenital Disability") || "Congenital Disability"}</option>
+            <option value="Temporary Mobility Impairment">{t("Temporary Mobility Impairment") || "Temporary Mobility Impairment"}</option>
+            <option value="Other">{t("other") || "Other"}</option>
+          </select>
+        </label>
+
+        {disabilityType === "Other" && (
+          <label className="grid gap-1 text-sm font-medium text-slate-700 md:col-span-2">
+            {t("disabilityTypeOtherDescription")}
+            <input
+              value={otherDisabilityDetail}
+              onChange={(e) => setOtherDisabilityDetail(e.target.value)}
+              className="rounded-xl border border-slate-300 px-4 py-3"
+              placeholder={t("disabilityTypeOtherPlaceholder")}
+              required
+            />
+          </label>
+        )}
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("uploadPhotoLabel")}
@@ -277,7 +316,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          House number
+          {t("houseNumber")}
           <input
             value={houseNumber}
             onChange={(event) => setHouseNumber(event.target.value)}
@@ -287,7 +326,7 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700 md:col-span-2">
-          Notes
+          {t("notes")}
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}

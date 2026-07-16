@@ -13,7 +13,13 @@ export default function BeneficiaryAssessmentForm({
   onCreated: () => void;
 }) {
   const [assessmentDate, setAssessmentDate] = useState("");
-  const [measurements, setMeasurements] = useState("");
+  const [seatWidth, setSeatWidth] = useState("");
+  const [seatDepth, setSeatDepth] = useState("");
+  const [backHeight, setBackHeight] = useState("");
+  const [armrestHeight, setArmrestHeight] = useState("");
+  const [footrestLength, setFootrestLength] = useState("");
+  const [overallHeight, setOverallHeight] = useState("");
+  const [weight, setWeight] = useState("");
   const [wheelchairFit, setWheelchairFit] = useState("");
   const [notes, setNotes] = useState("");
   const [recommendations, setRecommendations] = useState("");
@@ -28,7 +34,13 @@ export default function BeneficiaryAssessmentForm({
     const { error } = await supabase.from("assessments").insert({
       beneficiary_id: beneficiaryId,
       assessment_date: assessmentDate || new Date().toISOString().slice(0, 10),
-      measurements: measurements.trim(),
+      seat_width: seatWidth.trim(),
+      seat_depth: seatDepth.trim(),
+      back_height: backHeight.trim(),
+      armrest_height: armrestHeight.trim(),
+      footrest_length: footrestLength.trim(),
+      overall_height: overallHeight.trim(),
+      weight: weight.trim(),
       wheelchair_fit: wheelchairFit.trim(),
       notes: notes.trim(),
       recommendations: recommendations.trim(),
@@ -40,7 +52,13 @@ export default function BeneficiaryAssessmentForm({
     }
 
     setAssessmentDate("");
-    setMeasurements("");
+    setSeatWidth("");
+    setSeatDepth("");
+    setBackHeight("");
+    setArmrestHeight("");
+    setFootrestLength("");
+    setOverallHeight("");
+    setWeight("");
     setWheelchairFit("");
     setNotes("");
     setRecommendations("");
@@ -65,12 +83,72 @@ export default function BeneficiaryAssessmentForm({
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          {t("measurements")}
+          {t("seatWidth")}
           <input
-            value={measurements}
-            onChange={(event) => setMeasurements(event.target.value)}
+            value={seatWidth}
+            onChange={(event) => setSeatWidth(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
-            placeholder={t("measurementsPlaceholder")}
+            placeholder={t("hipWidthPlaceholder")}
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("seatDepth")}
+          <input
+            value={seatDepth}
+            onChange={(event) => setSeatDepth(event.target.value)}
+            className="rounded-xl border border-slate-300 px-4 py-3"
+            placeholder={t("seatDepthPlaceholder")}
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("backHeight")}
+          <input
+            value={backHeight}
+            onChange={(event) => setBackHeight(event.target.value)}
+            className="rounded-xl border border-slate-300 px-4 py-3"
+            placeholder={t("backHeightPlaceholder")}
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("armrestHeight")}
+          <input
+            value={armrestHeight}
+            onChange={(event) => setArmrestHeight(event.target.value)}
+            className="rounded-xl border border-slate-300 px-4 py-3"
+            placeholder={t("armrestHeight")}
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("footrestLength")}
+          <input
+            value={footrestLength}
+            onChange={(event) => setFootrestLength(event.target.value)}
+            className="rounded-xl border border-slate-300 px-4 py-3"
+            placeholder={t("footrestLength")}
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("overallHeight")}
+          <input
+            value={overallHeight}
+            onChange={(event) => setOverallHeight(event.target.value)}
+            className="rounded-xl border border-slate-300 px-4 py-3"
+            placeholder={t("overallHeight")}
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("weight")}
+          <input
+            value={weight}
+            onChange={(event) => setWeight(event.target.value)}
+            className="rounded-xl border border-slate-300 px-4 py-3"
+            placeholder={t("weight")}
           />
         </label>
 

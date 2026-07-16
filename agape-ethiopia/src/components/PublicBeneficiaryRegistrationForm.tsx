@@ -17,6 +17,7 @@ export default function PublicBeneficiaryRegistrationForm() {
   const [kebele, setKebele] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [disabilityType, setDisabilityType] = useState("");
+  const [otherDisabilityDetail, setOtherDisabilityDetail] = useState("");
   const [referralSource, setReferralSource] = useState("");
   const [notes, setNotes] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -29,7 +30,16 @@ export default function PublicBeneficiaryRegistrationForm() {
     setStatusMessage(t("register.public.saving"));
 
     try {
-        if (!firstName.trim() || !lastName.trim() || !gender || !phone.trim() || !region.trim() || !kebele.trim()) {
+        if (
+        !firstName.trim() ||
+        !lastName.trim() ||
+        !gender ||
+        !phone.trim() ||
+        !region.trim() ||
+        !kebele.trim() ||
+        !disabilityType.trim() ||
+        (disabilityType === "Other" && !otherDisabilityDetail.trim())
+      ) {
         setStatusMessage(t("register.public.validation.required"));
         setIsSubmitting(false);
         return;
@@ -46,7 +56,10 @@ export default function PublicBeneficiaryRegistrationForm() {
       formData.append("kifle_ketema", kifleKetema.trim());
       formData.append("kebele", kebele.trim());
       formData.append("house_number", houseNumber.trim());
-      formData.append("disability_type", disabilityType.trim());
+      formData.append(
+        "disability_type",
+        disabilityType === "Other" ? otherDisabilityDetail.trim() : disabilityType.trim()
+      );
       formData.append("referral_source", referralSource.trim());
       formData.append("notes", notes.trim());
       if (photoFile) {
@@ -77,6 +90,7 @@ export default function PublicBeneficiaryRegistrationForm() {
       setKebele("");
       setHouseNumber("");
       setDisabilityType("");
+      setOtherDisabilityDetail("");
       setReferralSource("");
       setNotes("");
       setPhotoFile(null);
@@ -145,9 +159,46 @@ export default function PublicBeneficiaryRegistrationForm() {
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        {t("notes")}
-        <input value={disabilityType} onChange={(event) => setDisabilityType(event.target.value)} className="rounded-xl border border-slate-300 px-4 py-3" placeholder={t("exampleRegion")} />
+        {t("disabilityType")}
+        <select
+          value={disabilityType}
+          onChange={(event) => {
+            const value = event.target.value;
+            setDisabilityType(value);
+            if (value !== "Other") {
+              setOtherDisabilityDetail("");
+            }
+          }}
+          className="rounded-xl border border-slate-300 bg-white px-4 py-3"
+          required
+        >
+          <option value="">{t("selectDisabilityType")}</option>
+          <option value="Spinal Cord Injury">{t("Spinal Cord Injury")}</option>
+          <option value="Cerebral Palsy">{t("Cerebral Palsy")}</option>
+          <option value="Amputation">{t("Amputation")}</option>
+          <option value="Polio">{t("Polio")}</option>
+          <option value="Muscular Dystrophy">{t("Muscular Dystrophy")}</option>
+          <option value="Multiple Sclerosis">{t("Multiple Sclerosis")}</option>
+          <option value="Stroke">{t("Stroke")}</option>
+          <option value="Arthritis">{t("Arthritis")}</option>
+          <option value="Congenital Disability">{t("Congenital Disability")}</option>
+          <option value="Temporary Mobility Impairment">{t("Temporary Mobility Impairment")}</option>
+          <option value="Other">{t("other")}</option>
+        </select>
       </label>
+
+      {disabilityType === "Other" ? (
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("disabilityTypeOtherDescription")}
+          <input
+            value={otherDisabilityDetail}
+            onChange={(event) => setOtherDisabilityDetail(event.target.value)}
+            className="rounded-xl border border-slate-300 px-4 py-3"
+            placeholder={t("disabilityTypeOtherPlaceholder")}
+            required
+          />
+        </label>
+      ) : null}
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
         {t("referralSource")}

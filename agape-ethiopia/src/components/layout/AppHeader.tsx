@@ -34,6 +34,16 @@ export default function AppHeader() {
             </Link>
           )}
           {(isStaff || isAdmin) && (
+            <Link href="/distributions/delivery-confirmation" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
+              {t("deliveryConfirmation")}
+            </Link>
+          )}
+          {(isStaff || isAdmin) && (
+            <Link href="/agreements" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
+              {t("organization.agreements")}
+            </Link>
+          )}
+          {(isStaff || isAdmin) && (
             <Link href="/beneficiaries/new" className="rounded-full bg-emerald-700 px-4 py-2 text-white transition hover:bg-emerald-800">
               {t("newRegistration")}
             </Link>
