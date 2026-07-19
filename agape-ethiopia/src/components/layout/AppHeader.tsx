@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/components/layout/Logo";
 import LanguageSelector from "@/components/layout/LanguageSelector";
+import AgapeMenu from "@/components/layout/AgapeMenu";
 import { useAuth } from "@/components/layout/SupabaseProvider";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 
@@ -20,6 +21,7 @@ export default function AppHeader() {
           <Link href="/" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
             {t("home")}
           </Link>
+          <AgapeMenu />
           <Link href="/register" className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-800 transition hover:bg-emerald-100">
             {t("registerBeneficiary")}
           </Link>

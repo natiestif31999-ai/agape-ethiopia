@@ -5,6 +5,8 @@ import { SupabaseProvider } from "@/components/layout/SupabaseProvider";
 import ServiceWorker from "@/components/ServiceWorker";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
