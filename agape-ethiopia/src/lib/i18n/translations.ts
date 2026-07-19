@@ -423,10 +423,10 @@ export const translations: Record<Locale, TranslationDictionary> = {
   am: {
     "home": "ቤት",
     "beneficiaries": "ተጠቃሚዎች",
-    "newRegistration": "ሐዲስ ምዝገባ",
+    "newRegistration": "አዲስ ምዝገባ",
     "registerBeneficiary": "ተጠቃሚ ይመዝገቡ",
     "beneficiaryRegistry": "ተጠቃሚ መመዝገቢያ",
-    "heroTitle": "በወለታው ላይ መሪመራ የለም",
+    "heroTitle": "የወለል ላይ መጎተት ይብቃ!",
     "heroSubtitle": "ድጋፍዎ ተስፋ ያስገባል፣ ክብርን ያመጣል፣ እና በኢትዮጵያ ውስጥ ህይወት ይለውጣል።",
     "beneficiaryRegistration": "ተጠቃሚ ምዝገባ",
     "equipmentTracking": "መሳሪያ ክትትል",
