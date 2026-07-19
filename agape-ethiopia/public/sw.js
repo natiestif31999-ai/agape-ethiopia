@@ -8,7 +8,7 @@
  * - Automatic cache cleanup on updates
  */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAMES = {
   STATIC: `agape-static-${CACHE_VERSION}`,
   DYNAMIC: `agape-dynamic-${CACHE_VERSION}`,
@@ -108,7 +108,10 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Determine caching strategy based on request type
-  if (isApiRequest(url)) {
+  if (request.mode === "navigate" || request.destination === "document") {
+    // Always prefer the latest deployment for HTML pages.
+    event.respondWith(networkFirstStrategy(request));
+  } else if (isApiRequest(url)) {
     // Network-first for API calls (fresh data is priority)
     event.respondWith(networkFirstStrategy(request));
   } else if (isStaticAsset(url)) {
@@ -118,8 +121,8 @@ self.addEventListener("fetch", (event) => {
     // Cache-first for images with longer lifecycle
     event.respondWith(cacheFirstStrategy(request, CACHE_NAMES.IMAGES));
   } else {
-    // Stale-while-revalidate for HTML pages (balance UX and freshness)
-    event.respondWith(staleWhileRevalidateStrategy(request));
+    // Use a cache-first fallback for other requests, but avoid serving stale HTML.
+    event.respondWith(cacheFirstStrategy(request, CACHE_NAMES.DYNAMIC));
   }
 });
 
@@ -133,10 +136,10 @@ function networkFirstStrategy(request) {
       // Only cache successful responses
       if (response.status === 200) {
         const responseClone = response.clone();
-        const cacheName = request.url.includes("/api/") 
-          ? CACHE_NAMES.API 
+        const cacheName = request.url.includes("/api/")
+          ? CACHE_NAMES.API
           : CACHE_NAMES.DYNAMIC;
-        
+
         caches.open(cacheName).then((cache) => {
           cache.put(request, responseClone);
         });
@@ -144,7 +147,7 @@ function networkFirstStrategy(request) {
       return response;
     })
     .catch(() => {
-      // On network failure, try cache
+      // On network failure, try a previously cached copy.
       return caches.match(request).then((cached) => {
         if (cached) {
           return cached;
