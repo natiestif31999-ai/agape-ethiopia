@@ -75,9 +75,12 @@ export default function HomePageContent() {
         <LocalizedSectionHeader titleKey="dashboard" subtitleKey="operationalDashboard" descriptionKey="dashboardDescription" />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3">
+      <section className="grid gap-6 lg:grid-cols-4">
         <a href="/register" className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm transition hover:border-emerald-400 hover:shadow-md">
           <LocalizedSectionHeader titleKey="selfRegistrationCard" subtitleKey="selfRegistrationTitle" descriptionKey="selfRegistrationText" />
+        </a>
+        <a href="/partnerships" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
+          <LocalizedSectionHeader titleKey="partnerPortalCard" subtitleKey="partnerPortalTitle" descriptionKey="partnerPortalCardDescription" />
         </a>
         <a href="/dashboard/staff" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
           <LocalizedSectionHeader titleKey="staffPanelCard" subtitleKey="staffPanelTitle" descriptionKey="staffPanelText" />
