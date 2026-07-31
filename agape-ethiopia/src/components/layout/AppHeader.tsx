@@ -23,7 +23,7 @@ export default function AppHeader() {
           </Link>
           <AgapeMenu />
           <Link href="/agape-registration" className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-800 transition hover:bg-emerald-100">
-            {t("applicationName")}
+            {t("navigation.agapeRegistration")}
           </Link>
           {(isStaff || isAdmin) && (
             <Link href="/dashboard/staff" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">

@@ -1,5 +1,6 @@
 import AppHeader from "@/components/layout/AppHeader";
 import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
+import DonationManagementPortal from "@/components/DonationManagementPortal";
 
 export default function DonationsPage() {
   return (
@@ -16,6 +17,8 @@ export default function DonationsPage() {
             <p>Your support helps fund wheelchairs, rehabilitation support, and follow-up care for persons with disabilities in Ethiopia.</p>
           </div>
         </section>
+
+        <DonationManagementPortal />
       </main>
     </>
   );

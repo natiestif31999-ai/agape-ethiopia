@@ -4,6 +4,7 @@ import AppHeader from "@/components/layout/AppHeader";
 import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 import BeneficiaryReport from "@/components/reports/BeneficiaryReport";
 import DistributionReport from "@/components/reports/DistributionReport";
+import DonationReport from "@/components/reports/DonationReport";
 import EquipmentSizeSummary from "@/components/reports/EquipmentSizeSummary";
 import { requireStaff } from "@/lib/auth/serverAuth";
 
@@ -29,6 +30,7 @@ export default async function ReportsPage() {
         </section>
 
         <div className="mt-8 space-y-6">
+          <DonationReport />
           <BeneficiaryReport />
           <DistributionReport />
           <EquipmentSizeSummary />
