@@ -1,5 +1,5 @@
 /**
- * Agape Ethiopia
+ * AGAPE MOBILITY ETHIOPIA
  * Supabase Client
  */
 

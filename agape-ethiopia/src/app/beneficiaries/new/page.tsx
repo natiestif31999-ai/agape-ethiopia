@@ -7,7 +7,7 @@ import { requireStaff } from "@/lib/auth/serverAuth";
 
 export const metadata: Metadata = {
   title: "Registration",
-  description: "Register a new beneficiary in the Agape Ethiopia system.",
+  description: "Register a new beneficiary in the AGAPE MOBILITY ETHIOPIA system.",
 };
 
 export default async function NewBeneficiaryPage() {

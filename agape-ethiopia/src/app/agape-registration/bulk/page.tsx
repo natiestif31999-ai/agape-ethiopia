@@ -4,7 +4,7 @@ import MultipleBeneficiaryRegistrationForm from "@/components/agape-registration
 
 export const metadata: Metadata = {
   title: "AGAPE REGISTRATION · Bulk Intake",
-  description: "Multiple beneficiary recording workflow using the shared Agape Ethiopia Supabase database.",
+  description: "Multiple beneficiary recording workflow using the shared AGAPE MOBILITY ETHIOPIA Supabase database.",
 };
 
 export default function AgapeRegistrationBulkPage() {

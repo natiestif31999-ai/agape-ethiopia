@@ -23,10 +23,10 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   "https://agape-ethiopia-navy.vercel.app";
 
-const siteTitle = "Agape Ethiopia";
+const siteTitle = "AGAPE MOBILITY ETHIOPIA";
 
 const siteDescription =
-  "Agape Ethiopia Beneficiary Management System for managing registrations, beneficiaries, support services, reporting, and organizational operations.";
+  "AGAPE MOBILITY ETHIOPIA Beneficiary Management System for managing registrations, beneficiaries, support services, reporting, and organizational operations.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   keywords: [
     "beneficiary management",
     "Ethiopia",
-    "Agape Ethiopia",
+    "AGAPE MOBILITY ETHIOPIA",
     "mobility assistance",
     "wheelchairs",
     "equipment tracking",
@@ -53,11 +53,11 @@ export const metadata: Metadata = {
 
   authors: [
     {
-      name: "Agape Ethiopia",
+      name: "AGAPE MOBILITY ETHIOPIA",
     },
   ],
 
-  creator: "Agape Ethiopia",
+  creator: "AGAPE MOBILITY ETHIOPIA",
 
   icons: {
     icon: [
@@ -101,7 +101,7 @@ export const metadata: Metadata = {
         url: "/final.png",
         width: 1200,
         height: 630,
-        alt: "Agape Ethiopia",
+        alt: "AGAPE MOBILITY ETHIOPIA",
       },
     ],
   },

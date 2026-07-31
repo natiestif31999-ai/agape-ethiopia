@@ -21,7 +21,7 @@ export default function AgapeRegistrationHome() {
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <Image src="/agape-logo.jpg" alt="Agape Ethiopia logo" width={48} height={48} className="rounded-full" />
+              <Image src="/agape-logo.jpg" alt="AGAPE MOBILITY ETHIOPIA logo" width={48} height={48} className="rounded-full" />
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">{t("applicationName")}</p>
                 <h1 className="text-3xl font-semibold text-slate-900 md:text-4xl">{t("partnerPortalTitle")}</h1>

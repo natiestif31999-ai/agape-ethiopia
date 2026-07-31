@@ -24,7 +24,7 @@ export default function HomePageContent() {
           <div className="relative flex items-center justify-center">
             <Image
               src="/c2.png"
-              alt="Agape Ethiopia wheelchair with Ethiopia map logo - mobility assistance"
+              alt="AGAPE MOBILITY ETHIOPIA wheelchair with Ethiopia map logo - mobility assistance"
               width={400}
               height={400}
               className="drop-shadow-lg"
@@ -66,7 +66,7 @@ export default function HomePageContent() {
             </div>
           </div>
           <div className="hidden sm:block">
-            <Image src="/final.png" alt="Agape Ethiopia impact visual" width={320} height={180} className="rounded-xl object-cover shadow-md" />
+            <Image src="/final.png" alt="AGAPE MOBILITY ETHIOPIA impact visual" width={320} height={180} className="rounded-xl object-cover shadow-md" />
           </div>
         </div>
       </section>

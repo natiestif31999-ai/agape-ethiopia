@@ -9,22 +9,8 @@ import { useLanguage } from "@/components/layout/LanguageProvider";
 const menuLinkClass =
   "flex w-full items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800";
 
-const desktopMenuLinks = [
-  { href: "/", label: "home" },
-  { href: "/about", label: "about" },
-  { href: "/services", label: "services" },
-  { href: "/contact", label: "contact" },
-  { href: "/donations", label: "donations" },
-  { href: "/partnerships", label: "partners" },
-  { href: "/agape-registration", label: "Agape Registration" },
-  { href: "/register", label: "registerBeneficiary" },
-  { href: "/login", label: "login" },
-] as const;
-
 export default function AgapeMenu() {
   const [open, setOpen] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 16, right: 16 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -32,38 +18,13 @@ export default function AgapeMenu() {
   const { isAdmin, isStaff } = useAuth();
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (!open || typeof document === "undefined") {
       return;
     }
 
-    const updateViewport = () => {
-      setIsMobileView(window.innerWidth < 768);
-    };
-
-    updateViewport();
-    window.addEventListener("resize", updateViewport);
-
-    return () => {
-      window.removeEventListener("resize", updateViewport);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const updatePosition = () => {
-      if (!buttonRef.current) {
-        return;
-      }
-
-      const rect = buttonRef.current.getBoundingClientRect();
-      setMenuPosition({
-        top: rect.bottom + 8,
-        right: Math.max(16, window.innerWidth - rect.right),
-      });
-    };
+    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    const firstLink = menuRef.current?.querySelector<HTMLAnchorElement>("a");
+    firstLink?.focus();
 
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -84,67 +45,23 @@ export default function AgapeMenu() {
       }
     };
 
-    if (!isMobileView) {
-      updatePosition();
-      window.addEventListener("resize", updatePosition);
-      window.addEventListener("scroll", updatePosition, true);
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscape);
-    } else {
-      previousFocusRef.current = document.activeElement as HTMLElement | null;
-      const firstLink = menuRef.current?.querySelector<HTMLAnchorElement>("a");
-      firstLink?.focus();
-      document.addEventListener("keydown", handleEscape);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
 
     return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
-
-      if (isMobileView) {
-        previousFocusRef.current?.focus();
-      }
+      previousFocusRef.current?.focus();
     };
-  }, [isMobileView, open]);
+  }, [open]);
 
   const closeMenu = () => setOpen(false);
 
-  const desktopMenu = open && !isMobileView && typeof window !== "undefined" && (
-    <div
-      ref={menuRef}
-      className="agape-menu-dropdown fixed z-[9999] w-[min(90vw,20rem)] max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"
-      style={{ top: menuPosition.top, right: menuPosition.right, maxHeight: "calc(100vh - 2rem)", overflowY: "auto" }}
-      role="menu"
-      aria-label={t("agapeMenu")}
-    >
-      <p className="mb-3 text-sm font-semibold text-emerald-700">{t("agapeMenuDescription")}</p>
-      <div className="grid gap-2">
-        {desktopMenuLinks.map((link) => (
-          <Link key={link.href} href={link.href} className={menuLinkClass} onClick={closeMenu}>
-            {t(link.label)}
-          </Link>
-        ))}
-        {(isStaff || isAdmin) && (
-          <Link href="/dashboard/staff" className={menuLinkClass} onClick={closeMenu}>
-            {t("staffDashboard")}
-          </Link>
-        )}
-        {isAdmin && (
-          <Link href="/admin" className={menuLinkClass} onClick={closeMenu}>
-            {t("adminPanel")}
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-
-  const mobileMenu = open && isMobileView && typeof window !== "undefined" && (
+  const drawerMenu = open && typeof document !== "undefined" && (
     <div className="fixed inset-0 z-[9999] flex">
       <button
         type="button"
-        aria-label="Close navigation drawer"
+        aria-label={t("agapeMenu")}
         className="absolute inset-0 bg-slate-950/50"
         onClick={closeMenu}
       />
@@ -153,7 +70,7 @@ export default function AgapeMenu() {
         role="dialog"
         aria-modal="true"
         aria-label={t("agapeMenu")}
-        className="relative ml-0 flex h-full w-[88vw] max-w-[26rem] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-2xl"
+        className="relative ml-0 flex h-full w-[min(90vw,22.5rem)] max-w-[360px] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-2xl"
         style={{
           paddingTop: "max(1rem, env(safe-area-inset-top))",
           paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
@@ -224,13 +141,13 @@ export default function AgapeMenu() {
         onClick={() => setOpen((value) => !value)}
         className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
         aria-expanded={open}
-        aria-haspopup={isMobileView ? "dialog" : "menu"}
+        aria-haspopup="dialog"
       >
         {t("agapeMenu")}
         <span className="text-base">▾</span>
       </button>
 
-      {typeof document !== "undefined" && createPortal(isMobileView ? mobileMenu : desktopMenu, document.body)}
+      {typeof document !== "undefined" && createPortal(drawerMenu, document.body)}
     </div>
   );
 }

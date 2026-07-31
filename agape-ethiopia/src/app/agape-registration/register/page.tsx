@@ -5,7 +5,7 @@ import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 
 export const metadata: Metadata = {
   title: "AGAPE REGISTRATION · Self Registration",
-  description: "Public self-registration entry for the Agape Ethiopia companion app.",
+  description: "Public self-registration entry for the AGAPE MOBILITY ETHIOPIA companion app.",
 };
 
 export default function AgapeRegistrationRegisterPage() {

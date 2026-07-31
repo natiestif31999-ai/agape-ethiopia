@@ -5,7 +5,7 @@ import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 
 export const metadata = {
   title: "Register",
-  description: "Register a new beneficiary request with Agape Mobility Ethiopia.",
+  description: "Register a new beneficiary request with AGAPE MOBILITY ETHIOPIA.",
 };
 
 export default function RegisterPage() {

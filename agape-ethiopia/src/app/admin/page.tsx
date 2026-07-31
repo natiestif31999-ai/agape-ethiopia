@@ -7,7 +7,7 @@ import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 
 export const metadata: Metadata = {
   title: "Admin",
-  description: "Manage users, roles, and system access for Agape Ethiopia.",
+  description: "Manage users, roles, and system access for AGAPE MOBILITY ETHIOPIA.",
 };
 
 export default async function AdminPage() {

@@ -1,4 +1,4 @@
-# Agape Ethiopia PWA Robots Configuration
+# AGAPE MOBILITY ETHIOPIA PWA Robots Configuration
 User-agent: *
 Allow: /
 

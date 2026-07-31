@@ -1,5 +1,5 @@
 /**
- * Agape Ethiopia PWA Service Worker
+ * AGAPE MOBILITY ETHIOPIA PWA Service Worker
  * - Network-first strategy for API calls (fresh data priority)
  * - Cache-first strategy for static assets (performance priority)
  * - Stale-while-revalidate for HTML pages (balance UX and freshness)

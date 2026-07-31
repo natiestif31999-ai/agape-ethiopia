@@ -7,7 +7,7 @@ import LocalizedActionCard from "@/components/LocalizedActionCard";
 
 export const metadata: Metadata = {
   title: "Operational Dashboard",
-  description: "Core operational workflow actions for Agape Ethiopia.",
+  description: "Core operational workflow actions for AGAPE MOBILITY ETHIOPIA.",
 };
 
 const actions = [

@@ -10,7 +10,7 @@ import { useLanguage } from "@/components/layout/LanguageProvider";
 
 export default function AppHeader() {
   const { t } = useLanguage();
-  const { userProfile, isAdmin, isStaff, signOut } = useAuth();
+  const { userProfile, signOut } = useAuth();
 
   return (
     <header className="border-b border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur">
@@ -18,45 +18,9 @@ export default function AppHeader() {
         <Logo />
 
         <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-700">
-          <Link href="/" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-            {t("home")}
-          </Link>
           <AgapeMenu />
-          <Link href="/agape-registration" className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-800 transition hover:bg-emerald-100">
-            {t("navigation.agapeRegistration")}
-          </Link>
-          {(isStaff || isAdmin) && (
-            <Link href="/dashboard/staff" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              {t("roleStaff")}
-            </Link>
-          )}
-          {(isStaff || isAdmin) && (
-            <Link href="/beneficiaries" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              {t("beneficiaries")}
-            </Link>
-          )}
-          {(isStaff || isAdmin) && (
-            <Link href="/distributions/delivery-confirmation" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              {t("deliveryConfirmation")}
-            </Link>
-          )}
-          {(isStaff || isAdmin) && (
-            <Link href="/agreements" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              {t("organization.agreements")}
-            </Link>
-          )}
-          {(isStaff || isAdmin) && (
-            <Link href="/beneficiaries/new" className="rounded-full bg-emerald-700 px-4 py-2 text-white transition hover:bg-emerald-800">
-              {t("newRegistration")}
-            </Link>
-          )}
-          {isAdmin && (
-            <Link href="/admin" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              {t("adminPanel")}
-            </Link>
-          )}
           <div className="flex items-center gap-2 rounded-full bg-emerald-700/10 px-4 py-2 text-emerald-900 shadow-sm">
-            <Image src="/agape-logo.jpg" alt="Agape Ethiopia accent mark" width={24} height={24} className="rounded-full" />
+            <Image src="/agape-logo.jpg" alt="AGAPE MOBILITY ETHIOPIA accent mark" width={24} height={24} className="rounded-full" />
             {t("liveDashboard")}
           </div>
           <LanguageSelector />

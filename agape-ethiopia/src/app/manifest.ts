@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Agape Ethiopia - Beneficiary Management",
-    short_name: "Agape",
+    name: "AGAPE MOBILITY ETHIOPIA - Beneficiary Management",
+    short_name: "AGAPE",
     description:
-      "Beneficiary registration and management system for Agape Ethiopia. Manage registrations, track equipment distributions, and organize support services.",
+      "Beneficiary registration and management system for AGAPE MOBILITY ETHIOPIA. Manage registrations, track equipment distributions, and organize support services.",
     start_url: "/",
     scope: "/",
     display: "standalone",
