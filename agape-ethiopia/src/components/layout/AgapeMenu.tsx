@@ -97,6 +97,9 @@ export default function AgapeMenu() {
         <Link href="/partnerships" className={menuLinkClass} onClick={() => setOpen(false)}>
           {t("partners")}
         </Link>
+        <Link href="/agape-registration" className={menuLinkClass} onClick={() => setOpen(false)}>
+          {t("applicationName")}
+        </Link>
         <Link href="/register" className={menuLinkClass} onClick={() => setOpen(false)}>
           {t("registerBeneficiary")}
         </Link>

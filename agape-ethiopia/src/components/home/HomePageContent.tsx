@@ -56,12 +56,12 @@ export default function HomePageContent() {
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">{t("impactStats")}</p>
                 <p className="mt-2 text-3xl font-bold text-slate-900">1,200+</p>
-                <p className="text-sm text-slate-600">beneficiaries supported</p>
+                <p className="text-sm text-slate-600">{t("beneficiariesSupported")}</p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">{t("partnerNetwork")}</p>
                 <p className="mt-2 text-3xl font-bold text-slate-900">35+</p>
-                <p className="text-sm text-slate-600">partner organizations</p>
+                <p className="text-sm text-slate-600">{t("partnerOrganizations")}</p>
               </div>
             </div>
           </div>
@@ -75,10 +75,7 @@ export default function HomePageContent() {
         <LocalizedSectionHeader titleKey="dashboard" subtitleKey="operationalDashboard" descriptionKey="dashboardDescription" />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-4">
-        <a href="/register" className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm transition hover:border-emerald-400 hover:shadow-md">
-          <LocalizedSectionHeader titleKey="selfRegistrationCard" subtitleKey="selfRegistrationTitle" descriptionKey="selfRegistrationText" />
-        </a>
+      <section className="grid gap-6 lg:grid-cols-3">
         <a href="/partnerships" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
           <LocalizedSectionHeader titleKey="partnerPortalCard" subtitleKey="partnerPortalTitle" descriptionKey="partnerPortalCardDescription" />
         </a>
