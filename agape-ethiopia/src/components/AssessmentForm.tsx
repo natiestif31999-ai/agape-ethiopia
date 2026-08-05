@@ -30,9 +30,12 @@ export default function AssessmentForm({
 
     const payload: Assessment = {
       beneficiary_id: selectedBeneficiary,
-      hip_width: hipWidth.trim(),
-      seat_depth: seatDepth.trim(),
-      back_height: backHeight.trim(),
+      hip_width: hipWidth.trim() || null,
+      hip_width_value: hipWidth ? Number(hipWidth.trim()) : null,
+      seat_depth: seatDepth.trim() || null,
+      seat_depth_value: seatDepth ? Number(seatDepth.trim()) : null,
+      back_height: backHeight.trim() || null,
+      back_height_value: backHeight ? Number(backHeight.trim()) : null,
       recommended_equipment: recommendedEquipment.trim(),
       recommended_size: recommendedSize.trim(),
       assessor_name: assessorName.trim(),
@@ -89,6 +92,9 @@ export default function AssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("hipWidth")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={hipWidth}
             onChange={(event) => setHipWidth(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -100,6 +106,9 @@ export default function AssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("seatDepth")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={seatDepth}
             onChange={(event) => setSeatDepth(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -111,6 +120,9 @@ export default function AssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("backHeight")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={backHeight}
             onChange={(event) => setBackHeight(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"

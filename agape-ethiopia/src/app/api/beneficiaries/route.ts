@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
+function normalizeRegionCode(value?: string | null) {
+  const cleaned = (value ?? "").trim().toUpperCase().replace(/[^A-Z]/g, "");
+  return cleaned ? cleaned.slice(0, 3) : null;
+}
+
 export async function GET(req: Request) {
   const profile = await requireStaff();
   if (!profile) {
@@ -84,7 +89,7 @@ export async function POST(req: Request) {
     .from("beneficiaries")
     .insert([
       {
-        registration_number: registration_number?.trim() || `BEN-${Date.now()}`,
+        registration_number: registration_number?.trim() || null,
         registration_date: registration_date || new Date().toISOString().slice(0, 10),
         first_name: first_name.trim(),
         middle_name: middle_name?.trim() ?? null,
@@ -93,6 +98,7 @@ export async function POST(req: Request) {
         gender,
         phone: phone.trim(),
         region: region.trim(),
+        region_code: normalizeRegionCode(region),
         kifle_ketema: kifle_ketema?.trim() ?? null,
         kebele: kebele.trim(),
         house_number: house_number?.trim() ?? null,

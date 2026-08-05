@@ -9,24 +9,42 @@ export type Beneficiary = {
   gender?: string;
   phone?: string;
   region?: string;
+  region_code?: string;
   kifle_ketema?: string;
   kebele?: string;
   house_number?: string;
   photo_url?: string;
   notes?: string;
+  disability_type?: string;
+  referral_source?: string;
+  status?: string;
 };
 
 export type Assessment = {
   id?: string;
   beneficiary_id: string;
-  hip_width?: string;
-  seat_depth?: string;
-  back_height?: string;
-  recommended_equipment?: string;
-  recommended_size?: string;
-  assessor_name?: string;
-  assessment_date?: string;
-  notes?: string;
+  hip_width?: string | null;
+  hip_width_value?: number | null;
+  seat_depth?: string | null;
+  seat_depth_value?: number | null;
+  back_height?: string | null;
+  back_height_value?: number | null;
+  armrest_height?: string | null;
+  arm_rest_height_value?: number | null;
+  footrest_length?: string | null;
+  foot_rest_height_value?: number | null;
+  overall_height?: string | null;
+  height_value?: number | null;
+  weight?: string | null;
+  weight_value?: number | null;
+  recommended_equipment?: string | null;
+  recommended_size?: string | null;
+  assessor_name?: string | null;
+  assessment_date?: string | null;
+  notes?: string | null;
+  measurements?: string | null;
+  wheelchair_fit?: string | null;
+  recommendations?: string | null;
 };
 
 export type EquipmentDistribution = {

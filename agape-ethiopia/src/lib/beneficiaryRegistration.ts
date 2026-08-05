@@ -13,6 +13,14 @@ function normalizeValue(value: string | undefined | null) {
   return value?.trim() ?? "";
 }
 
+export function normalizeRegionCode(value: string | undefined | null) {
+  const cleaned = normalizeValue(value)
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "");
+
+  return cleaned ? cleaned.slice(0, 3) : "";
+}
+
 export function validatePublicBeneficiaryFields(values: Record<string, string | undefined | null>) {
   const errors: string[] = [];
 
@@ -34,7 +42,6 @@ export function validatePublicBeneficiaryFields(values: Record<string, string | 
 export function buildPublicBeneficiaryPayload(values: Record<string, string | undefined | null>, photoUrl: string | null = null) {
   const normalized = {
     registration_date: normalizeValue(values.registration_date),
-    registration_number: normalizeValue(values.registration_number),
     first_name: normalizeValue(values.first_name),
     middle_name: normalizeValue(values.middle_name),
     last_name: normalizeValue(values.last_name),
@@ -52,7 +59,8 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
 
   return {
     registration_date: normalized.registration_date || new Date().toISOString().slice(0, 10),
-    registration_number: normalized.registration_number || `BEN-${Date.now()}`,
+    registration_number: null,
+    region_code: normalizeRegionCode(values.region),
     first_name: normalized.first_name,
     middle_name: normalized.middle_name || null,
     last_name: normalized.last_name,

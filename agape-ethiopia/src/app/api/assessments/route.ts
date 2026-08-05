@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
+function parseNumeric(value: unknown): number | null {
+  const normalized = value === undefined || value === null ? "" : String(value).trim();
+  if (normalized === "") {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export async function POST(req: Request) {
   const profile = await requireStaff();
   if (!profile) {
@@ -13,6 +23,10 @@ export async function POST(req: Request) {
     hip_width,
     seat_depth,
     back_height,
+    armrest_height,
+    footrest_length,
+    overall_height,
+    weight,
     recommended_equipment,
     recommended_size,
     assessor_name,
@@ -39,8 +53,19 @@ export async function POST(req: Request) {
     {
       beneficiary_id,
       hip_width: hip_width?.trim() ?? null,
+      hip_width_value: parseNumeric(hip_width),
       seat_depth: seat_depth?.trim() ?? null,
+      seat_depth_value: parseNumeric(seat_depth),
       back_height: back_height?.trim() ?? null,
+      back_height_value: parseNumeric(back_height),
+      armrest_height: armrest_height?.trim() ?? null,
+      arm_rest_height_value: parseNumeric(armrest_height),
+      footrest_length: footrest_length?.trim() ?? null,
+      foot_rest_height_value: parseNumeric(footrest_length),
+      overall_height: overall_height?.trim() ?? null,
+      height_value: parseNumeric(overall_height),
+      weight: weight?.trim() ?? null,
+      weight_value: parseNumeric(weight),
       recommended_equipment: recommended_equipment?.trim() ?? null,
       recommended_size: recommended_size?.trim() ?? null,
       assessor_name: assessor_name?.trim() ?? null,

@@ -26,6 +26,13 @@ export default function BeneficiaryAssessmentForm({
   const { t } = useLanguage();
   const [status, setStatus] = useState(t("assessmentReady"));
 
+  function parseNumericValue(value: string) {
+    const normalized = value.trim();
+    if (!normalized) return null;
+    const numeric = Number(normalized);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus(t("savingAssessment"));
@@ -34,13 +41,20 @@ export default function BeneficiaryAssessmentForm({
     const { error } = await supabase.from("assessments").insert({
       beneficiary_id: beneficiaryId,
       assessment_date: assessmentDate || new Date().toISOString().slice(0, 10),
-      seat_width: seatWidth.trim(),
-      seat_depth: seatDepth.trim(),
-      back_height: backHeight.trim(),
-      armrest_height: armrestHeight.trim(),
-      footrest_length: footrestLength.trim(),
-      overall_height: overallHeight.trim(),
-      weight: weight.trim(),
+      seat_width: seatWidth.trim() || null,
+      seat_width_value: parseNumericValue(seatWidth),
+      seat_depth: seatDepth.trim() || null,
+      seat_depth_value: parseNumericValue(seatDepth),
+      back_height: backHeight.trim() || null,
+      back_height_value: parseNumericValue(backHeight),
+      armrest_height: armrestHeight.trim() || null,
+      arm_rest_height_value: parseNumericValue(armrestHeight),
+      footrest_length: footrestLength.trim() || null,
+      foot_rest_height_value: parseNumericValue(footrestLength),
+      overall_height: overallHeight.trim() || null,
+      height_value: parseNumericValue(overallHeight),
+      weight: weight.trim() || null,
+      weight_value: parseNumericValue(weight),
       wheelchair_fit: wheelchairFit.trim(),
       notes: notes.trim(),
       recommendations: recommendations.trim(),
@@ -85,6 +99,9 @@ export default function BeneficiaryAssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("seatWidth")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={seatWidth}
             onChange={(event) => setSeatWidth(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -95,6 +112,9 @@ export default function BeneficiaryAssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("seatDepth")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={seatDepth}
             onChange={(event) => setSeatDepth(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -105,6 +125,9 @@ export default function BeneficiaryAssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("backHeight")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={backHeight}
             onChange={(event) => setBackHeight(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -115,6 +138,9 @@ export default function BeneficiaryAssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("armrestHeight")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={armrestHeight}
             onChange={(event) => setArmrestHeight(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -125,6 +151,9 @@ export default function BeneficiaryAssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("footrestLength")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={footrestLength}
             onChange={(event) => setFootrestLength(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -135,6 +164,9 @@ export default function BeneficiaryAssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("overallHeight")}
           <input
+            type="number"
+            min="0"
+            step="0.01"
             value={overallHeight}
             onChange={(event) => setOverallHeight(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
@@ -145,6 +177,9 @@ export default function BeneficiaryAssessmentForm({
         <label className="grid gap-1 text-sm font-medium text-slate-700">
           {t("weight")}
           <input
+            type="number"
+            min="0"
+            step="0.1"
             value={weight}
             onChange={(event) => setWeight(event.target.value)}
             className="rounded-xl border border-slate-300 px-4 py-3"
