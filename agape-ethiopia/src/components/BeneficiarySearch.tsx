@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import type { FormEvent } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -31,11 +31,7 @@ export default function BeneficiarySearch() {
   const { t } = useLanguage();
   const [status, setStatus] = useState(t("searchPlaceholder") || "");
 
-  useEffect(() => {
-    void loadRecentBeneficiaries();
-  }, []);
-
-  async function loadRecentBeneficiaries() {
+  const loadRecentBeneficiaries = useCallback(async () => {
     setLoading(true);
     setStatus(t("loadingRecent"));
 
@@ -56,7 +52,11 @@ export default function BeneficiarySearch() {
     setEquipmentSummary({});
     setStatus(t("showRecent"));
     setLoading(false);
-  }
+  }, [t]);
+
+  useEffect(() => {
+    void loadRecentBeneficiaries();
+  }, [loadRecentBeneficiaries]);
 
   async function searchBeneficiaries(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

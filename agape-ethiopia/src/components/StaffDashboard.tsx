@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
@@ -35,7 +35,7 @@ export default function StaffDashboard() {
   const [editingRecord, setEditingRecord] = useState<EditingBeneficiary | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  async function loadRecords() {
+  const loadRecords = useCallback(async () => {
     try {
       const supabase = getSupabaseClient();
       const { data, error } = await supabase.from("beneficiaries").select("*").order("created_at", { ascending: false });
@@ -48,11 +48,11 @@ export default function StaffDashboard() {
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : t("unableToLoadApplicationsShort"));
     }
-  }
+  }, [t]);
 
   useEffect(() => {
     void loadRecords();
-  }, []);
+  }, [loadRecords]);
 
   async function updateStatus(id: string, status: string) {
     try {

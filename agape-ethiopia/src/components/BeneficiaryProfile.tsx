@@ -92,7 +92,7 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
     setAssessments(assessmentResult.data ?? []);
     setEquipment(equipmentResult.data ?? []);
     setStatus(t("profileLoaded"));
-  }, [beneficiaryId]);
+  }, [beneficiaryId, t]);
 
   useEffect(() => {
     let mounted = true;

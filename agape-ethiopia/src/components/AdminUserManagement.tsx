@@ -48,7 +48,7 @@ export default function AdminUserManagement() {
     }
     setUsers((data ?? []) as UserProfile[]);
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, t]);
 
   useEffect(() => {
     void loadUsers();

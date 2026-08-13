@@ -102,7 +102,7 @@ export default function MultipleBeneficiaryRegistrationForm() {
     if (isOnline) {
       void flushQueue();
     }
-  }, [isOnline]);
+  }, [isOnline, flushQueue]);
 
   const queuedCount = readQueue().length;
 
@@ -194,6 +194,7 @@ export default function MultipleBeneficiaryRegistrationForm() {
     return { ok: true, queued: false };
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   async function flushQueue() {
     const queuedItems = readQueue();
     if (!queuedItems.length) {

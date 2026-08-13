@@ -37,10 +37,7 @@ export async function middleware(req: NextRequest) {
     },
   });
 
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
 
   const { pathname } = req.nextUrl;
   if (pathname.startsWith("/_next") || pathname.startsWith("/favicon.ico") || pathname.startsWith("/assets") || pathname.startsWith("/static") || pathname.startsWith("/login")) {

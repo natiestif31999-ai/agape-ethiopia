@@ -210,7 +210,10 @@ function cacheFirstStrategy(request, cacheName = CACHE_NAMES.STATIC) {
 /**
  * Stale-while-revalidate strategy: Return cached immediately, update in background
  * Best for: HTML pages, where UX is priority but freshness is still important
+ * Note: Currently unused but available for advanced caching strategies
  */
+// This strategy function is kept for future use when implementing advanced caching
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function staleWhileRevalidateStrategy(request) {
   return caches.match(request).then((cached) => {
     const networkPromise = fetch(request)
