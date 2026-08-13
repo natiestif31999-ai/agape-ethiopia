@@ -663,7 +663,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "statusDelivered": "ተላልፏል",
     "users": "ተጠቃሚዎች",
     "usersDescription": "የመተግበሪያ መለያዎችን ያስተዳድሩ እና ለአስተዳዳሪዎችና ለሰራተኞች ሚናዎችን ይመድቡ።",
-   ```json
+  
 "unknownProfile": "ያልታወቀ መገለጫ",
 "overview": "አጠቃላይ እይታ",
 "buttonLabel": "የአዝራር መለያ",
