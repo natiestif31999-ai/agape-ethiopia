@@ -1,10 +1,10 @@
-import StaffDashboard from "@/components/StaffDashboard";
+import StaffDashboardEnhanced from "@/components/StaffDashboardEnhanced";
 import { requireStaff } from "@/lib/auth/serverAuth";
 import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Staff Dashboard",
-  description: "Review and manage beneficiary applications.",
+  description: "Professional staff portal for beneficiary management.",
 };
 
 export default async function StaffDashboardPage() {
@@ -13,5 +13,5 @@ export default async function StaffDashboardPage() {
     redirect("/login");
   }
 
-  return <StaffDashboard />;
+  return <StaffDashboardEnhanced />;
 }

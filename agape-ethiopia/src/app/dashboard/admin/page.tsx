@@ -1,10 +1,10 @@
-import AdminDashboard from "@/components/AdminDashboard";
+import AdminDashboardEnhanced from "@/components/AdminDashboardEnhanced";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/serverAuth";
 
 export const metadata = {
-  title: "Admin Dashboard",
-  description: "Manage beneficiaries, users, and site settings.",
+  title: "Admin Control Center",
+  description: "System administration and organizational management.",
 };
 
 export default async function AdminDashboardPage() {
@@ -13,5 +13,5 @@ export default async function AdminDashboardPage() {
     redirect("/login");
   }
 
-  return <AdminDashboard />;
+  return <AdminDashboardEnhanced />;
 }
