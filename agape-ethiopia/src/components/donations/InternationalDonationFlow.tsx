@@ -20,13 +20,13 @@ export default function InternationalDonationFlow({ onBack }: { onBack: () => vo
   const handleNext = async () => {
     if (step === "donor-info") {
       if (!donorName.trim() || !donorEmail.trim() || !donorCountry.trim()) {
-        alert("Please fill in all required fields");
+        alert(t("donation.required"));
         return;
       }
       setStep("amount");
     } else if (step === "amount") {
       if (!amount || Number(amount) <= 0) {
-        alert("Please enter a valid amount");
+        alert(t("donation.validAmount"));
         return;
       }
       setStep("method");
@@ -66,10 +66,10 @@ export default function InternationalDonationFlow({ onBack }: { onBack: () => vo
 
       // In a real implementation, redirect to payment processor
       // For now, show a message
-      alert(`Donation recorded as "${result.data?.receipt_number || 'pending'}". Payment processing would be handled by ${getProviderName()} in production.`);
+      alert(`${t("donation.donationRecorded")} "${result.data?.receipt_number || 'pending'}". ${t("donation.paymentWillBeHandledBy")} ${getProviderName()} ${t("donation.inProduction")}.`);
       onBack();
     } catch (error) {
-      alert(`Error: ${error instanceof Error ? error.message : "Failed to process donation"}`);
+      alert(`${t("donation.errorProcessing")}: ${error instanceof Error ? error.message : t("donation.failedProcess")}`);
       setStep("confirm");
     } finally {
       setLoading(false);
@@ -89,15 +89,15 @@ export default function InternationalDonationFlow({ onBack }: { onBack: () => vo
     <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">🌍 {t("donation.internationalDonation")}</h2>
-          <p className="mt-1 text-slate-600">Support from around the world</p>
+          <h2 className="text-2xl font-bold text-slate-900">🌍 {t("donation.international")}</h2>
+          <p className="mt-1 text-slate-600">{t("donation.supportInternational")}</p>
         </div>
         <button
           type="button"
           onClick={onBack}
           className="rounded-lg border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition"
         >
-          ← Back
+          ← {t("donation.back")}
         </button>
       </div>
 

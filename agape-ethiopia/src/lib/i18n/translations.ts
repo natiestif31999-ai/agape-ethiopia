@@ -551,6 +551,10 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "donation.contactSupport": "Contact Support",
     "donation.bankInfoDescription": "Manual donation information for direct bank transfers",
     "donation.faqSimpleDescription": "Frequently asked questions about donations",
+    "donation.supportInternational": "Support from around the world",
+    "donation.donationRecorded": "Donation recorded as",
+    "donation.paymentWillBeHandledBy": "Payment processing would be handled by",
+    "donation.inProduction": "in production",
     "optional": "Optional",
   },
   am: {
