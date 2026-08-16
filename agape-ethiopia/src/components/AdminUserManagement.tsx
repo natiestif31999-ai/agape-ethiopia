@@ -68,6 +68,24 @@ export default function AdminUserManagement() {
     void loadUsers();
   }
 
+  async function resetPassword(userId: string) {
+    if (!supabase) {
+      setStatus(t("supabaseNotConfigured"));
+      return;
+    }
+
+    setStatus("Resetting password...");
+    const response = await fetch(`/api/admin/users/${userId}/reset-password`, { method: "POST" });
+    const result = await response.json().catch(() => ({ error: "Reset failed." }));
+    if (!response.ok) {
+      setStatus(result.error || "Unable to reset password.");
+      return;
+    }
+
+    setStatus(result.message || "Temporary password issued.");
+    void loadUsers();
+  }
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <h2 className="text-2xl font-semibold text-slate-900">{t("users")}</h2>
@@ -100,13 +118,22 @@ export default function AdminUserManagement() {
                 </td>
                 <td className="px-4 py-3">{user.is_disabled ? t("disabled") : t("active")}</td>
                 <td className="px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => updateUser(user.id, { is_disabled: !user.is_disabled })}
-                    className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
-                  >
-                    {user.is_disabled ? t("enable") : t("disable")}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateUser(user.id, { is_disabled: !user.is_disabled })}
+                      className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+                    >
+                      {user.is_disabled ? t("enable") : t("disable")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => resetPassword(user.id)}
+                      className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
+                    >
+                      Reset password
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -31,6 +31,7 @@ export default function StaffDashboard() {
   const { t } = useLanguage();
   const [records, setRecords] = useState<BeneficiaryRecord[]>([]);
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const [statusMessage, setStatusMessage] = useState(t("loadingApplications") || "Loading applications...");
   const [editingRecord, setEditingRecord] = useState<EditingBeneficiary | null>(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -104,7 +105,24 @@ export default function StaffDashboard() {
     }
   }
 
-  const visibleRecords = records.filter((record) => filter === "all" || (record.status ?? "pending") === filter);
+  const workspaceStats = {
+    total: records.length,
+    pending: records.filter((record) => (record.status ?? "pending") === "pending").length,
+    approved: records.filter((record) => (record.status ?? "pending") === "approved").length,
+    rejected: records.filter((record) => (record.status ?? "pending") === "rejected").length,
+    recent: records.slice(0, 5),
+  };
+
+  const visibleRecords = records.filter((record) => {
+    const normalizedStatus = (record.status ?? "pending").toLowerCase();
+    const matchesStatus = filter === "all" || normalizedStatus === filter;
+    const haystack = [record.first_name, record.last_name, record.phone, record.region, record.disability_type, record.status]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesSearch = !search || haystack.includes(search.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -113,12 +131,47 @@ export default function StaffDashboard() {
           <h1 className="text-3xl font-semibold text-slate-900">{t("staffReviewDashboard")}</h1>
           <p className="mt-2 text-slate-600">{t("staffReviewDescription")}</p>
         </div>
-        <select value={filter} onChange={(event) => setFilter(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3">
-          <option value="all">{t("allStatuses")}</option>
-          <option value="pending">{t("statusPending")}</option>
-          <option value="approved">{t("statusApproved")}</option>
-          <option value="rejected">{t("statusRejected")}</option>
-        </select>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("searchBeneficiaries") || "Search beneficiaries"} className="rounded-xl border border-slate-300 bg-white px-4 py-3" />
+          <select value={filter} onChange={(event) => setFilter(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3">
+            <option value="all">{t("allStatuses") || "All statuses"}</option>
+            <option value="pending">{t("statusPending")}</option>
+            <option value="approved">{t("statusApproved") || "Approved"}</option>
+            <option value="rejected">{t("statusRejected") || "Rejected"}</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-4">
+        <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm text-slate-500">{t("beneficiaries")}</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-900">{workspaceStats.total}</p>
+        </article>
+        <article className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm text-amber-700">{t("statusPending")}</p>
+          <p className="mt-2 text-2xl font-semibold text-amber-900">{workspaceStats.pending}</p>
+        </article>
+        <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-sm text-emerald-700">{t("statusApproved") || "Approved"}</p>
+          <p className="mt-2 text-2xl font-semibold text-emerald-900">{workspaceStats.approved}</p>
+        </article>
+        <article className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+          <p className="text-sm text-rose-700">{t("statusRejected") || "Rejected"}</p>
+          <p className="mt-2 text-2xl font-semibold text-rose-900">{workspaceStats.rejected}</p>
+        </article>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <h2 className="text-lg font-semibold text-slate-900">Recent registrations</h2>
+        <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+          {workspaceStats.recent.map((record) => (
+            <div key={record.id} className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+              <p className="font-semibold text-slate-900">{[record.first_name, record.last_name].filter(Boolean).join(" ") || t("unnamed")}</p>
+              <p>{record.region || t("unknown")}</p>
+              <p>{record.status || t("statusPending")}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <p className="mt-4 text-sm text-slate-500">{statusMessage}</p>
