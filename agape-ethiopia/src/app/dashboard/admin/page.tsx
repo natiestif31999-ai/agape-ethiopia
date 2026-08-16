@@ -1,4 +1,3 @@
-import AppHeader from "@/components/layout/AppHeader";
 import AdminDashboard from "@/components/AdminDashboard";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/serverAuth";
@@ -14,12 +13,5 @@ export default async function AdminDashboardPage() {
     redirect("/login");
   }
 
-  return (
-    <>
-      <AppHeader />
-      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:px-6 lg:px-8">
-        <AdminDashboard />
-      </main>
-    </>
-  );
+  return <AdminDashboard />;
 }
