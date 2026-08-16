@@ -556,6 +556,12 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "donation.paymentWillBeHandledBy": "Payment processing would be handled by",
     "donation.inProduction": "in production",
     "optional": "Optional",
+    "staffManagement": "Staff Management",
+    "beneficiaryManagement": "Beneficiary Management",
+    "donationControl": "Donation Control",
+    "auditLog": "Audit Log",
+    "changePassword": "Change Password",
+    "operationalReports": "Reports",
   },
   am: {
     "home": "ቤት",
