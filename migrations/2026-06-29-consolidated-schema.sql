@@ -105,6 +105,7 @@ CREATE TABLE IF NOT EXISTS users (
   email text,
   role text DEFAULT 'Staff',
   is_disabled boolean DEFAULT false,
+  password_change_required boolean DEFAULT false,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );

@@ -105,28 +105,37 @@ export default function AgapeMenu() {
             </div>
 
             <div className="space-y-2">
-              <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Benefits</p>
-              <Link href="/beneficiaries" className={menuLinkClass} onClick={closeMenu}>{t("beneficiaries")}</Link>
-              <Link href="/assessments" className={menuLinkClass} onClick={closeMenu}>{t("assessments")}</Link>
-              <Link href="/distributions" className={menuLinkClass} onClick={closeMenu}>{t("distributions")}</Link>
-              <Link href="/records" className={menuLinkClass} onClick={closeMenu}>{t("records")}</Link>
-            </div>
-
-            <div className="space-y-2">
               <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Support</p>
               <Link href="/partnerships" className={menuLinkClass} onClick={closeMenu}>{t("partners")}</Link>
               <Link href="/donations" className={menuLinkClass} onClick={closeMenu}>{t("donations")}</Link>
-              <Link href="/reports" className={menuLinkClass} onClick={closeMenu}>{t("reports")}</Link>
             </div>
 
-            <div className="space-y-2">
-              <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Administration</p>
-              {(isStaff || isAdmin) && (
+            {(isStaff || isAdmin) && (
+              <div className="space-y-2">
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Staff Portal</p>
                 <Link href="/dashboard/staff" className={menuLinkClass} onClick={closeMenu}>{t("staffDashboard")}</Link>
-              )}
-              {isAdmin && <Link href="/admin" className={menuLinkClass} onClick={closeMenu}>{t("adminPanel")}</Link>}
-              <Link href="/login" className={menuLinkClass} onClick={closeMenu}>{t("login")}</Link>
-            </div>
+                <Link href="/beneficiaries" className={menuLinkClass} onClick={closeMenu}>{t("beneficiaries")}</Link>
+                <Link href="/assessments" className={menuLinkClass} onClick={closeMenu}>{t("assessments")}</Link>
+                <Link href="/distributions" className={menuLinkClass} onClick={closeMenu}>{t("distributions")}</Link>
+                <Link href="/records" className={menuLinkClass} onClick={closeMenu}>{t("records")}</Link>
+                <Link href="/reports" className={menuLinkClass} onClick={closeMenu}>{t("reports")}</Link>
+              </div>
+            )}
+
+            {isAdmin && (
+              <div className="space-y-2">
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Admin</p>
+                <Link href="/dashboard/admin" className={menuLinkClass} onClick={closeMenu}>{t("adminPanel")}</Link>
+                <Link href="/admin" className={menuLinkClass} onClick={closeMenu}>{t("adminCenter")}</Link>
+              </div>
+            )}
+
+            {!isStaff && !isAdmin && (
+              <div className="space-y-2">
+                <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Access</p>
+                <Link href="/login" className={menuLinkClass} onClick={closeMenu}>{t("staffAdminPortal")}</Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

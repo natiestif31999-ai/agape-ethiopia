@@ -2,13 +2,20 @@ import AppHeader from "@/components/layout/AppHeader";
 import StaffDashboard from "@/components/StaffDashboard";
 import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 import LocalizedLink from "@/components/LocalizedLink";
+import { requireStaff } from "@/lib/auth/serverAuth";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Staff Dashboard",
   description: "Review and manage beneficiary applications.",
 };
 
-export default function StaffDashboardPage() {
+export default async function StaffDashboardPage() {
+  const profile = await requireStaff();
+  if (!profile) {
+    redirect("/login");
+  }
+
   return (
     <>
       <AppHeader />

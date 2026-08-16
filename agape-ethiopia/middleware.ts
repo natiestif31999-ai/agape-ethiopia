@@ -3,8 +3,50 @@ import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
 
-const ADMIN_PATHS = ["/admin", "/api/admin"];
-const STAFF_PATHS = ["/beneficiaries", "/api/beneficiaries"];
+const PUBLIC_PATHS = [
+  "/",
+  "/about",
+  "/services",
+  "/contact",
+  "/partnerships",
+  "/donations",
+  "/agape-registration",
+  "/agape-registration/register",
+  "/agape-registration/bulk",
+  "/agape-registration/track",
+  "/agape-registration/partner",
+  "/login",
+  "/register",
+  "/offline",
+  "/_next",
+  "/favicon.ico",
+  "/assets",
+  "/static",
+  "/api/auth",
+  "/api/organization-agreements",
+  "/api/requests",
+  "/api/beneficiaries",
+  "/api/public",
+  "/api/health",
+];
+const ADMIN_PATHS = ["/admin", "/dashboard/admin", "/api/admin"];
+const STAFF_PATHS = [
+  "/dashboard",
+  "/dashboard/staff",
+  "/beneficiaries",
+  "/assessments",
+  "/distributions",
+  "/records",
+  "/reports",
+  "/api/beneficiaries",
+  "/api/assessments",
+  "/api/inventory",
+  "/api/requests",
+  "/api/follow-ups",
+  "/api/donations",
+  "/api/equipment-distributions",
+  "/api/organization-agreements",
+];
 
 function matchesPath(pathname: string, patterns: string[]) {
   return patterns.some((pattern) => pathname === pattern || pathname.startsWith(pattern + "/"));
@@ -40,7 +82,8 @@ export async function middleware(req: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
 
   const { pathname } = req.nextUrl;
-  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon.ico") || pathname.startsWith("/assets") || pathname.startsWith("/static") || pathname.startsWith("/login")) {
+
+  if (PUBLIC_PATHS.some((pattern) => pathname === pattern || pathname.startsWith(pattern + "/"))) {
     return res;
   }
 
@@ -68,7 +111,7 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  if (pathname.startsWith("/api/auth/user")) {
+  if (pathname.startsWith("/api/auth")) {
     return res;
   }
 
@@ -76,5 +119,22 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/beneficiaries/:path*", "/admin/:path*", "/api/admin/:path*", "/api/beneficiaries/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/beneficiaries/:path*",
+    "/assessments/:path*",
+    "/distributions/:path*",
+    "/records/:path*",
+    "/reports/:path*",
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/api/beneficiaries/:path*",
+    "/api/assessments/:path*",
+    "/api/inventory/:path*",
+    "/api/requests/:path*",
+    "/api/follow-ups/:path*",
+    "/api/donations/:path*",
+    "/api/equipment-distributions/:path*",
+    "/api/organization-agreements/:path*",
+  ],
 };

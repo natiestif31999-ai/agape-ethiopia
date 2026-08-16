@@ -30,7 +30,7 @@ export default function AppHeader() {
             </button>
           ) : (
             <Link href="/login" className="rounded-full border border-slate-200 bg-slate-100 px-4 py-2 transition hover:bg-slate-200">
-              {t("login")}
+              {t("staffAdminPortal")}
             </Link>
           )}
         </div>

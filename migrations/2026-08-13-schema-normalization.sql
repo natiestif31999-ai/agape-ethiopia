@@ -8,6 +8,9 @@ BEGIN;
 ALTER TABLE IF EXISTS beneficiaries
   ADD COLUMN IF NOT EXISTS region_code text;
 
+ALTER TABLE IF EXISTS users
+  ADD COLUMN IF NOT EXISTS password_change_required boolean DEFAULT false;
+
 -- Backfill from the existing region field to keep historical data consistent.
 DO $$
 BEGIN

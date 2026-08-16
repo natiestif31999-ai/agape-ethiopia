@@ -9,6 +9,7 @@ export type AppUserProfile = {
   email: string;
   role: "Admin" | "Staff";
   is_disabled: boolean;
+  password_change_required: boolean;
 };
 
 export function getSupabaseServerClient() {
@@ -57,7 +58,7 @@ export async function getUserProfile(): Promise<AppUserProfile | null> {
     return null;
   }
 
-  const { data, error } = await supabase.from("users").select("id,email,role,is_disabled").eq("id", currentUser.id).maybeSingle();
+  const { data, error } = await supabase.from("users").select("id,email,role,is_disabled,password_change_required").eq("id", currentUser.id).maybeSingle();
   if (error) {
     console.error("Error loading user profile:", error.message);
     return null;
@@ -73,8 +74,8 @@ export async function getUserProfile(): Promise<AppUserProfile | null> {
 
   const { data: newProfile, error: insertError } = await supabase
     .from("users")
-    .insert({ id: currentUser.id, email: currentUser.email, role: "Staff" })
-    .select("id,email,role,is_disabled")
+    .insert({ id: currentUser.id, email: currentUser.email, role: "Staff", password_change_required: true })
+    .select("id,email,role,is_disabled,password_change_required")
     .single();
 
   if (insertError) {
@@ -88,6 +89,9 @@ export async function getUserProfile(): Promise<AppUserProfile | null> {
 export async function requireAuth() {
   const profile = await getUserProfile();
   if (!profile || profile.is_disabled) {
+    return null;
+  }
+  if (profile.password_change_required) {
     return null;
   }
   return profile;
