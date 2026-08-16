@@ -530,6 +530,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   },
   am: {
     "home": "ቤት",
+    "AGAPE MOBILITY ETHIOPIA Menu ": "አጋፔ ሞቢሊቲ ኢትዮጵያ ምናሌ",
     "partners": "አጋርዎች",
     "partnerPortalTitle": "የአጋርነት ፖርታል",
     "partnerPortalHeroTitle": "ከአጋፔ ሞቢሊቲ ኢትዮጵያ ጋር ይተባበሩ",
