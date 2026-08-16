@@ -4,6 +4,28 @@
 
 BEGIN;
 
+-- Ensure the normalized region code exists; the application writes to it during registration.
+ALTER TABLE IF EXISTS beneficiaries
+  ADD COLUMN IF NOT EXISTS region_code text;
+
+-- Backfill from the existing region field to keep historical data consistent.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'beneficiaries'
+      AND column_name = 'region'
+  ) THEN
+    UPDATE beneficiaries
+    SET region_code = UPPER(substring(regexp_replace(COALESCE(region, ''), '[^A-Za-z]', '', 'g') FROM 1 FOR 3))
+    WHERE region_code IS NULL OR region_code = '';
+  END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_beneficiaries_region_code ON beneficiaries(region_code);
+
 -- Fix column naming: Father's_name -> fathers_name (apostrophe causes SQL issues)
 -- This needs to be done carefully to preserve data
 ALTER TABLE IF EXISTS beneficiaries
