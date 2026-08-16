@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStatus("Signing in...");
+    setStatus(t("signingIn"));
 
     const { error } = await signIn(email, password);
     if (error) {
@@ -30,7 +30,7 @@ export default function LoginPage() {
     <main className="mx-auto max-w-md px-4 py-12">
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-3xl font-semibold text-slate-900">{t("login")}</h1>
-        <p className="mt-3 text-slate-600">{t("login")} to access the AGAPE MOBILITY ETHIOPIA administrative system.</p>
+        <p className="mt-3 text-slate-600">{t("login")} {t("loginPrompt")}</p>
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <label className="grid gap-2 text-sm font-medium text-slate-700">
             {t("email")}

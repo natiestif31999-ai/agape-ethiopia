@@ -74,15 +74,15 @@ export default function AdminUserManagement() {
       return;
     }
 
-    setStatus("Resetting password...");
+    setStatus(t("admin.resetPassword") + "...");
     const response = await fetch(`/api/admin/users/${userId}/reset-password`, { method: "POST" });
-    const result = await response.json().catch(() => ({ error: "Reset failed." }));
+    const result = await response.json().catch(() => ({ error: t("admin.resetPasswordError") }));
     if (!response.ok) {
-      setStatus(result.error || "Unable to reset password.");
+      setStatus(result.error || t("admin.resetPasswordFailed"));
       return;
     }
 
-    setStatus(result.message || "Temporary password issued.");
+    setStatus(result.message || t("admin.resetPasswordIssued"));
     void loadUsers();
   }
 
@@ -131,7 +131,7 @@ export default function AdminUserManagement() {
                       onClick={() => resetPassword(user.id)}
                       className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
                     >
-                      Reset password
+                      {t("admin.resetPassword")}
                     </button>
                   </div>
                 </td>

@@ -132,9 +132,9 @@ export default function StaffDashboard() {
           <p className="mt-2 text-slate-600">{t("staffReviewDescription")}</p>
         </div>
         <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("searchBeneficiaries") || "Search beneficiaries"} className="rounded-xl border border-slate-300 bg-white px-4 py-3" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("staff.searchPlaceholder")} className="rounded-xl border border-slate-300 bg-white px-4 py-3" />
           <select value={filter} onChange={(event) => setFilter(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3">
-            <option value="all">{t("allStatuses") || "All statuses"}</option>
+            <option value="all">{t("staff.allStatuses")}</option>
             <option value="pending">{t("statusPending")}</option>
             <option value="approved">{t("statusApproved") || "Approved"}</option>
             <option value="rejected">{t("statusRejected") || "Rejected"}</option>
@@ -162,7 +162,7 @@ export default function StaffDashboard() {
       </div>
 
       <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <h2 className="text-lg font-semibold text-slate-900">Recent registrations</h2>
+        <h2 className="text-lg font-semibold text-slate-900">{t("staff.recentRegistrations")}</h2>
         <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
           {workspaceStats.recent.map((record) => (
             <div key={record.id} className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">

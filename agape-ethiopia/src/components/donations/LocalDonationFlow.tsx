@@ -22,13 +22,13 @@ export default function LocalDonationFlow({ onBack }: { onBack: () => void }) {
   const handleNext = async () => {
     if (step === "donor-info") {
       if (!donorName.trim() || !donorEmail.trim()) {
-        alert("Please fill in all required fields");
+        alert(t("donation.required"));
         return;
       }
       setStep("amount");
     } else if (step === "amount") {
       if (!amount || Number(amount) <= 0) {
-        alert("Please enter a valid amount");
+        alert(t("donation.validAmount"));
         return;
       }
       setStep("method");
@@ -66,7 +66,7 @@ export default function LocalDonationFlow({ onBack }: { onBack: () => void }) {
       setReceiptNumber(result.data?.receipt_number || `REF-${Date.now()}`);
       setStep("success");
     } catch (error) {
-      alert(`Error: ${error instanceof Error ? error.message : "Failed to process donation"}`);
+      alert(`${t("donation.errorProcessing")}: ${error instanceof Error ? error.message : t("donation.failedProcess")}`);
     } finally {
       setLoading(false);
     }
@@ -86,15 +86,15 @@ export default function LocalDonationFlow({ onBack }: { onBack: () => void }) {
     <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">🇪🇹 {t("donation.localDonation")}</h2>
-          <p className="mt-1 text-slate-600">Simple and secure local donation</p>
+          <h2 className="text-2xl font-bold text-slate-900">🇪🇹 {t("donation.local")}</h2>
+          <p className="mt-1 text-slate-600">{t("donation.simpleSecure")}</p>
         </div>
         <button
           type="button"
           onClick={onBack}
           className="rounded-lg border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition"
         >
-          ← Back
+          ← {t("donation.back")}
         </button>
       </div>
 
@@ -121,29 +121,29 @@ export default function LocalDonationFlow({ onBack }: { onBack: () => void }) {
       {/* Step: Donor Information */}
       {step === "donor-info" && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-900">Your Information</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{t("donation.yourInformation")}</h3>
           <label className="grid gap-1">
-            <span className="text-sm font-medium text-slate-700">Full Name *</span>
+            <span className="text-sm font-medium text-slate-700">{t("donation.fullName")} *</span>
             <input
               type="text"
               value={donorName}
               onChange={(e) => setDonorName(e.target.value)}
-              placeholder="Your full name"
+              placeholder={t("donation.fullName")}
               className="rounded-lg border border-slate-300 px-4 py-3 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             />
           </label>
           <label className="grid gap-1">
-            <span className="text-sm font-medium text-slate-700">Email Address *</span>
+            <span className="text-sm font-medium text-slate-700">{t("donation.emailAddress")} *</span>
             <input
               type="email"
               value={donorEmail}
               onChange={(e) => setDonorEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder={t("donation.emailAddress")}
               className="rounded-lg border border-slate-300 px-4 py-3 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             />
           </label>
           <label className="grid gap-1">
-            <span className="text-sm font-medium text-slate-700">Phone Number (Optional)</span>
+            <span className="text-sm font-medium text-slate-700">{t("donation.phoneNumber")} ({t("optional")})</span>
             <input
               type="tel"
               value={donorPhone}
