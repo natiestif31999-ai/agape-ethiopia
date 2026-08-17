@@ -60,7 +60,15 @@ export async function getUserProfile(): Promise<AppUserProfile | null> {
 
   const { data, error } = await supabase.from("users").select("id,email,role,is_disabled,password_change_required").eq("id", currentUser.id).maybeSingle();
   if (error) {
-    console.error("Error loading user profile:", error.message);
+    const message = error.message || "Unknown profile error";
+    const isMissingRbAddedColumns = /column.*(role|is_disabled|password_change_required)|does not exist/i.test(message);
+
+    console.error("Error loading user profile:", message);
+
+    if (isMissingRbAddedColumns) {
+      throw new Error("The live users table is missing the required RBAC columns. Run the RBAC migration before continuing.");
+    }
+
     return null;
   }
 

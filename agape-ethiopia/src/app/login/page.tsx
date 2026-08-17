@@ -16,8 +16,17 @@ export default function LoginPage() {
 
   // Effect: Redirect after successful login when profile is loaded
   useEffect(() => {
-    if (!isSigningIn || !session || !userProfile) {
+    if (!isSigningIn || !session) {
       return;
+    }
+
+    if (!userProfile) {
+      const profileTimeout = window.setTimeout(() => {
+        setStatus("Authentication succeeded, but your account profile could not be loaded. Please contact support or run the RBAC migration for the users table.");
+        setIsSigningIn(false);
+      }, 2500);
+
+      return () => window.clearTimeout(profileTimeout);
     }
 
     // Check if password change is required
@@ -29,6 +38,7 @@ export default function LoginPage() {
     // Check if user is disabled
     if (userProfile.is_disabled) {
       setStatus(t("accountDisabled"));
+      setIsSigningIn(false);
       return;
     }
 
@@ -39,6 +49,7 @@ export default function LoginPage() {
       router.push("/dashboard/staff");
     } else {
       setStatus(t("noPermission"));
+      setIsSigningIn(false);
     }
   }, [isSigningIn, session, userProfile, router, t]);
 
