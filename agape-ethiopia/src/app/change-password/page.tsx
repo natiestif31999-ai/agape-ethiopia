@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
+import { useAuth } from "@/components/layout/SupabaseProvider";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
+  const { userProfile } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,7 +31,14 @@ export default function ChangePasswordPage() {
         throw new Error(result.error || "Unable to change password.");
       }
 
-      router.push("/dashboard");
+      // Redirect based on user role
+      if (userProfile?.role === "Admin") {
+        router.push("/dashboard/admin");
+      } else if (userProfile?.role === "Staff") {
+        router.push("/dashboard/staff");
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to change password.");
     } finally {

@@ -595,7 +595,11 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "generateReports": "View reports",
     "staffDirectory": "Staff Directory",
     "noStaffFound": "No staff members found",
-    "errorLoadingData": "Error loading data"
+    "errorLoadingData": "Error loading data",
+    "staffDashboard": "Staff Dashboard",
+    "staffAdminPortal": "Staff / Admin Portal",
+    "accountDisabled": "Your account has been disabled. Please contact an administrator.",
+    "noPermission": "You do not have permission to access this system."
   },
   am: {
     "home": "ቤት",
@@ -1062,7 +1066,11 @@ export const translations: Record<Locale, TranslationDictionary> = {
 "generateReports": "ሪፖርቶችን ይመልከቱ",
 "staffDirectory": "የሰራተኞች ዝርዝር",
 "noStaffFound": "ሰራተኞች አልተገኙም",
-"errorLoadingData": "ውሂብ ሲጫን ስህተት"
+"errorLoadingData": "ውሂብ ሲጫን ስህተት",
+"staffDashboard": "የሰራተኞች ዳሽቦርድ",
+"staffAdminPortal": "ሰራተኞች / አስተዳደሪ ፖርታል",
+"accountDisabled": "ፍቃድዎ ተሰናክሏል። እባክዎ ከአስተዳደሪ ጋር ይติኩ።",
+"noPermission": "ይህን ስርዓት ለመድረስ ፍቃድ የለዎም።"
 
 
   },
@@ -1511,7 +1519,11 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "generateReports": "View reports",
     "staffDirectory": "Staff Directory",
     "noStaffFound": "No staff members found",
-    "errorLoadingData": "Error loading data"
+    "errorLoadingData": "Error loading data",
+    "staffDashboard": "Daashbordii Hojjettaa",
+    "staffAdminPortal": "Kumbii Hojjettaa / Bulchiinsa",
+    "accountDisabled": "Tokko keetti itti dhabamee jira. Qabiyyee bulchiinsa walii galuuf.",
+    "noPermission": "Sirna kana seenuuf eebboo hin qabdu."
   },
   ti: {
     "home": "ቤት",
@@ -1976,6 +1988,10 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "generateReports": "View reports",
     "staffDirectory": "Staff Directory",
     "noStaffFound": "No staff members found",
-    "errorLoadingData": "Error loading data"
+    "errorLoadingData": "Error loading data",
+    "staffDashboard": "ዳሽቦርድ ሰራተኛ",
+    "staffAdminPortal": "ክፍል ሰራተኛ / 행政",
+    "accountDisabled": "ሂሳብዎ ተሰናክሏል። እባክዎ ከአስተዳደሪ ጋር ይገናኙ።",
+    "noPermission": "ይህን ስርዓት ለመድረስ ፍቃድ የለዎም።"
   },
 };

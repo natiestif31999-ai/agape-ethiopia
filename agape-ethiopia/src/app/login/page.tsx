@@ -1,29 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/layout/SupabaseProvider";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, userProfile, session } = useAuth();
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  // Effect: Redirect after successful login when profile is loaded
+  useEffect(() => {
+    if (!isSigningIn || !session || !userProfile) {
+      return;
+    }
+
+    // Check if password change is required
+    if (userProfile.password_change_required) {
+      router.push("/change-password");
+      return;
+    }
+
+    // Check if user is disabled
+    if (userProfile.is_disabled) {
+      setStatus(t("accountDisabled"));
+      return;
+    }
+
+    // Redirect based on role
+    if (userProfile.role === "Admin") {
+      router.push("/dashboard/admin");
+    } else if (userProfile.role === "Staff") {
+      router.push("/dashboard/staff");
+    } else {
+      setStatus(t("noPermission"));
+    }
+  }, [isSigningIn, session, userProfile, router, t]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus(t("signingIn"));
+    setIsSigningIn(true);
 
     const { error } = await signIn(email, password);
     if (error) {
       setStatus(error.message);
+      setIsSigningIn(false);
       return;
     }
 
-    router.push("/");
+    // Don't reset isSigningIn - let the effect handle the redirect
   };
 
   return (

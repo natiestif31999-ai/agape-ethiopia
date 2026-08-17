@@ -10,6 +10,7 @@ type UserProfile = {
   email: string;
   role: "Admin" | "Staff";
   is_disabled: boolean;
+  password_change_required?: boolean;
 };
 
 type AuthContextValue = {
