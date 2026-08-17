@@ -1,4 +1,5 @@
 import AdminDashboardEnhanced from "@/components/AdminDashboardEnhanced";
+import AdminLayout from "@/components/AdminLayout";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/serverAuth";
 
@@ -13,5 +14,11 @@ export default async function AdminDashboardPage() {
     redirect("/login");
   }
 
-  return <AdminDashboardEnhanced />;
+  return (
+    <AdminLayout currentSection="overview">
+      <div className="p-6">
+        <AdminDashboardEnhanced />
+      </div>
+    </AdminLayout>
+  );
 }

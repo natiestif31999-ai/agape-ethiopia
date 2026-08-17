@@ -6,7 +6,7 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/serverAuth";
 import StaffUserManagement from "@/components/StaffUserManagement";
-import AppHeader from "@/components/layout/AppHeader";
+import AdminLayout from "@/components/AdminLayout";
 
 export const metadata = {
   title: "Staff Management",
@@ -20,11 +20,10 @@ export default async function StaffManagementPage() {
   }
 
   return (
-    <>
-      <AppHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
+    <AdminLayout currentSection="staff">
+      <div className="p-6">
         <StaffUserManagement />
-      </main>
-    </>
+      </div>
+    </AdminLayout>
   );
 }
