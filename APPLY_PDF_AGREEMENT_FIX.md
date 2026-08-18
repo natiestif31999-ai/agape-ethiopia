@@ -1,5 +1,10 @@
 # 📋 PDF AGREEMENT UPLOAD FIX - STEP-BY-STEP INSTRUCTIONS
 
+> Updated workflow: run the complete migration
+> `migrations/2026-08-18-public-partner-agreement-workflow.sql`. It replaces the
+> earlier bucket-wide public-read guidance with controlled submission prefixes
+> and server-side validation.
+
 ## Executive Summary
 ✅ **Root Cause Identified**: Storage RLS policy was too restrictive for public uploads  
 ✅ **Solution Designed**: Simple SQL fix to allow public uploads  
@@ -19,12 +24,14 @@
 5. Paste this SQL:
 
 ```sql
+DROP POLICY IF EXISTS organization_agreements_storage_select_public ON storage.objects;
 DROP POLICY IF EXISTS organization_agreements_storage_insert_authenticated ON storage.objects;
+DROP POLICY IF EXISTS organization_agreements_storage_insert_public ON storage.objects;
 
 CREATE POLICY organization_agreements_storage_insert_public
-  ON storage.objects
-  FOR INSERT
-  WITH CHECK (bucket_id = 'organization-agreements');
+   ON storage.objects
+   FOR INSERT
+   WITH CHECK (bucket_id = 'organization-agreements' AND name LIKE 'public-submissions/%');
 ```
 
 6. Click **Run** (or press Cmd/Ctrl + Enter)

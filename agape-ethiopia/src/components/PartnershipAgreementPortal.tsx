@@ -12,10 +12,12 @@ type AgreementFormState = {
   city: string;
   address: string;
   agreement_number: string;
+  message: string;
 };
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/layout/SupabaseProvider";
 import { useLanguage } from "@/components/layout/LanguageProvider";
+import OfficialAgreementEditor from "@/components/OfficialAgreementEditor";
 
 type AgreementRecord = {
   id: string;
@@ -33,6 +35,7 @@ type AgreementRecord = {
   uploaded_by: string | null;
   status: string;
   notes: string | null;
+  internal_notes: string | null;
   submitted_at: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
@@ -51,11 +54,9 @@ const organizationTypes = [
   "Other",
 ] as const;
 
-const statusOptions = ["Pending Review", "Pending", "Approved", "Rejected"] as const;
+const statusOptions = ["Pending Review", "Pending", "Under Review", "Approved", "Rejected"] as const;
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
-const AGREEMENT_STORAGE_BUCKET = "organization-agreements";
-const AGREEMENT_SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 function isPdfFile(file: File | null) {
   if (!file) {
@@ -67,7 +68,7 @@ function isPdfFile(file: File | null) {
 
 export default function PartnershipAgreementPortal() {
   const { t } = useLanguage();
-  const { userProfile, isAdmin, isStaff } = useAuth();
+  const { isAdmin, isStaff } = useAuth();
   const [form, setForm] = useState<AgreementFormState>({
     organization_name: "",
     organization_type: organizationTypes[0],
@@ -78,6 +79,7 @@ export default function PartnershipAgreementPortal() {
     city: "",
     address: "",
     agreement_number: "",
+    message: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -133,23 +135,11 @@ export default function PartnershipAgreementPortal() {
     });
   }, [agreements, search, statusFilter]);
 
-  async function resolveSignedAgreementUrl(filePath: string | null) {
-    if (!filePath) {
-      return null;
-    }
-
+  async function resolveSignedAgreementUrl(agreementId: string) {
     try {
-      const supabase = getSupabaseClient();
-      const { data, error } = await supabase.storage
-        .from(AGREEMENT_STORAGE_BUCKET)
-        .createSignedUrl(filePath, AGREEMENT_SIGNED_URL_TTL_SECONDS);
-
-      if (error) {
-        console.error("Agreement signed URL generation failed:", error);
-        return null;
-      }
-
-      return data?.signedUrl ?? null;
+      const response = await fetch(`/api/organization-agreements/${agreementId}/file`);
+      const result = (await response.json()) as { url?: string };
+      return response.ok ? result.url ?? null : null;
     } catch (error) {
       console.error("Agreement signed URL generation exception:", error);
       return null;
@@ -186,60 +176,16 @@ export default function PartnershipAgreementPortal() {
 
     try {
       setIsUploading(true);
-      const supabase = getSupabaseClient();
-      const storagePath = `agreements/${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-
-      const uploadResult = await supabase.storage.from(AGREEMENT_STORAGE_BUCKET).upload(storagePath, selectedFile, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: "application/pdf",
+      const submissionData = new FormData();
+      Object.entries(form).forEach(([key, value]) => submissionData.append(key, value));
+      submissionData.append("signed_pdf", selectedFile);
+      const response = await fetch("/api/organization-agreements", {
+        method: "POST",
+        body: submissionData,
       });
-
-      if (uploadResult.error) {
-        const message = uploadResult.error.message?.toLowerCase() || "";
-        if (message.includes("bucket not found") || message.includes("not found")) {
-          throw new Error("Agreement storage is temporarily unavailable.");
-        }
-
-        if (message.includes("permission") || message.includes("policy") || message.includes("unauthorized")) {
-          throw new Error("You do not have permission to upload agreements.");
-        }
-
-        throw uploadResult.error;
-      }
-
-      const signedUrlResult = await supabase.storage
-        .from(AGREEMENT_STORAGE_BUCKET)
-        .createSignedUrl(storagePath, AGREEMENT_SIGNED_URL_TTL_SECONDS);
-
-      if (signedUrlResult.error) {
-        throw signedUrlResult.error;
-      }
-
-      const insertedData = await supabase
-        .from("organization_agreements")
-        .insert({
-          organization_name: form.organization_name.trim(),
-          organization_type: form.organization_type,
-          contact_person: form.contact_person.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          region: form.region.trim(),
-          city: form.city.trim(),
-          address: form.address.trim(),
-          agreement_number: form.agreement_number.trim() || null,
-          agreement_file_name: selectedFile.name,
-          agreement_file_path: storagePath,
-          agreement_file_url: signedUrlResult.data?.signedUrl ?? null,
-          uploaded_by: userProfile?.id ?? null,
-          status: "Pending Review",
-        })
-        .select("*")
-        .single();
-
-      if (insertedData.error) {
-        await supabase.storage.from(AGREEMENT_STORAGE_BUCKET).remove([storagePath]).catch(() => undefined);
-        throw insertedData.error;
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to upload agreement.");
       }
 
       setFeedback(t("uploadAgreementSuccess"));
@@ -254,6 +200,7 @@ export default function PartnershipAgreementPortal() {
         city: "",
         address: "",
         agreement_number: "",
+        message: "",
       });
       setSelectedFile(null);
       if (canManageAgreements) {
@@ -297,7 +244,7 @@ export default function PartnershipAgreementPortal() {
     try {
       let fileUrl = agreement.agreement_file_url;
       if (!fileUrl && agreement.agreement_file_path) {
-        fileUrl = await resolveSignedAgreementUrl(agreement.agreement_file_path);
+        fileUrl = await resolveSignedAgreementUrl(agreement.id);
       }
 
       if (!fileUrl) {
@@ -347,6 +294,7 @@ export default function PartnershipAgreementPortal() {
               <a href="#upload-agreement" className="rounded-full border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700">
                 {t("uploadSignedAgreementTitle")}
               </a>
+              <a href="#online-agreement" className="rounded-full border border-amber-300 bg-amber-50 px-5 py-3 font-semibold text-amber-800">Fill &amp; sign online</a>
             </div>
           </div>
           <div className="rounded-3xl border border-emerald-200 bg-white/80 p-6 shadow-sm">
@@ -461,6 +409,16 @@ export default function PartnershipAgreementPortal() {
             </div>
 
             <label className="grid gap-1 text-sm font-medium text-slate-700">
+              Message (optional)
+              <textarea
+                value={form.message}
+                onChange={(event) => setForm((value) => ({ ...value, message: event.target.value }))}
+                className="min-h-24 rounded-2xl border border-slate-300 px-4 py-3"
+                maxLength={2000}
+              />
+            </label>
+
+            <label className="grid gap-1 text-sm font-medium text-slate-700">
               {t("address")}
               <textarea
                 value={form.address}
@@ -504,6 +462,8 @@ export default function PartnershipAgreementPortal() {
           )}
         </div>
       </section>
+
+      <OfficialAgreementEditor />
 
       {canManageAgreements && (
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -578,15 +538,15 @@ export default function PartnershipAgreementPortal() {
 
                   <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
                     <label className="grid gap-1 text-sm font-medium text-slate-700">
-                      {t("notes")}
+                      Review comment / rejection reason (optional)
                       <textarea
-                        value={draftNotes[agreement.id] ?? agreement.notes ?? ""}
+                        value={draftNotes[agreement.id] ?? agreement.internal_notes ?? agreement.notes ?? ""}
                         onChange={(event) => setDraftNotes((value) => ({ ...value, [agreement.id]: event.target.value }))}
                         className="min-h-20 rounded-2xl border border-slate-300 px-3 py-2"
                       />
                     </label>
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => updateAgreement(agreement.id, { notes: draftNotes[agreement.id] ?? agreement.notes ?? "" })} className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
+                      <button type="button" onClick={() => updateAgreement(agreement.id, { internal_notes: draftNotes[agreement.id] ?? agreement.internal_notes ?? agreement.notes ?? "" })} className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
                         {t("save")}
                       </button>
                     </div>

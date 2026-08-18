@@ -1,39 +1,28 @@
--- ============================================
--- FIX FOR PDF AGREEMENT UPLOAD ISSUE
--- ============================================
--- 
--- Root Cause:
--- The storage policy for INSERT requires authentication (auth.uid() is not null),
--- but the PartnershipAgreementPortal form uses the anonymous key which has no user ID.
--- 
--- Solution:
--- Drop the restrictive INSERT policy and create a new one that allows public uploads.
---
--- To apply these changes:
--- 1. Go to Supabase Dashboard → SQL Editor
--- 2. Copy and paste the commands below
--- 3. Run them
--- ============================================
+-- Apply after 2026-08-18-public-partner-agreement-workflow.sql if migrations
+-- are being run manually. Public submissions are handled by the server route;
+-- these policies are defense in depth for the existing bucket.
 
--- Step 1: Drop the old restrictive policy
-DROP POLICY IF EXISTS organization_agreements_storage_insert_authenticated ON storage.objects;
+drop policy if exists organization_agreements_insert_public on public.organization_agreements;
+drop policy if exists organization_agreements_storage_select_public on storage.objects;
+drop policy if exists organization_agreements_storage_insert_authenticated on storage.objects;
+drop policy if exists organization_agreements_storage_insert_public on storage.objects;
 
--- Step 2: Create a new public INSERT policy
-CREATE POLICY organization_agreements_storage_insert_public
-  ON storage.objects
-  FOR INSERT
-  WITH CHECK (bucket_id = 'organization-agreements');
+create policy organization_agreements_storage_insert_public
+  on storage.objects
+  for insert
+  with check (
+    bucket_id = 'organization-agreements'
+    and name like 'public-submissions/%'
+  );
 
--- Step 3: Verify the policy was created (optional - just for inspection)
--- SELECT
---   schemaname,
---   tablename,
---   policyname,
---   permissive,
---   roles,
---   qual,
---   with_check
--- FROM pg_policies
--- WHERE tablename = 'objects' 
---   AND policyname LIKE 'organization_agreements_storage%'
--- ORDER BY policyname;
+create policy organization_agreements_storage_select_staff
+  on storage.objects
+  for select
+  using (
+    bucket_id = 'organization-agreements'
+    and auth.uid() is not null
+    and exists (
+      select 1 from public.users u
+      where u.id = auth.uid() and u.role in ('Staff', 'Admin')
+    )
+  );
