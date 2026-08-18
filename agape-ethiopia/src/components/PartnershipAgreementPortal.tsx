@@ -332,14 +332,6 @@ export default function PartnershipAgreementPortal() {
     }
   }
 
-  function openAgreement(agreement: AgreementRecord) {
-    if (!agreement.agreement_file_url) {
-      return;
-    }
-
-    window.open(agreement.agreement_file_url, "_blank", "noopener,noreferrer");
-  }
-
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:px-6 lg:px-8">
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-blue-50 via-white to-emerald-50 p-6 shadow-sm md:p-8">
