@@ -54,6 +54,8 @@ const organizationTypes = [
 const statusOptions = ["Pending Review", "Pending", "Approved", "Rejected"] as const;
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+const AGREEMENT_STORAGE_BUCKET = "organization-agreements";
+const AGREEMENT_SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 function isPdfFile(file: File | null) {
   if (!file) {
@@ -131,11 +133,34 @@ export default function PartnershipAgreementPortal() {
     });
   }, [agreements, search, statusFilter]);
 
+  async function resolveSignedAgreementUrl(filePath: string | null) {
+    if (!filePath) {
+      return null;
+    }
+
+    try {
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase.storage
+        .from(AGREEMENT_STORAGE_BUCKET)
+        .createSignedUrl(filePath, AGREEMENT_SIGNED_URL_TTL_SECONDS);
+
+      if (error) {
+        console.error("Agreement signed URL generation failed:", error);
+        return null;
+      }
+
+      return data?.signedUrl ?? null;
+    } catch (error) {
+      console.error("Agreement signed URL generation exception:", error);
+      return null;
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!selectedFile) {
-      setFeedback(t("uploadAgreementError"));
+      setFeedback(t("uploadAgreementSelectPdf") || "Please select a PDF agreement.");
       setFeedbackTone("error");
       return;
     }
@@ -163,16 +188,34 @@ export default function PartnershipAgreementPortal() {
       setIsUploading(true);
       const supabase = getSupabaseClient();
       const storagePath = `agreements/${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const uploadResult = await supabase.storage.from("organization-agreements").upload(storagePath, selectedFile, {
+
+      const uploadResult = await supabase.storage.from(AGREEMENT_STORAGE_BUCKET).upload(storagePath, selectedFile, {
         cacheControl: "3600",
         upsert: false,
+        contentType: "application/pdf",
       });
 
       if (uploadResult.error) {
+        const message = uploadResult.error.message?.toLowerCase() || "";
+        if (message.includes("bucket not found") || message.includes("not found")) {
+          throw new Error("Agreement storage is temporarily unavailable.");
+        }
+
+        if (message.includes("permission") || message.includes("policy") || message.includes("unauthorized")) {
+          throw new Error("You do not have permission to upload agreements.");
+        }
+
         throw uploadResult.error;
       }
 
-      const publicUrlResult = supabase.storage.from("organization-agreements").getPublicUrl(storagePath);
+      const signedUrlResult = await supabase.storage
+        .from(AGREEMENT_STORAGE_BUCKET)
+        .createSignedUrl(storagePath, AGREEMENT_SIGNED_URL_TTL_SECONDS);
+
+      if (signedUrlResult.error) {
+        throw signedUrlResult.error;
+      }
+
       const insertedData = await supabase
         .from("organization_agreements")
         .insert({
@@ -187,7 +230,7 @@ export default function PartnershipAgreementPortal() {
           agreement_number: form.agreement_number.trim() || null,
           agreement_file_name: selectedFile.name,
           agreement_file_path: storagePath,
-          agreement_file_url: publicUrlResult.data?.publicUrl ?? null,
+          agreement_file_url: signedUrlResult.data?.signedUrl ?? null,
           uploaded_by: userProfile?.id ?? null,
           status: "Pending Review",
         })
@@ -195,6 +238,7 @@ export default function PartnershipAgreementPortal() {
         .single();
 
       if (insertedData.error) {
+        await supabase.storage.from(AGREEMENT_STORAGE_BUCKET).remove([storagePath]).catch(() => undefined);
         throw insertedData.error;
       }
 
@@ -217,7 +261,17 @@ export default function PartnershipAgreementPortal() {
       }
     } catch (error) {
       console.error("Agreement upload failed:", error);
-      setFeedback(t("uploadAgreementError"));
+      const errorMessage = error instanceof Error ? error.message : "";
+
+      if (errorMessage.includes("storage is temporarily unavailable") || errorMessage.includes("Bucket not found")) {
+        setFeedback(t("uploadAgreementStorageUnavailable") || "Agreement storage is temporarily unavailable.");
+      } else if (errorMessage.includes("permission") || errorMessage.includes("unauthorized")) {
+        setFeedback(t("uploadAgreementPermissionDenied") || "You do not have permission to upload agreements.");
+      } else if (errorMessage.includes("saved") || errorMessage.includes("record")) {
+        setFeedback(t("uploadAgreementRecordFailed") || "The agreement was uploaded, but saving its record failed. Please try again.");
+      } else {
+        setFeedback(t("uploadAgreementError"));
+      }
       setFeedbackTone("error");
     } finally {
       setIsUploading(false);
@@ -235,6 +289,27 @@ export default function PartnershipAgreementPortal() {
     } catch (error) {
       console.error("Unable to update agreement:", error);
       setFeedback(t("unableToSaveChanges"));
+      setFeedbackTone("error");
+    }
+  }
+
+  async function openAgreement(agreement: AgreementRecord) {
+    try {
+      let fileUrl = agreement.agreement_file_url;
+      if (!fileUrl && agreement.agreement_file_path) {
+        fileUrl = await resolveSignedAgreementUrl(agreement.agreement_file_path);
+      }
+
+      if (!fileUrl) {
+        setFeedback(t("agreementUnavailable") || "This agreement is not available right now.");
+        setFeedbackTone("error");
+        return;
+      }
+
+      window.open(fileUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Unable to open agreement:", error);
+      setFeedback(t("agreementUnavailable") || "This agreement is not available right now.");
       setFeedbackTone("error");
     }
   }
