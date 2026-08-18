@@ -173,8 +173,6 @@ USING (auth.uid() = id)
 WITH CHECK (
   auth.uid() = id
   AND role = public.get_current_user_role()
-  AND email = (SELECT email FROM public.users WHERE id = auth.uid())
-  AND is_disabled = (SELECT is_disabled FROM public.users WHERE id = auth.uid())
 );
 
 CREATE POLICY users_update_admin

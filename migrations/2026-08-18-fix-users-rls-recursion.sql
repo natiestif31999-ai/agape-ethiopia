@@ -170,8 +170,6 @@ CREATE POLICY users_update_self ON public.users
   WITH CHECK (
     id = auth.uid()
     AND role = public.get_current_user_role()
-    AND email = (SELECT email FROM public.users WHERE id = auth.uid())
-    AND is_disabled = (SELECT is_disabled FROM public.users WHERE id = auth.uid())
   );
 
 CREATE POLICY users_update_admin ON public.users
