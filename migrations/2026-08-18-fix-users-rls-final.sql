@@ -197,31 +197,28 @@ TO authenticated
 USING (auth.is_admin());
 
 -- -----------------------------------------------------------------------------
--- 4) Preserve real user records without inserting fake data.
+-- 4) Preserve known real user rows without querying auth.users from SQL.
+--    If a profile row is missing, it should be created by the application after a
+--    valid authenticated user is present; do not insert fake rows here.
 -- -----------------------------------------------------------------------------
-INSERT INTO public.users (id, email, role, is_disabled, password_change_required)
-SELECT
-  au.id,
-  au.email,
-  CASE
-    WHEN au.email = 'admin@agapeethiopia.org' THEN 'Admin'
-    ELSE 'Staff'
-  END,
-  false,
-  false
-FROM auth.users au
-WHERE au.email IN (
-  'admin@agapeethiopia.org',
+UPDATE public.users
+SET role = 'Admin',
+    is_disabled = false,
+    password_change_required = false,
+    updated_at = now()
+WHERE lower(email) = 'admin@agapeethiopia.org'
+  AND role IS DISTINCT FROM 'Admin';
+
+UPDATE public.users
+SET role = 'Staff',
+    is_disabled = false,
+    password_change_required = false,
+    updated_at = now()
+WHERE lower(email) IN (
   'natiestif31999@gmail.com',
   'agape@gmail.com',
   'natiestif@gmail.com'
 )
-ON CONFLICT (id) DO UPDATE
-SET
-  email = EXCLUDED.email,
-  role = EXCLUDED.role,
-  is_disabled = EXCLUDED.is_disabled,
-  password_change_required = EXCLUDED.password_change_required,
-  updated_at = now();
+AND role IS DISTINCT FROM 'Staff';
 
 COMMIT;
