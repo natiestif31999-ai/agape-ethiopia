@@ -198,11 +198,11 @@ export default function AdminDashboardEnhanced() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-6">
+    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-slate-900">{t("adminControlCenter") || "Admin Control Center"}</h1>
-        <p className="mt-2 text-slate-600">{t("systemWideManagement") || "System-wide organizational management and oversight."}</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl font-bold text-slate-900 sm:text-4xl">{t("adminControlCenter") || "Admin Control Center"}</h1>
+        <p className="mt-2 text-sm text-slate-600 sm:text-base">{t("systemWideManagement") || "System-wide organizational management and oversight."}</p>
       </div>
 
       {/* System Alerts */}
@@ -248,8 +248,8 @@ export default function AdminDashboardEnhanced() {
         <>
           {/* Top KPIs Section */}
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("systemMetrics") || "System Metrics"}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("systemMetrics") || "System Metrics"}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <KPICard
                 label={t("totalBeneficiaries") || "Total Beneficiaries"}
                 value={kpiData.totalBeneficiaries}
@@ -277,8 +277,8 @@ export default function AdminDashboardEnhanced() {
 
           {/* Approvals Section */}
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("approvalStatus") || "Approval Status"}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("approvalStatus") || "Approval Status"}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               <KPICard
                 label={t("approvedRegistrations") || "Approved"}
                 value={kpiData.approvedRegistrations}
@@ -302,8 +302,8 @@ export default function AdminDashboardEnhanced() {
 
           {/* Staff Management Section */}
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("staffManagement") || "Staff Management"}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("staffManagement") || "Staff Management"}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <KPICard label={t("activeStaff") || "Active Staff"} value={kpiData.activeStaff} color="emerald" href="/admin" />
               <KPICard label={t("disabledStaff") || "Disabled Staff"} value={kpiData.disabledStaff} color="rose" href="/admin" />
             </div>
@@ -311,8 +311,8 @@ export default function AdminDashboardEnhanced() {
 
           {/* Donations Section */}
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("donationOverview") || "Donation Overview"}</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("donationOverview") || "Donation Overview"}</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
               <KPICard
                 label={t("donationTotal") || "Total Donations"}
                 value={`${kpiData.donationTotal.toLocaleString()}`}
@@ -330,8 +330,8 @@ export default function AdminDashboardEnhanced() {
 
           {/* Quick Admin Actions */}
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("adminActions") || "Admin Actions"}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("adminActions") || "Admin Actions"}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <Link
                 href="/admin"
                 className="rounded-lg border-2 border-blue-300 bg-blue-50 p-4 transition hover:border-blue-400 hover:bg-blue-100"
@@ -369,8 +369,8 @@ export default function AdminDashboardEnhanced() {
 
           {/* Recent Staff Activity */}
           <section>
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("staffDirectory") || "Staff Directory"}</h2>
-            <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("staffDirectory") || "Staff Directory"}</h2>
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
               {staffMembers.length === 0 ? (
                 <div className="p-8 text-center">
                   <p className="text-slate-500">{t("noStaffFound") || "No staff members found"}</p>

@@ -177,8 +177,8 @@ export default function StaffDashboardEnhanced() {
         <>
           {/* KPI Section */}
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("operationalMetrics") || "Operational Metrics"}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("operationalMetrics") || "Operational Metrics"}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
               <KPICard
                 label={t("totalBeneficiaries") || "Total Beneficiaries"}
                 value={kpiData.totalBeneficiaries}
@@ -220,8 +220,8 @@ export default function StaffDashboardEnhanced() {
 
           {/* Quick Actions */}
           <section className="mb-8">
-            <h2 className="mb-4 text-2xl font-bold text-slate-900">{t("quickActions") || "Quick Actions"}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("quickActions") || "Quick Actions"}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Link
                 href="/beneficiaries/new"
                 className="rounded-lg border-2 border-emerald-300 bg-emerald-50 p-4 transition hover:border-emerald-400 hover:bg-emerald-100"

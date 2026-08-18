@@ -201,28 +201,28 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-3 sm:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
             {beneficiary.first_name} {beneficiary.last_name}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
             {t("registrationNumber")}: {beneficiary.registration_number}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/dashboard/staff/registrations"
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 sm:px-4"
           >
             {t("back")}
           </Link>
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white transition hover:bg-blue-700 sm:px-4"
             >
               {t("edit")}
             </button>
@@ -231,9 +231,9 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
       </div>
 
       {/* Status Badge */}
-      <div className="flex gap-4 items-center">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
         <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
             beneficiary.status === "Approved"
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
               : beneficiary.status === "Rejected"
@@ -250,12 +250,12 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <div className="flex gap-8">
+        <div className="flex flex-wrap gap-4 sm:gap-8">
           {(["profile", "assessments", "distributions"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
+              className={`border-b-2 py-3 px-1 text-sm font-medium ${
                 activeTab === tab
                   ? "border-blue-600 text-blue-600 dark:text-blue-400"
                   : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
@@ -279,9 +279,9 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Personal Information
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   First Name
                 </label>
                 {isEditing ? (
@@ -397,9 +397,9 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Address
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Region
                 </label>
                 {isEditing ? (

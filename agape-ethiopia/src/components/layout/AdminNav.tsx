@@ -58,14 +58,14 @@ export default function AdminNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 font-semibold transition ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-3 font-semibold transition sm:px-4 ${
                 active
                   ? "bg-emerald-600 text-white shadow-lg"
                   : "text-slate-300 hover:bg-slate-700"
               }`}
             >
-              <span className="text-xl">{item.icon}</span>
-              <span className="hidden sm:inline">{t(item.labelKey) || item.labelKey}</span>
+              <span className="text-lg sm:text-xl">{item.icon}</span>
+              <span className="text-sm sm:text-base">{t(item.labelKey) || item.labelKey}</span>
             </Link>
           );
         })}
