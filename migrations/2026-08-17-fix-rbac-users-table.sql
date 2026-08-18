@@ -61,38 +61,104 @@ DROP POLICY IF EXISTS users_select_self ON public.users;
 DROP POLICY IF EXISTS users_select_admin ON public.users;
 DROP POLICY IF EXISTS users_update_self ON public.users;
 DROP POLICY IF EXISTS users_update_admin ON public.users;
+DROP POLICY IF EXISTS users_insert_admin ON public.users;
+DROP POLICY IF EXISTS users_delete_admin ON public.users;
+
+CREATE OR REPLACE FUNCTION public.get_current_user_role()
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
+  SELECT role::text
+  FROM public.users
+  WHERE id = auth.uid()
+  LIMIT 1;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_current_user_role() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_current_user_role() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.is_current_user_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
+  SELECT public.get_current_user_role() = 'Admin';
+$$;
+
+REVOKE ALL ON FUNCTION public.is_current_user_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_current_user_admin() TO authenticated;
 
 CREATE POLICY users_select_self ON public.users
   FOR SELECT
-  USING (auth.uid() = id);
+  USING (id = auth.uid());
 
 CREATE POLICY users_select_admin ON public.users
   FOR SELECT
   USING (
-    EXISTS (
-      SELECT 1 FROM public.users admin
-      WHERE admin.id = auth.uid()
-        AND admin.role = 'Admin'
-        AND admin.is_disabled = false
+    public.is_current_user_admin()
+    AND EXISTS (
+      SELECT 1
+      FROM public.users u
+      WHERE u.id = auth.uid()
+        AND u.is_disabled = false
     )
   );
 
 CREATE POLICY users_update_self ON public.users
   FOR UPDATE
-  USING (auth.uid() = id)
+  USING (id = auth.uid())
   WITH CHECK (
-    auth.uid() = id
-    AND role = (SELECT role FROM public.users WHERE id = auth.uid())
+    id = auth.uid()
+    AND role = public.get_current_user_role()
   );
 
 CREATE POLICY users_update_admin ON public.users
   FOR UPDATE
   USING (
-    EXISTS (
-      SELECT 1 FROM public.users admin
-      WHERE admin.id = auth.uid()
-        AND admin.role = 'Admin'
-        AND admin.is_disabled = false
+    public.is_current_user_admin()
+    AND EXISTS (
+      SELECT 1
+      FROM public.users u
+      WHERE u.id = auth.uid()
+        AND u.is_disabled = false
+    )
+  )
+  WITH CHECK (
+    public.is_current_user_admin()
+    AND EXISTS (
+      SELECT 1
+      FROM public.users u
+      WHERE u.id = auth.uid()
+        AND u.is_disabled = false
+    )
+  );
+
+CREATE POLICY users_insert_admin ON public.users
+  FOR INSERT
+  WITH CHECK (
+    public.is_current_user_admin()
+    AND EXISTS (
+      SELECT 1
+      FROM public.users u
+      WHERE u.id = auth.uid()
+        AND u.is_disabled = false
+    )
+  );
+
+CREATE POLICY users_delete_admin ON public.users
+  FOR DELETE
+  USING (
+    public.is_current_user_admin()
+    AND EXISTS (
+      SELECT 1
+      FROM public.users u
+      WHERE u.id = auth.uid()
+        AND u.is_disabled = false
     )
   );
 

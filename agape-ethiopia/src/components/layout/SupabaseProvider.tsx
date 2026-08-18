@@ -98,10 +98,10 @@ function AuthStateProvider({ children, supabase }: { children: React.ReactNode; 
 
     void loadSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event: string, currentSession: { session: Session | null } | null) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event: string, currentSession: Session | null) => {
       if (!mounted) return;
-      setSession(currentSession?.session ?? null);
-      if (!currentSession?.session?.user) {
+      setSession(currentSession);
+      if (!currentSession?.user) {
         setUserProfile(null);
         setIsLoading(false);
         return;
