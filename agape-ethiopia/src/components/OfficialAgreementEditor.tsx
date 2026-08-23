@@ -122,7 +122,8 @@ export default function OfficialAgreementEditor() {
   }
 
   async function previewAgreement() {
-    if (!signatureDataUrl || Object.values(values).some((value) => !value.trim())) {
+    const requiredValues = [values.organizationName, values.organizationType, values.representativeName, values.email, values.phone, values.region, values.city, values.address, values.signingDate];
+    if (!signatureDataUrl || requiredValues.some((value) => !value.trim())) {
       setFeedback("Complete the partner information and draw or upload a signature.");
       return;
     }

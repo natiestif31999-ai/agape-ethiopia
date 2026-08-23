@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { LanguageProvider } from "@/components/layout/LanguageProvider";
 import { SupabaseProvider } from "@/components/layout/SupabaseProvider";
 import ServiceWorker from "@/components/ServiceWorker";
+import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -166,7 +167,7 @@ export default function RootLayout({
       >
         <ServiceWorker />
         <LanguageProvider>
-          <SupabaseProvider>{children}</SupabaseProvider>
+          <SupabaseProvider><SiteSettingsProvider>{children}</SiteSettingsProvider></SupabaseProvider>
         </LanguageProvider>
       </body>
     </html>

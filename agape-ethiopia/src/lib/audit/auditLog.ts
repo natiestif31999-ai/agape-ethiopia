@@ -7,6 +7,7 @@ export type AuditAction =
   | "registration_approved"
   | "registration_rejected"
   | "beneficiary_updated"
+  | "beneficiary_message_sent"
   | "assessment_created"
   | "assessment_updated"
   | "donation_received"

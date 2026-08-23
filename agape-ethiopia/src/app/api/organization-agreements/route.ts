@@ -138,13 +138,48 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try {
+    body = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
+
+  const allowedFields = [
+    "organization_name",
+    "organization_type",
+    "contact_person",
+    "email",
+    "phone",
+    "region",
+    "city",
+    "address",
+    "agreement_number",
+    "agreement_file_url",
+    "agreement_file_name",
+    "agreement_file_path",
+    "uploaded_by",
+    "status",
+    "notes",
+    "internal_notes",
+    "public_message",
+    "agreement_version",
+    "signer_name",
+    "signed_at",
+    "signature_method",
+    "submission_source",
+  ];
+  const insertData = Object.fromEntries(allowedFields.filter((field) => field in body).map((field) => [field, body[field]]));
+  if (!insertData.organization_name || !insertData.organization_type || !insertData.contact_person || !insertData.email) {
+    return NextResponse.json({ error: "Required organization fields are missing." }, { status: 400 });
+  }
+
   const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
 
-  const { data, error } = await supabase.from("organization_agreements").insert(body).select("*").single();
+  const { data, error } = await supabase.from("organization_agreements").insert(insertData).select("*").single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

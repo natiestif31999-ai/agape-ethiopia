@@ -227,10 +227,14 @@ export default function PartnershipAgreementPortal() {
 
   async function updateAgreement(id: string, changes: Partial<AgreementRecord>) {
     try {
-      const supabase = getSupabaseClient();
-      const { error } = await supabase.from("organization_agreements").update(changes).eq("id", id);
-      if (error) {
-        throw error;
+      const response = await fetch(`/api/organization-agreements/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: changes.status, internal_notes: changes.internal_notes }),
+      });
+      if (!response.ok) {
+        const result = (await response.json()) as { error?: string };
+        throw new Error(result.error || "Unable to save agreement review.");
       }
       await loadAgreements();
     } catch (error) {

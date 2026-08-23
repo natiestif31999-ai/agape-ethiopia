@@ -11,9 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default async function BeneficiariesPage() {
-  try {
-    await requireStaff();
-  } catch {
+  const profile = await requireStaff();
+  if (!profile) {
     redirect("/login");
   }
 
