@@ -2466,7 +2466,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "validation.validBeneficiaryIdRequired": "ዝርዝር ፕሮፋይል ተጠቃሚ ንምርኣይ ቅኑዕ መለለዪ ተጠቃሚ የድሊ።",
     "*": "*",
     ".": " ",
-     "/login": "/login",
+    "/login": "/login",
   "assessments": "ገምጋማት",
   "beneficiaryProfileDescription": "ሓፈሻዊ መግለጺ ምዝገባን ታሪኽን ተጠቃሚ።",
 
@@ -2575,8 +2575,8 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "beneficiaryControl": "ቁጽጽር ተጠቀምቲ",
   "allBeneficiaryRecords": "ኩሎም መዝገባት ተጠቀምቲ",
   "donationReports": "ወፈያታት ኣስተዳድር",
-  "generateReports": "ሪፖርታት ርአ"
-  
+  "generateReports": "ሪፖርታት ኣቀምጥ"
+
   "systemSettings": "ስርዓት ቅንብራት",
   "configureSystemSettings": "ስርዓት ቅንብራት ኣዋጅ",
     "staffDirectory": "መዝገብ ሰራተኞች",
@@ -2591,6 +2591,8 @@ export const translations: Record<Locale, TranslationDictionary> = {
 
 "accountDisabled": "ኣካውንትካ ተሰናኺሉ ኣሎ። በጃኻ ምስ ኣስተዳዳሪ ተራኸብ።",
 
-"noPermission": "ነዚ ስርዓት ንምእታው ፍቓድ የብልካን።"
+"noPermission": "ነዚ ስርዓት ንምእታው ፍቓድ የብልካን።",
+
+
   },
 };
