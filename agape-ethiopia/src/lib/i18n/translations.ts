@@ -1215,7 +1215,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "assessmentSaved": "Madaalliin milkaa'inaan olkaa'ameera.",
   "newAssessment": "Madaallii Haaraa",
   "assessmentDescription": "Odeeffannoo safartuu kursiiwwan fayyadamaa sirnaan qindaa'e galchi.",
-  "beneficiaryId": "Eenyummaa Fayyadamaa"
+  "beneficiaryId": "Eenyummaa Fayyadamaa",
      "beneficiaryIdPlaceholder": "UUID Fayyadamaa",
 
   "hipWidth": "Bal'ina Mudhii",
@@ -1500,7 +1500,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
 
   "distributionReport.title": "Gabaasa Raabsa",
 
-  "distributionReport.description": "Raabsa meeshaalee dhiheenya raawwatamanii fi bal'ina namoota meeshaalee fudhatanii."
+  "distributionReport.description": "Raabsa meeshaalee dhiheenya raawwatamanii fi bal'ina namoota meeshaalee fudhatanii.",
   "report.regNumber": "Lakkoofsa Galmee",
   "report.name": "Maqaa",
   "report.region": "Naannoo",
@@ -1578,7 +1578,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "referralSource": "Madda Ergaa",
   "referralSourcePlaceholder": "Kilinika, maatii, hoogganaa hawaasaa",
 
-  "validation.validBeneficiaryIdRequired": "Bal'ina piroofaayila agarsiisuuf eenyummaan fayyadamaa sirrii barbaachisa."
+  "validation.validBeneficiaryIdRequired": "Bal'ina piroofaayila agarsiisuuf eenyummaan fayyadamaa sirrii barbaachisa.",
     "*": "*",
     ".": " ",
     "/login": "/login",
@@ -1972,7 +1972,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
 
   "accountDisabled": "ኣካውንትካ ተሰናኺሉ ኣሎ። ንዝያዳ ሓበሬታ ምስ ኣስተዳደር ተወከስ።",
 
-  "noPermission": "ነዚ ስርዓት ንምእታው ፍቓድ የብልካን።"
+  "noPermission": "ነዚ ስርዓት ንምእታው ፍቓድ የብልካን።",
      "firstName": "ቀዳማይ ስም",
 
   "fathersName": "ስም ኣቦ",
@@ -2145,7 +2145,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
 
   "beneficiaryIdPlaceholder": "UUID ተጠቃሚ",
 
-  "hipWidth": "ስፍሓት ሕቖ"
+  "hipWidth": "ስፍሓት ሕቖ",
    "hipWidthPlaceholder": "ስፍሓት ሕቖ",
 
   "measurements": "መለክዒታት",
@@ -2318,7 +2318,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
 
   "cancel": "ሰርዝ",
 
-  "saving": "ይዕቀብ ኣሎ..."
+  "saving": "ይዕቀብ ኣሎ...",
    "noApplicationsMatch": "ምስዚ ማጣሪያ ዝሰማማዑ መመልከቲታት የለዉን።",
   "distribution": "ምክፍፋል",
   "equipmentDistribution": "ምክፍፋል መሳርሒታት",
@@ -2446,7 +2446,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "donation.status.saved": "ወፈያ ብዓወት ተቐሚጡ።",
   "donation.donorName": "ስም ወፋዪ",
   "donation.itemType": "ዓይነት እቃ",
-  "donation.notes": "ማስታወሻ"
+  "donation.notes": "ማስታወሻ",
   "donation.placeholder.donorName": "ኣብነት፡ ኣዲስ ሪሊፍ ፈንድ",
   "donation.placeholder.itemType": "ዊልቸር፣ መመላለሲ መሳርሒ፣ ፍራሽ",
   "donation.placeholder.notes": "ዝርዝር ምብጻሕ፣ ህጹጽነት ወይ ሎጂስቲክስ ሓበሬታ ወስኽ።",
@@ -2463,7 +2463,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "referralSource": "ምንጪ ሪፈራል",
   "referralSourcePlaceholder": "ክሊኒክ፣ ስድራቤት፣ መራሒ ማሕበረሰብ",
 
-  "validation.validBeneficiaryIdRequired": "ዝርዝር ፕሮፋይል ተጠቃሚ ንምርኣይ ቅኑዕ መለለዪ ተጠቃሚ የድሊ።"
+  "validation.validBeneficiaryIdRequired": "ዝርዝር ፕሮፋይል ተጠቃሚ ንምርኣይ ቅኑዕ መለለዪ ተጠቃሚ የድሊ።",
     "*": "*",
     ".": " ",
      "/login": "/login",
@@ -2576,6 +2576,9 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "allBeneficiaryRecords": "ኩሎም መዝገባት ተጠቀምቲ",
   "donationReports": "ወፈያታት ኣስተዳድር",
   "generateReports": "ሪፖርታት ርአ"
+  
+  "systemSettings": "ስርዓት ቅንብራት",
+  "configureSystemSettings": "ስርዓት ቅንብራት ኣዋጅ",
     "staffDirectory": "መዝገብ ሰራተኞች",
 
 "noStaffFound": "ምንም ሰራተኛ ኣይተረኽበን",
