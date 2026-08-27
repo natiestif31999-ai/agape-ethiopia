@@ -1501,7 +1501,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "distributionReport.title": "Gabaasa Raabsa",
 
   "distributionReport.description": "Raabsa meeshaalee dhiheenya raawwatamanii fi bal'ina namoota meeshaalee fudhatanii."
-    "report.regNumber": "Lakkoofsa Galmee",
+  "report.regNumber": "Lakkoofsa Galmee",
   "report.name": "Maqaa",
   "report.region": "Naannoo",
   "report.kebele": "Keebilee",
@@ -2447,7 +2447,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "donation.donorName": "ስም ወፋዪ",
   "donation.itemType": "ዓይነት እቃ",
   "donation.notes": "ማስታወሻ"
-    "donation.placeholder.donorName": "ኣብነት፡ ኣዲስ ሪሊፍ ፈንድ",
+  "donation.placeholder.donorName": "ኣብነት፡ ኣዲስ ሪሊፍ ፈንድ",
   "donation.placeholder.itemType": "ዊልቸር፣ መመላለሲ መሳርሒ፣ ፍራሽ",
   "donation.placeholder.notes": "ዝርዝር ምብጻሕ፣ ህጹጽነት ወይ ሎጂስቲክስ ሓበሬታ ወስኽ።",
   "donation.save": "ወፈያ ኣቐምጥ",
