@@ -2575,7 +2575,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "beneficiaryControl": "ቁጽጽር ተጠቀምቲ",
   "allBeneficiaryRecords": "ኩሎም መዝገባት ተጠቀምቲ",
   "donationReports": "ወፈያታት ኣስተዳድር",
-  "generateReports": "ሪፖርታት ኣቀምጥ"
+  "generateReports": "ሪፖርታት ኣቀምጥ",
 
   "systemSettings": "ስርዓት ቅንብራት",
   "configureSystemSettings": "ስርዓት ቅንብራት ኣዋጅ",
