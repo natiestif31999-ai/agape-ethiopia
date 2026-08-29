@@ -59,6 +59,13 @@ interface BeneficiaryProfileProps {
   beneficiaryId: string;
 }
 
+interface BeneficiaryMessage {
+  id: string;
+  message: string;
+  sender_email: string;
+  created_at: string;
+}
+
 export default function BeneficiaryProfileDetails({ beneficiaryId }: BeneficiaryProfileProps) {
   const { t } = useLanguage();
   const [beneficiary, setBeneficiary] = useState<Beneficiary | null>(null);
@@ -72,6 +79,9 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Beneficiary> | null>(null);
   const [saving, setSaving] = useState(false);
+  const [messages, setMessages] = useState<BeneficiaryMessage[]>([]);
+  const [messageDraft, setMessageDraft] = useState("");
+  const [messageStatus, setMessageStatus] = useState<string | null>(null);
 
   // Load beneficiary data
   const loadBeneficiaryData = useCallback(async () => {
@@ -121,6 +131,12 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
       if (distData) {
         setDistributions(distData);
       }
+
+      const messagesResponse = await fetch(`/api/beneficiaries/${beneficiaryId}/messages`);
+      if (messagesResponse.ok) {
+        const result = (await messagesResponse.json()) as { messages?: BeneficiaryMessage[] };
+        setMessages(result.messages ?? []);
+      }
     } catch (err) {
       setError(t("errorLoadingData"));
       console.error("Error loading beneficiary:", err);
@@ -128,6 +144,21 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
       setLoading(false);
     }
   }, [beneficiaryId, t]);
+
+  async function sendMessage() {
+    const message = messageDraft.trim();
+    if (!message) return;
+    setMessageStatus(null);
+    const response = await fetch(`/api/beneficiaries/${beneficiaryId}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message }) });
+    const result = (await response.json()) as { error?: string; message?: BeneficiaryMessage };
+    if (!response.ok || !result.message) {
+      setMessageStatus(result.error || "Message could not be sent.");
+      return;
+    }
+    setMessages((current) => [result.message!, ...current]);
+    setMessageDraft("");
+    setMessageStatus("Message saved.");
+  }
 
   useEffect(() => {
     loadBeneficiaryData();
@@ -148,7 +179,18 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
       const { error: updateError } = await client
         .from("beneficiaries")
         .update({
-          ...editData,
+          first_name: editData.first_name?.trim(),
+          last_name: editData.last_name?.trim(),
+          date_of_birth: editData.date_of_birth || null,
+          gender: editData.gender,
+          phone: editData.phone?.trim(),
+          region: editData.region?.trim(),
+          kifle_ketema: editData.kifle_ketema?.trim() || null,
+          kebele: editData.kebele?.trim(),
+          house_number: editData.house_number?.trim() || null,
+          disability_type: editData.disability_type?.trim() || null,
+          referral_source: editData.referral_source?.trim() || null,
+          notes: editData.notes?.trim() || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", beneficiaryId);
@@ -274,6 +316,13 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
       {/* Profile Tab */}
       {activeTab === "profile" && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-6">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <h2 className="text-lg font-semibold text-gray-900">Send beneficiary response</h2>
+            <textarea value={messageDraft} onChange={(event) => setMessageDraft(event.target.value)} maxLength={4000} placeholder="Write a response or follow-up message" className="mt-3 min-h-24 w-full rounded-lg border border-gray-300 px-3 py-2" />
+            <button type="button" onClick={sendMessage} disabled={!messageDraft.trim()} className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Send message</button>
+            {messageStatus && <p className="mt-2 text-sm text-gray-700" role="status">{messageStatus}</p>}
+            {messages.length > 0 && <div className="mt-4 space-y-2">{messages.map((item) => <div key={item.id} className="rounded-lg bg-white p-3 text-sm"><p className="text-gray-800">{item.message}</p><p className="mt-1 text-xs text-gray-500">{item.sender_email} · {new Date(item.created_at).toLocaleString()}</p></div>)}</div>}
+          </div>
           {/* Personal Information */}
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">

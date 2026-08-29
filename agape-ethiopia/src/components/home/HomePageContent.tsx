@@ -4,12 +4,14 @@ import Image from "next/image";
 import TabPanel from "@/components/TabPanel";
 import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 import { useLanguage } from "@/components/layout/LanguageProvider";
+import PublicAnnouncements from "@/components/home/PublicAnnouncements";
 
 export default function HomePageContent() {
   const { t } = useLanguage();
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 lg:px-8">
+      <PublicAnnouncements />
       <section className="relative overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 via-white to-emerald-50 p-6 shadow-sm md:p-8">
         <div className="grid gap-8 md:grid-cols-2 md:items-center">
           <div>

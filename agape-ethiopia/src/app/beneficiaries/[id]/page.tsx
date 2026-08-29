@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import BeneficiaryProfile from "@/components/BeneficiaryProfile";
+import { requireStaff } from "@/lib/auth/serverAuth";
+import { redirect } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
@@ -12,6 +14,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function BeneficiaryPage({ params }: { params: Promise<{ id: string }> }) {
+  const profile = await requireStaff();
+  if (!profile) {
+    redirect("/login");
+  }
+
   const resolvedParams = await params;
 
   return (

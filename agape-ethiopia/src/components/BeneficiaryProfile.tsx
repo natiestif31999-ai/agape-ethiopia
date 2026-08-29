@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
@@ -127,6 +129,12 @@ export default function BeneficiaryProfile({ beneficiaryId }: { beneficiaryId: s
       {beneficiary ? (
         <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
           <div className="space-y-6">
+            {beneficiary.photo_url && (
+              <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-xl font-semibold text-slate-900">Profile photo</h3>
+                <img src={beneficiary.photo_url} alt={`Photo of ${beneficiary.first_name || "beneficiary"}`} className="mt-4 max-h-80 w-full rounded-2xl object-contain" />
+              </section>
+            )}
             {renderSection(
               t("registrationDetails"),
               <div className="grid gap-3">

@@ -1,5 +1,9 @@
 # PDF AGREEMENT UPLOAD FIX - COMPLETE DIAGNOSTIC REPORT
 
+> Updated 2026-08-18: public submissions now use the actual flat official PDF,
+> with server-side overlay embedding and controlled storage paths. The browser
+> never selects a bucket/path or receives the service-role key.
+
 ## Issue Summary
 Users were unable to upload PDF agreements through the public partnership form. The application displayed the generic error message:
 > "Unable to upload agreement. Please try again."

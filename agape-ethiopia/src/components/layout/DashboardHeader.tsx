@@ -31,7 +31,7 @@ export default function DashboardHeader({ title, userRole }: DashboardHeaderProp
           <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
             <div className="text-right">
               <p className="text-sm font-semibold text-slate-900">{userProfile?.email || "User"}</p>
-              <p className="text-xs text-slate-600">{userProfile?.role || "Staff"}</p>
+              <p className="text-xs text-slate-600">{userProfile?.role === "Admin" ? "Hello, welcome to Agape Admin" : "Hello, welcome to Agape Staff Member"}</p>
             </div>
             <button
               onClick={signOut}

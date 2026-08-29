@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import type { User } from "@supabase/supabase-js";
+import { createClient, type User } from "@supabase/supabase-js";
 import { isAdmin, isStaff } from "@/lib/auth/permissions";
 import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
 
@@ -33,6 +33,17 @@ export function getSupabaseServerClient() {
   });
 }
 
+function getSupabaseAdminClient() {
+  const config = getSupabaseConfig();
+  if (!config.serviceRoleKey) {
+    return null;
+  }
+
+  return createClient(config.url, config.serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = getSupabaseServerClient();
   if (!supabase) {
@@ -58,18 +69,37 @@ export async function getUserProfile(): Promise<AppUserProfile | null> {
     return null;
   }
 
-  const { data, error } = await supabase.from("users").select("id,email,role,is_disabled,password_change_required").eq("id", currentUser.id).maybeSingle();
-  if (error) {
-    const message = error.message || "Unknown profile error";
-    const isMissingRbAddedColumns = /column.*(role|is_disabled|password_change_required)|does not exist/i.test(message);
+  const profileFields = "id,email,role,is_disabled,password_change_required";
+  const { data, error } = await supabase.from("users").select(profileFields).eq("id", currentUser.id).maybeSingle();
+  if (error || !data) {
+    if (error) {
+      const message = error.message || "Unknown profile error";
+      const isMissingRbAddedColumns = /column.*(role|is_disabled|password_change_required)|does not exist/i.test(message);
 
-    console.error("Error loading user profile:", message);
+      console.error("Error loading user profile:", message);
 
-    if (isMissingRbAddedColumns) {
-      throw new Error("The live users table is missing the required RBAC columns. Run the RBAC migration before continuing.");
+      if (isMissingRbAddedColumns) {
+        throw new Error("The live users table is missing the required RBAC columns. Run the RBAC migration before continuing.");
+      }
     }
 
-    return null;
+    const adminClient = getSupabaseAdminClient();
+    if (!adminClient) {
+      return null;
+    }
+
+    const { data: adminProfile, error: adminProfileError } = await adminClient
+      .from("users")
+      .select(profileFields)
+      .eq("id", currentUser.id)
+      .maybeSingle();
+    if (adminProfileError) {
+      console.error("Error loading profile with server fallback:", adminProfileError.message);
+      return null;
+    }
+    if (adminProfile) {
+      return adminProfile as AppUserProfile;
+    }
   }
 
   if (data) {
@@ -80,7 +110,13 @@ export async function getUserProfile(): Promise<AppUserProfile | null> {
     return null;
   }
 
-  const { data: newProfile, error: insertError } = await supabase
+  const adminClient = getSupabaseAdminClient();
+  if (!adminClient) {
+    console.error("Cannot provision profile: Supabase service role is not configured");
+    return null;
+  }
+
+  const { data: newProfile, error: insertError } = await adminClient
     .from("users")
     .insert({ id: currentUser.id, email: currentUser.email, role: "Staff", password_change_required: true })
     .select("id,email,role,is_disabled,password_change_required")

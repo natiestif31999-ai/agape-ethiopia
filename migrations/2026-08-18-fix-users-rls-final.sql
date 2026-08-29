@@ -73,80 +73,10 @@ DROP POLICY IF EXISTS users_update_admin ON public.users;
 DROP POLICY IF EXISTS users_insert_admin ON public.users;
 DROP POLICY IF EXISTS users_delete_admin ON public.users;
 
-DROP FUNCTION IF EXISTS auth.is_admin();
-DROP FUNCTION IF EXISTS auth.is_staff();
-DROP FUNCTION IF EXISTS public.get_current_user_role();
-DROP FUNCTION IF EXISTS public.is_current_user_admin();
-
--- -----------------------------------------------------------------------------
--- 2) Create secure role helper functions.
---    These are SECURITY DEFINER and fixed search_path, so they do not recursively
---    trigger the public.users RLS policy evaluation.
--- -----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION auth.is_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog, auth
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.users u
-    WHERE u.id = auth.uid()
-      AND u.role = 'Admin'
-      AND u.is_disabled = false
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION auth.is_staff()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog, auth
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.users u
-    WHERE u.id = auth.uid()
-      AND u.is_disabled = false
-      AND u.role IN ('Staff', 'Admin')
-  );
-$$;
-
-REVOKE ALL ON FUNCTION auth.is_admin() FROM PUBLIC;
-REVOKE ALL ON FUNCTION auth.is_staff() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION auth.is_admin() TO authenticated;
-GRANT EXECUTE ON FUNCTION auth.is_staff() TO authenticated;
-
-CREATE OR REPLACE FUNCTION public.get_current_user_role()
-RETURNS text
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog, auth
-AS $$
-  SELECT u.role::text
-  FROM public.users u
-  WHERE u.id = auth.uid()
-  LIMIT 1;
-$$;
-
-CREATE OR REPLACE FUNCTION public.is_current_user_admin()
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public, pg_catalog, auth
-AS $$
-  SELECT COALESCE(public.get_current_user_role(), '') = 'Admin';
-$$;
-
-REVOKE ALL ON FUNCTION public.get_current_user_role() FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.is_current_user_admin() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.get_current_user_role() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.is_current_user_admin() TO authenticated;
+-- The existing public.get_current_user_role() and
+-- public.is_current_user_admin() helpers are created by the preceding RBAC
+-- migration. Supabase does not allow this migration role to create functions
+-- in the protected auth schema, so preserve those existing helpers.
 
 -- -----------------------------------------------------------------------------
 -- 3) Safe public.users policies.
@@ -163,7 +93,7 @@ CREATE POLICY users_select_admin
 ON public.users
 FOR SELECT
 TO authenticated
-USING (auth.is_admin());
+USING (public.is_current_user_admin());
 
 CREATE POLICY users_update_self
 ON public.users
@@ -179,20 +109,20 @@ CREATE POLICY users_update_admin
 ON public.users
 FOR UPDATE
 TO authenticated
-USING (auth.is_admin())
-WITH CHECK (auth.is_admin());
+USING (public.is_current_user_admin())
+WITH CHECK (public.is_current_user_admin());
 
 CREATE POLICY users_insert_admin
 ON public.users
 FOR INSERT
 TO authenticated
-WITH CHECK (auth.is_admin());
+WITH CHECK (public.is_current_user_admin());
 
 CREATE POLICY users_delete_admin
 ON public.users
 FOR DELETE
 TO authenticated
-USING (auth.is_admin());
+USING (public.is_current_user_admin());
 
 -- -----------------------------------------------------------------------------
 -- 4) Preserve known real user rows without querying auth.users from SQL.

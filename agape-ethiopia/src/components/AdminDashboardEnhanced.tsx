@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import AdminAnnouncements from "@/components/admin/AdminAnnouncements";
 
 interface AdminKPIData {
   totalBeneficiaries: number;
@@ -246,6 +247,7 @@ export default function AdminDashboardEnhanced() {
 
       {!loading && (
         <>
+          <AdminAnnouncements />
           {/* Top KPIs Section */}
           <section className="mb-8">
             <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">{t("systemMetrics") || "System Metrics"}</h2>
