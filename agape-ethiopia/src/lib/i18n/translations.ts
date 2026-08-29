@@ -408,9 +408,6 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "referralSource": "Referral source",
     "referralSourcePlaceholder": "Clinic, family, community leader",
     "validation.validBeneficiaryIdRequired": "A valid beneficiary ID is required to display profile details.",
-    "*": "*",
-    ".": " ",
-    "/login": "/login",
     "assessments": "Assessments",
     "beneficiaryProfileDescription": "Beneficiary registration and history summary.",
     "beneficiary_id,equipment_type": "Beneficiary_id,equipment_type",
@@ -976,9 +973,6 @@ export const translations: Record<Locale, TranslationDictionary> = {
 "referralSource": "የሪፈራል ምንጭ",
 "referralSourcePlaceholder": "ክሊኒክ፣ ቤተሰብ፣ የማህበረሰብ መሪ",
 "validation.validBeneficiaryIdRequired": "የመገለጫ ዝርዝሮችን ለማሳየት ትክክለኛ የተጠቃሚ መለያ ያስፈልጋል።",
-"*": "*",
-".": " ",
-"/login": "/login",
 "assessments": "ግምገማዎች",
 "beneficiaryProfileDescription": "የተጠቃሚ ምዝገባና የታሪክ ማጠቃለያ።",
 "beneficiary_id,equipment_type": "የተጠቃሚ_መለያ፣የመሳሪያ_ዓይነት",
@@ -1579,9 +1573,6 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "referralSourcePlaceholder": "Kilinika, maatii, hoogganaa hawaasaa",
 
   "validation.validBeneficiaryIdRequired": "Bal'ina piroofaayila agarsiisuuf eenyummaan fayyadamaa sirrii barbaachisa.",
-    "*": "*",
-    ".": " ",
-    "/login": "/login",
 
   "assessments": "Madaalliiwwan",
 
@@ -1778,8 +1769,6 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "noPermission": "Sirna kana seenuuf hayyama hin qabdu."
   },
   ti: {
-    "/login": "/login",
-
   "assessments": "ገምጋማት",
 
   "beneficiaryProfileDescription": "ሓፈሻዊ መግለጺ ምዝገባን ታሪኽን ተጠቃሚ።",
@@ -2464,135 +2453,5 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "referralSourcePlaceholder": "ክሊኒክ፣ ስድራቤት፣ መራሒ ማሕበረሰብ",
 
   "validation.validBeneficiaryIdRequired": "ዝርዝር ፕሮፋይል ተጠቃሚ ንምርኣይ ቅኑዕ መለለዪ ተጠቃሚ የድሊ።",
-    "*": "*",
-    ".": " ",
-    "/login": "/login",
-  "assessments": "ገምጋማት",
-  "beneficiaryProfileDescription": "ሓፈሻዊ መግለጺ ምዝገባን ታሪኽን ተጠቃሚ።",
-
-  "beneficiary_id,equipment_type": "መለለዪ_ተጠቃሚ፣ዓይነት_መሳርሒ",
-  "disabilityType": "ዓይነት ስንክልና",
-  "disabilityTypeOtherDescription": "ነቲ ስንክልና ግለጽ",
-  "disabilityTypeOtherPlaceholder": "ካልእ ስንክልና ግለጽ",
-  "equipmentDistributions": "ምክፍፋል መሳርሒታት",
-  "equipment_type,equipment_size": "ዓይነት_መሳርሒ፣ዓቐን_መሳርሒ",
-
-  "id,assessment_date,measurements,wheelchair_fit,notes,recommendations": "መለለዪ፣ዕለት_ገምጋም፣መለክዒታት፣ምስክር_ዊልቸር፣ማስታወሻታት፣ምኽርታት",
-
-  "id,beneficiary_id,equipment_type,equipment_size,distribution_date,distribution_location,received_by,signature_confirmed,notes": "መለለዪ፣መለለዪ_ተጠቃሚ፣ዓይነት_መሳርሒ፣ዓቐን_መሳርሒ፣ዕለት_ምክፍፋል፣ቦታ_ምክፍፋል፣ብዝተቐበለ፣ፊርማ_ተረጋጊጹ፣ማስታወሻታት",
-
-  "id,distribution_date,equipment_type,equipment_size,distribution_location,received_by,signature_confirmed,notes": "መለለዪ፣ዕለት_ምክፍፋል፣ዓይነት_መሳርሒ፣ዓቐን_መሳርሒ፣ቦታ_ምክፍፋል፣ብዝተቐበለ፣ፊርማ_ተረጋጊጹ፣ማስታወሻታት",
-
-  "id,email,role,is_disabled": "መለለዪ፣ኢሜይል፣ግደፍ፣ተሰናኺሉ",
-  "id,first_name,last_name,phone,region,status": "መለለዪ፣ስም_መጀመርታ፣ስም_ሓደ፣ስልኪ፣ክልል፣ኩነታት",
-  "id,key,value": "መለለዪ፣መፍትሕ፣ዋጋ",
-
-  "id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url": "መለለዪ፣ቁጽሪ_ምዝገባ፣ስም_መጀመርታ፣ማእከላይ_ስም፣ስም_ሓደ፣ስልኪ፣ክልል፣ቀበሌ፣መራኸቢ_ሊንክ_ስእሊ",
-
-  "id,registration_number,first_name,middle_name,last_name,region,kifle_ketema,kebele,house_number": "መለለዪ፣ቁጽሪ_ምዝገባ፣ስም_መጀመርታ፣ማእከላይ_ስም፣ስም_ሓደ፣ክልል፣ክፍለ_ከተማ፣ቀበሌ፣ቁጽሪ_ገዛ",
-
-  "id,registration_number,registration_date,first_name,middle_name,last_name,date_of_birth,gender,phone,region,kifle_ketema,kebele,house_number,notes,photo_url": "መለለዪ፣ቁጽሪ_ምዝገባ፣ዕለት_ምዝገባ፣ስም_መጀመርታ፣ማእከላይ_ስም፣ስም_ሓደ፣ዕለት_ልደት፣ጾታ፣ስልኪ፣ክልል፣ክፍለ_ከተማ፣ቀበሌ፣ቁጽሪ_ገዛ፣ማስታወሻታት፣መራኸቢ_ሊንክ_ስእሊ",
-
-  "key,value": "መፍትሕ፣ዋጋ",
-  "lastName": "ስም ሓደ",
-  "middleName": "ማእከላይ ስም",
-  "noAdditionalNotes": "ተወሳኺ ማስታወሻ የለን።",
-  "savingAssignment": "ምደባ ይቕመጥ ኣሎ...",
-  "selectDisabilityType": "ዓይነት ስንክልና ምረጽ",
-
-  "settings.saveFailed": "ምቕማጥ ኣይተዓወተን:",
-  "settings.saved": "ቅንብራት ተቐሚጦም።",
-
-  "seatWidth": "ስፍሓት መቐመጢ",
-  "armrestHeight": "ቁመት መደገፊ ኢድ",
-  "footrestLength": "ንውሓት መደገፊ እግሪ",
-  "overallHeight": "ጠቕላላ ቁመት",
-  "weight": "ክብደት",
-
-  "deliveryConfirmation": "ምርግጋጽ ምብጻሕ",
-  "delivery.date": "ዕለት ምብጻሕ",
-  "delivery.wheelchairType": "ዓይነት ዊልቸር",
-  "delivery.wheelchairSize": "ዓቐን ዊልቸር",
-  "delivery.serialNumber": "ቁጽሪ መለለዪ",
-  "delivery.beneficiarySignature": "ፊርማ ተጠቃሚ",
-  "delivery.partnerSignature": "ፊርማ መሻርኽቲ",
-  "delivery.print": "ኣትም / ከም PDF ዓቅብ",
-
-  "organization.agreements": "ስምምዓት ውድብ",
-  "organization.downloadAgreement": "ስምምዕ ኣውርድ",
-  "organization.uploadAgreement": "ዝተፈረመ ስምምዕ ስቐል",
-  "organization.type": "ዓይነት ውድብ",
-  "organization.type.hospital": "ሆስፒታል",
-  "organization.type.clinic": "ክሊኒክ",
-  "organization.type.rehab": "ማእከል ምሕዋይ",
-  "organization.type.ngo": "NGO",
-  "organization.type.gov": "መንግስታዊ ውድብ",
-  "organization.type.other": "ካልእ መሻርኽቲ",
-
-  "Spinal Cord Injury": "መጉዳእቲ ኣከርካሪ",
-  "Cerebral Palsy": "ሓማም ሽባነት ህጻናት",
-  "Amputation": "ምቑራጽ ኣካል",
-  "Polio": "ፖሊዮ",
-  "Muscular Dystrophy": "ሕማም ድኽመት ጭዋዳታት",
-  "Multiple Sclerosis": "ብዙሕ ስክለሮሲስ",
-  "Stroke": "ስትሮክ",
-  "Arthritis": "ሕማም መላግቦ",
-  "Congenital Disability": "ብውልደት ዝመጽእ ስንክልና",
-  "Temporary Mobility Impairment": "ግዝያዊ ጸገም ምንቅስቓስ",
-
-  "staffDashboardDescription": "ሓፈሻዊ ምልከታ ተጠቀምቲ፣ ምዝገባታትን መለክዒታት ስራሕን።",
-  "operationalMetrics": "መለክዒታት ስራሕ",
-  "totalBeneficiaries": "ጠቕላላ ተጠቀምቲ",
-  "newRegistrations": "ሓደሽቲ ምዝገባታት",
-  "pendingApprovals": "ዝጽበዩ ፍቓዳት",
-  "approvedRegistrations": "ዝተፈቐዱ ምዝገባታት",
-  "rejectedRegistrations": "ዝተነጸጉ ምዝገባታት",
-  "assessmentsPending": "ዝጽበዩ ገምጋማት",
-
-  "quickActions": "ቅልጡፍ ተግባራት",
-  "addNewBeneficiaryRecord": "ሓድሽ ተጠቃሚ ወስኽ",
-  "findExistingBeneficiary": "ዝነበረ ተጠቃሚ ድለ",
-  "recordWheelchairMeasurements": "መለክዒታት መዝግብ",
-  "recordEquipmentDistribution": "ምክፍፋል መዝግብ",
-  "recentBeneficiaries": "ናይ ቀረባ ግዜ ተጠቀምቲ",
-  "noBeneficiariesFound": "ምንም ተጠቃሚ ኣይተረኽበን",
-
-  "adminControlCenter": "ማእከል ቁጽጽር ኣስተዳደር",
-  "systemWideManagement": "ምሉእ ኣስተዳደር ውድባዊ ስርዓት።",
-  "systemMetrics": "መለክዒታት ስርዓት",
-  "registrationsToday": "ምዝገባታት ሎሚ",
-  "registrationsThisMonth": "ምዝገባታት (ወርሒ)",
-  "approvalStatus": "ኩነታት ፍቓድ",
-  "activeStaff": "ንጡፋት ሰራሕተኛታት",
-  "disabledStaff": "ዝተሰናኸሉ ሰራሕተኛታት",
-
-  "donationOverview": "ሓፈሻዊ ምልከታ ወፈያ",
-  "donationTotal": "ጠቕላላ ወፈያ",
-  "donationsThisMonth": "ወፈያታት (ወርሒ)",
-
-  "adminActions": "ተግባራት ኣስተዳደር",
-  "manageStaffAccounts": "ኣካውንታት ሰራሕተኛታት ኣስተዳድር",
-  "beneficiaryControl": "ቁጽጽር ተጠቀምቲ",
-  "allBeneficiaryRecords": "ኩሎም መዝገባት ተጠቀምቲ",
-  "donationReports": "ወፈያታት ኣስተዳድር",
-  "generateReports": "ሪፖርታት ኣቀምጥ",
-
-  "systemSettings": "ስርዓት ቅንብራት",
-  "configureSystemSettings": "ስርዓት ቅንብራት ኣዋጅ",
-    "staffDirectory": "መዝገብ ሰራተኞች",
-
-"noStaffFound": "ምንም ሰራተኛ ኣይተረኽበን",
-
-"errorLoadingData": "ዳታ ኣብ ምጽዓን ጌጋ ተፈጢሩ",
-
-"staffDashboard": "ዳሽቦርድ ሰራተኛ",
-
-"staffAdminPortal": "ፖርታል ሰራተኛ / ኣስተዳደር",
-
-"accountDisabled": "ኣካውንትካ ተሰናኺሉ ኣሎ። በጃኻ ምስ ኣስተዳዳሪ ተራኸብ።",
-
-"noPermission": "ነዚ ስርዓት ንምእታው ፍቓድ የብልካን።",
-
-
   },
 };
