@@ -5,15 +5,21 @@ import DonationForm from "@/components/DonationForm";
 import RequestPortal from "@/components/RequestPortal";
 import AdminPanel from "@/components/AdminPanel";
 import ImpactHero from "@/components/ImpactHero";
-
-const tabs = [
-  { id: "home", label: "Master Home" },
-  { id: "donations", label: "Donation Form" },
-  { id: "requests", label: "Request Portal" },
-  { id: "admin", label: "Admin Center" },
-] as const;
+import { useAuth } from "@/components/layout/SupabaseProvider";
 
 export default function TabPanel() {
+  const { isAdmin } = useAuth();
+
+  const tabs = useMemo(
+    () => [
+      { id: "home", label: "Master Home" },
+      { id: "donations", label: "Donation Form" },
+      { id: "requests", label: "Request Portal" },
+      ...(isAdmin ? [{ id: "admin", label: "Admin Center" } as const] : []),
+    ],
+    [isAdmin]
+  );
+
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["id"]>("home");
 
   const panel = useMemo(() => {
@@ -29,6 +35,10 @@ export default function TabPanel() {
         return <ImpactHero />;
     }
   }, [activeTab]);
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <section className="space-y-8">

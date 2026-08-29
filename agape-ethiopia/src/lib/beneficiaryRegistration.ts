@@ -13,12 +13,93 @@ function normalizeValue(value: string | undefined | null) {
   return value?.trim() ?? "";
 }
 
-export function normalizeRegionCode(value: string | undefined | null) {
-  const cleaned = normalizeValue(value)
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "");
+export function normalizeEthiopianPhone(value: string | undefined | null): string {
+  const raw = normalizeValue(value);
+  if (!raw) {
+    return "";
+  }
 
-  return cleaned ? cleaned.slice(0, 3) : "";
+  const digitsOnly = raw.replace(/\D/g, "");
+  if (!digitsOnly) {
+    return "";
+  }
+
+  let compact = digitsOnly;
+  if (compact.startsWith("251")) {
+    compact = compact.slice(3);
+  }
+
+  if (compact.startsWith("0")) {
+    compact = compact.slice(1);
+  }
+
+  if (compact.length !== 9 || !/^9\d{8}$/.test(compact)) {
+    return "";
+  }
+
+  return `+251${compact}`;
+}
+
+export function isValidEthiopianPhone(value: string | undefined | null): boolean {
+  return normalizeEthiopianPhone(value).length > 0;
+}
+
+export function normalizeRegionCode(value: string | undefined | null) {
+  const cleaned = normalizeValue(value).trim();
+  if (!cleaned) {
+    return "";
+  }
+
+  const normalized = cleaned
+    .toUpperCase()
+    .replace(/[_-]/g, " ")
+    .replace(/[^A-Z ]/g, "")
+    .trim();
+
+  const regionMap: Record<string, string> = {
+    "ADDIS ABABA": "AA",
+    "ADDISABABA": "AA",
+    AFA: "AFA",
+    AFAR: "AFA",
+    AMH: "AMH",
+    AMHARA: "AMH",
+    BEN: "BEN",
+    "BENISHANGUL GUMUZ": "BEN",
+    "BENISHANGULGUMUZ": "BEN",
+    DD: "DD",
+    "DIRE DAWA": "DD",
+    "DIREDAWA": "DD",
+    GAM: "GAM",
+    GAMBELA: "GAM",
+    HAR: "HAR",
+    HARARI: "HAR",
+    OR: "ORO",
+    ORO: "ORO",
+    OROMIA: "ORO",
+    SID: "SID",
+    SIDAMA: "SID",
+    SOM: "SOM",
+    SOMALI: "SOM",
+    SNN: "SNN",
+    SNNP: "SNN",
+    "SOUTH ETHIOPIA": "SET",
+    "SOUTHETHIOPIA": "SET",
+    "CENTRAL ETHIOPIA": "CET",
+    "CENTRALETHIOPIA": "CET",
+    TIG: "TIG",
+    TIGRAY: "TIG",
+    SWE: "SWE",
+    "SOUTHWEST ETHIOPIA": "SWE",
+    "SOUTHWESTETHIOPIA": "SWE",
+  };
+
+  return regionMap[normalized] || normalized.replace(/\s+/g, "").slice(0, 3) || "";
+}
+
+export function buildBeneficiaryId(region: string | undefined | null) {
+  const code = normalizeRegionCode(region);
+  const regionCode = code || "GEN";
+  return `AG-B-${regionCode}-`;
 }
 
 export function validatePublicBeneficiaryFields(values: Record<string, string | undefined | null>) {
@@ -29,6 +110,10 @@ export function validatePublicBeneficiaryFields(values: Record<string, string | 
       const label = field.replace(/_/g, " ");
       errors.push(`Please enter your ${label}.`);
     }
+  }
+
+  if (!isValidEthiopianPhone(values.phone)) {
+    errors.push("Please enter a valid Ethiopian phone number.");
   }
 
   const gender = normalizeValue(values.gender).toLowerCase();
@@ -47,7 +132,7 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
     last_name: normalizeValue(values.last_name),
     date_of_birth: normalizeValue(values.date_of_birth),
     gender: normalizeValue(values.gender).toLowerCase(),
-    phone: normalizeValue(values.phone),
+    phone: normalizeEthiopianPhone(values.phone),
     region: normalizeValue(values.region),
     kifle_ketema: normalizeValue(values.kifle_ketema),
     kebele: normalizeValue(values.kebele),
@@ -59,6 +144,7 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
 
   return {
     registration_date: normalized.registration_date || new Date().toISOString().slice(0, 10),
+    beneficiary_id: null,
     registration_number: null,
     region_code: normalizeRegionCode(values.region),
     first_name: normalized.first_name,
@@ -67,6 +153,7 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
     date_of_birth: normalized.date_of_birth || null,
     gender: normalized.gender || "",
     phone: normalized.phone,
+    phone_normalized: normalized.phone,
     region: normalized.region,
     kifle_ketema: normalized.kifle_ketema || null,
     kebele: normalized.kebele,

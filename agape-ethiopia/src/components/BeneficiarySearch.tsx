@@ -9,6 +9,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 
 type Beneficiary = {
   id: string;
+  beneficiary_id?: string;
   registration_number?: string;
   first_name?: string;
   middle_name?: string;
@@ -38,8 +39,9 @@ export default function BeneficiarySearch() {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("beneficiaries")
-      .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url")
-      .order("created_at", { ascending: false })
+      .select("id,beneficiary_id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
+      .order("region", { ascending: true })
+      .order("created_at", { ascending: true })
       .limit(25);
 
     if (error) {
@@ -74,6 +76,7 @@ export default function BeneficiarySearch() {
 
       if (trimmedSearch) {
         const orFilter = [
+          `beneficiary_id.ilike.%${trimmedSearch}%`,
           `registration_number.ilike.%${trimmedSearch}%`,
           `first_name.ilike.%${trimmedSearch}%`,
           `middle_name.ilike.%${trimmedSearch}%`,
@@ -85,9 +88,10 @@ export default function BeneficiarySearch() {
 
         const { data, error } = await supabase
           .from("beneficiaries")
-          .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url")
+          .select("id,beneficiary_id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
           .or(orFilter)
-          .order("created_at", { ascending: false })
+          .order("region", { ascending: true })
+          .order("created_at", { ascending: true })
           .limit(50);
 
         if (error) throw error;
@@ -109,9 +113,10 @@ export default function BeneficiarySearch() {
         if (assignmentIds.length > 0) {
           const { data, error } = await supabase
             .from("beneficiaries")
-            .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url")
+            .select("id,beneficiary_id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
             .in("id", assignmentIds)
-            .order("created_at", { ascending: false })
+            .order("region", { ascending: true })
+            .order("created_at", { ascending: true })
             .limit(50);
 
           if (error) throw error;
@@ -163,6 +168,25 @@ export default function BeneficiarySearch() {
     }
   }
 
+  const organizedResults = Array.from(
+    results.reduce((groups, beneficiary) => {
+      const region = beneficiary.region?.trim() || "Unassigned";
+      const bucket = groups.get(region) ?? [];
+      bucket.push(beneficiary);
+      groups.set(region, bucket);
+      return groups;
+    }, new Map<string, Beneficiary[]>()).entries()
+  )
+    .sort(([regionA], [regionB]) => regionA.localeCompare(regionB))
+    .map(([region, beneficiaries]) => ({
+      region,
+      beneficiaries: beneficiaries.sort((left, right) => {
+        const leftDate = left.created_at ? new Date(left.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+        const rightDate = right.created_at ? new Date(right.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+        return leftDate - rightDate;
+      }),
+    }));
+
   const resultCount = results.length;
 
   return (
@@ -205,49 +229,54 @@ export default function BeneficiarySearch() {
 
       <p className="mt-4 text-sm text-slate-500">{status}</p>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
-        <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-          <thead className="bg-slate-50 text-slate-700">
-            <tr>
-              <th className="px-4 py-3">{t("beneficiary")}</th>
-              <th className="px-4 py-3">{t("registrationNumber")}</th>
-              <th className="px-4 py-3">{t("phone")}</th>
-              <th className="px-4 py-3">{t("region")}</th>
-              <th className="px-4 py-3">{t("kebele")}</th>
-              <th className="px-4 py-3">{t("equipment")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
-            {results.map((beneficiary) => (
-              <tr key={beneficiary.id}>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    {beneficiary.photo_url ? (
-                      <Image src={beneficiary.photo_url} alt="beneficiary portrait" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-slate-100" />
-                    )}
-                    <Link href={`/beneficiaries/${beneficiary.id}`} className="font-semibold text-slate-900 hover:text-emerald-700">
-                      {[beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name].filter(Boolean).join(" ") || t("unknownBeneficiary")}
-                    </Link>
-                  </div>
-                </td>
-                <td className="px-4 py-3">{beneficiary.registration_number ?? t("unknown")}</td>
-                <td className="px-4 py-3">{beneficiary.phone ?? t("unknown")}</td>
-                <td className="px-4 py-3">{beneficiary.region ?? t("unknown")}</td>
-                <td className="px-4 py-3">{beneficiary.kebele ?? "—"}</td>
-                <td className="px-4 py-3">{equipmentSummary[beneficiary.id] ?? "—"}</td>
-              </tr>
-            ))}
-            {resultCount === 0 && !loading && (
-              <tr>
-                <td className="px-4 py-6 text-slate-500" colSpan={6}>
-                  {t("noRecords")}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6 space-y-6">
+        {organizedResults.map(({ region, beneficiaries }) => (
+          <div key={region} className="overflow-hidden rounded-2xl border border-slate-200">
+            <div className="bg-slate-100 px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-700">
+              {region}
+            </div>
+            <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
+              <thead className="bg-slate-50 text-slate-700">
+                <tr>
+                  <th className="px-4 py-3">{t("beneficiary")}</th>
+                  <th className="px-4 py-3">{t("registrationNumber")}</th>
+                  <th className="px-4 py-3">{t("phone")}</th>
+                  <th className="px-4 py-3">{t("region")}</th>
+                  <th className="px-4 py-3">{t("kebele")}</th>
+                  <th className="px-4 py-3">{t("equipment")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {beneficiaries.map((beneficiary) => (
+                  <tr key={beneficiary.id}>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {beneficiary.photo_url ? (
+                          <Image src={beneficiary.photo_url} alt="beneficiary portrait" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-slate-100" />
+                        )}
+                        <Link href={`/beneficiaries/${beneficiary.id}`} className="font-semibold text-slate-900 hover:text-emerald-700">
+                          {[beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name].filter(Boolean).join(" ") || t("unknownBeneficiary")}
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">{beneficiary.registration_number ?? t("unknown")}</td>
+                    <td className="px-4 py-3">{beneficiary.phone ?? t("unknown")}</td>
+                    <td className="px-4 py-3">{beneficiary.region ?? t("unknown")}</td>
+                    <td className="px-4 py-3">{beneficiary.kebele ?? "—"}</td>
+                    <td className="px-4 py-3">{equipmentSummary[beneficiary.id] ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+        {resultCount === 0 && !loading && (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-slate-500">
+            {t("noRecords")}
+          </div>
+        )}
       </div>
     </section>
   );

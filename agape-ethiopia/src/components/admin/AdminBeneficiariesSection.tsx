@@ -9,6 +9,8 @@ interface Beneficiary {
   first_name: string;
   last_name: string;
   registration_number: string;
+  beneficiary_id?: string;
+  region?: string;
   status: string;
   created_at: string;
 }
@@ -26,8 +28,9 @@ export default function AdminBeneficiariesSection() {
         const supabase = getSupabaseClient();
         let query = supabase
           .from("beneficiaries")
-          .select("id,first_name,last_name,registration_number,status,created_at")
-          .order("created_at", { ascending: false });
+          .select("id,first_name,last_name,registration_number,status,created_at,region,beneficiary_id")
+          .order("region", { ascending: true })
+          .order("created_at", { ascending: true });
 
         if (filterStatus !== "all") {
           query = query.eq("status", filterStatus);
@@ -51,6 +54,25 @@ export default function AdminBeneficiariesSection() {
     pending: beneficiaries.filter((b) => b.status === "pending" || b.status === "registered").length,
     rejected: beneficiaries.filter((b) => b.status === "rejected").length,
   };
+
+  const groupedByRegion = Array.from(
+    beneficiaries.reduce((groups, beneficiary) => {
+      const region = (beneficiary.region || "Unassigned").trim() || "Unassigned";
+      const bucket = groups.get(region) || [];
+      bucket.push(beneficiary);
+      groups.set(region, bucket);
+      return groups;
+    }, new Map<string, Beneficiary[]>()).entries()
+  )
+    .sort(([regionA], [regionB]) => regionA.localeCompare(regionB))
+    .map(([region, items]) => ({
+      region,
+      items: items.sort((left, right) => {
+        const leftDate = left.created_at ? new Date(left.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+        const rightDate = right.created_at ? new Date(right.created_at).getTime() : Number.MAX_SAFE_INTEGER;
+        return leftDate - rightDate;
+      }),
+    }));
 
   return (
     <div className="space-y-6">
@@ -107,8 +129,8 @@ export default function AdminBeneficiariesSection() {
         </button>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+      {/* Grouped region tables */}
+      <div className="space-y-6 bg-white rounded-lg border border-slate-200 overflow-hidden">
         {loading && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
@@ -123,48 +145,57 @@ export default function AdminBeneficiariesSection() {
           <div className="p-12 text-center text-slate-500">No beneficiaries found</div>
         )}
 
-        {!loading && beneficiaries.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Reg #</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Registered</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {beneficiaries.map((ben) => (
-                  <tr key={ben.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="px-6 py-4">{ben.first_name} {ben.last_name}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{ben.registration_number}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                          ben.status === "approved"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : ben.status === "rejected"
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {ben.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {new Date(ben.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link href={`/beneficiaries/${ben.id}/details`} className="text-emerald-600 hover:text-emerald-800 font-medium">
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {!loading && groupedByRegion.length > 0 && (
+          <div className="space-y-6 p-4">
+            {groupedByRegion.map(({ region, items }) => (
+              <div key={region} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h2 className="mb-3 text-lg font-bold text-slate-900">{region}</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Beneficiary ID</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Reg #</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Registered</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((ben) => (
+                        <tr key={ben.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="px-6 py-4">{ben.first_name} {ben.last_name}</td>
+                          <td className="px-6 py-4 text-sm text-slate-700">{ben.beneficiary_id || ben.registration_number || "-"}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{ben.registration_number || "-"}</td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                                ben.status === "approved"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : ben.status === "rejected"
+                                  ? "bg-rose-100 text-rose-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {ben.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">
+                            {ben.created_at ? new Date(ben.created_at).toLocaleDateString() : "-"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Link href={`/beneficiaries/${ben.id}/details`} className="text-emerald-600 hover:text-emerald-800 font-medium">
+                              View
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

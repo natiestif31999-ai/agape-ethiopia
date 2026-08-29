@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import AdminUserManagement from "@/components/AdminUserManagement";
+import AdminWebsiteSettings from "@/components/admin/AdminWebsiteSettings";
 import { requireAdmin } from "@/lib/auth/serverAuth";
 import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 
@@ -24,8 +25,9 @@ export default async function AdminPage() {
         <section className="rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-emerald-50 p-6 shadow-sm">
           <LocalizedSectionHeader titleKey="adminPanel" subtitleKey="adminCenter" descriptionKey="adminCenterDescription" />
         </section>
-        <div className="mt-8">
+        <div className="mt-8 space-y-8">
           <AdminUserManagement />
+          <AdminWebsiteSettings />
         </div>
       </main>
     </>

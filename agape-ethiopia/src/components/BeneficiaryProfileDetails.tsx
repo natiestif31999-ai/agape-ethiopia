@@ -12,10 +12,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { normalizeEthiopianPhone } from "@/lib/beneficiaryRegistration";
 import Link from "next/link";
 
 interface Beneficiary {
   id: string;
+  beneficiary_id?: string;
   registration_number: string;
   first_name: string;
   last_name: string;
@@ -176,6 +178,12 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
         return;
       }
 
+      const normalizedPhone = normalizeEthiopianPhone(editData.phone);
+      if (!normalizedPhone) {
+        setError("Please enter a valid Ethiopian phone number.");
+        return;
+      }
+
       const { error: updateError } = await client
         .from("beneficiaries")
         .update({
@@ -183,7 +191,8 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
           last_name: editData.last_name?.trim(),
           date_of_birth: editData.date_of_birth || null,
           gender: editData.gender,
-          phone: editData.phone?.trim(),
+          phone: normalizedPhone,
+          phone_normalized: normalizedPhone,
           region: editData.region?.trim(),
           kifle_ketema: editData.kifle_ketema?.trim() || null,
           kebele: editData.kebele?.trim(),
