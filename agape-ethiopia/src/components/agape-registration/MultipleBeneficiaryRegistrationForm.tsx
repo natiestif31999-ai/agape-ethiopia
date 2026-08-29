@@ -2,6 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
+import { getQueueCount, queueItem, readQueue, writeQueue } from "@/lib/offlineSync";
 
 type BeneficiaryCard = {
   id: string;
@@ -22,8 +23,6 @@ type BeneficiaryCard = {
   error?: string;
 };
 
-const STORAGE_KEY = "agape-registration-offline-queue";
-
 function createEmptyCard(): BeneficiaryCard {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -42,27 +41,6 @@ function createEmptyCard(): BeneficiaryCard {
     previewOpen: false,
     status: "draft",
   };
-}
-
-function readQueue() {
-  if (typeof window === "undefined") {
-    return [] as Array<Record<string, unknown>>;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Array<Record<string, unknown>>) : [];
-  } catch {
-    return [] as Array<Record<string, unknown>>;
-  }
-}
-
-function writeQueue(items: Array<Record<string, unknown>>) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
 function dataUrlToFile(dataUrl: string, fileName = "photo.jpg") {
@@ -104,7 +82,11 @@ export default function MultipleBeneficiaryRegistrationForm() {
     }
   }, [isOnline, flushQueue]);
 
-  const queuedCount = readQueue().length;
+  const [queuedCount, setQueuedCount] = useState(0);
+
+  useEffect(() => {
+    void getQueueCount().then(setQueuedCount);
+  }, []);
 
   function updateCard(id: string, field: keyof BeneficiaryCard, value: string | boolean) {
     setCards((current) => current.map((card) => (card.id === id ? { ...card, [field]: value } : card)));
@@ -171,11 +153,12 @@ export default function MultipleBeneficiaryRegistrationForm() {
     }
 
     if (!navigator.onLine) {
-      const queued = readQueue();
-      queued.push({ ...card, queuedAt: new Date().toISOString() });
-      writeQueue(queued);
+      const queuedCard = { ...card, localId: card.id || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, queuedAt: new Date().toISOString(), status: "pending" as const };
+      const saved = await queueItem(queuedCard);
+      const nextCount = await getQueueCount();
+      setQueuedCount(nextCount);
       setFeedback(t("offlineQueued"));
-      return { ok: true, queued: true };
+      return { ok: true, queued: true, localId: saved.localId };
     }
 
     const response = await fetch("/api/public-registration", {
@@ -185,9 +168,10 @@ export default function MultipleBeneficiaryRegistrationForm() {
 
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      const queued = readQueue();
-      queued.push({ ...card, queuedAt: new Date().toISOString(), lastError: body?.error || body?.errors?.[0] || t("submitFailed") });
-      writeQueue(queued);
+      const failedCard = { ...card, localId: card.id || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, queuedAt: new Date().toISOString(), status: "failed" as const, lastError: body?.error || body?.errors?.[0] || t("submitFailed") };
+      const queued = await readQueue();
+      await writeQueue([...queued, failedCard]);
+      setQueuedCount((await getQueueCount()));
       return { ok: false, queued: true, error: body?.error || body?.errors?.[0] || t("submitFailed") };
     }
 
@@ -196,7 +180,7 @@ export default function MultipleBeneficiaryRegistrationForm() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   async function flushQueue() {
-    const queuedItems = readQueue();
+    const queuedItems = await readQueue();
     if (!queuedItems.length) {
       return;
     }
@@ -206,11 +190,14 @@ export default function MultipleBeneficiaryRegistrationForm() {
       const card = item as BeneficiaryCard;
       const saved = await submitCard(card);
       if (!saved.ok) {
-        remaining.push({ ...card, lastError: saved.error });
+        remaining.push({ ...card, status: "failed", lastError: saved.error });
+      } else {
+        remaining.push({ ...card, status: "synced", queuedAt: new Date().toISOString() });
       }
     }
 
-    writeQueue(remaining);
+    await writeQueue(remaining.filter((item) => (item as Record<string, unknown>).status !== "synced"));
+    setQueuedCount((await readQueue()).length);
     setFeedback(t("queueSynced"));
   }
 

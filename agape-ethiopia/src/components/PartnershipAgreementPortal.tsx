@@ -135,9 +135,14 @@ export default function PartnershipAgreementPortal() {
     });
   }, [agreements, search, statusFilter]);
 
-  async function resolveSignedAgreementUrl(agreementId: string) {
+  async function resolveSignedAgreementUrl(agreementId: string, agreementEmail?: string | null) {
     try {
-      const response = await fetch(`/api/organization-agreements/${agreementId}/file`);
+      const query = new URLSearchParams();
+      if (agreementEmail) {
+        query.set("email", agreementEmail);
+      }
+      query.set("public", "1");
+      const response = await fetch(`/api/organization-agreements/${agreementId}/file?${query.toString()}`);
       const result = (await response.json()) as { url?: string };
       return response.ok ? result.url ?? null : null;
     } catch (error) {
@@ -248,7 +253,7 @@ export default function PartnershipAgreementPortal() {
     try {
       let fileUrl = agreement.agreement_file_url;
       if (!fileUrl && agreement.agreement_file_path) {
-        fileUrl = await resolveSignedAgreementUrl(agreement.id);
+        fileUrl = await resolveSignedAgreementUrl(agreement.id, agreement.email);
       }
 
       if (!fileUrl) {
@@ -263,6 +268,18 @@ export default function PartnershipAgreementPortal() {
       setFeedback(t("agreementUnavailable") || "This agreement is not available right now.");
       setFeedbackTone("error");
     }
+  }
+
+  async function getAgreementDownloadUrl(agreement: AgreementRecord) {
+    if (agreement.agreement_file_url) {
+      return agreement.agreement_file_url;
+    }
+
+    if (!agreement.agreement_file_path) {
+      return null;
+    }
+
+    return resolveSignedAgreementUrl(agreement.id, agreement.email);
   }
 
   async function handleDelete(id: string, filePath: string | null) {
@@ -520,10 +537,22 @@ export default function PartnershipAgreementPortal() {
                       <button type="button" onClick={() => openAgreement(agreement)} className="rounded-full border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700">
                         {t("open")}
                       </button>
-                      {agreement.agreement_file_url && (
-                        <a href={agreement.agreement_file_url} target="_blank" rel="noreferrer" className="rounded-full border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700">
+                      {agreement.agreement_file_path && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const url = await getAgreementDownloadUrl(agreement);
+                            if (!url) {
+                              setFeedback(t("agreementUnavailable") || "This agreement is not available right now.");
+                              setFeedbackTone("error");
+                              return;
+                            }
+                            window.open(url, "_blank", "noopener,noreferrer");
+                          }}
+                          className="rounded-full border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
+                        >
                           {t("download")}
-                        </a>
+                        </button>
                       )}
                       <button type="button" onClick={() => updateAgreement(agreement.id, { status: "Approved" })} className="rounded-full bg-emerald-700 px-3 py-2 text-sm font-semibold text-white">
                         {t("approve")}
