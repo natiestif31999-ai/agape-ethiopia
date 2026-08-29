@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { normalizeEthiopianPhone } from "@/lib/beneficiaryRegistration";
 
 type BeneficiaryRecord = {
   id: string;
@@ -76,13 +77,20 @@ export default function StaffDashboard() {
 
     try {
       setIsSavingEdit(true);
+      const normalizedPhone = normalizeEthiopianPhone(editingRecord.phone);
+      if (!normalizedPhone) {
+        setStatusMessage("Please enter a valid Ethiopian phone number.");
+        return;
+      }
+
       const supabase = getSupabaseClient();
       const { error } = await supabase
         .from("beneficiaries")
         .update({
           first_name: editingRecord.first_name.trim() || null,
           last_name: editingRecord.last_name.trim() || null,
-          phone: editingRecord.phone.trim() || null,
+          phone: normalizedPhone,
+          phone_normalized: normalizedPhone,
           region: editingRecord.region.trim() || null,
           disability_type: editingRecord.disability_type.trim() || null,
           notes: editingRecord.notes.trim() || null,

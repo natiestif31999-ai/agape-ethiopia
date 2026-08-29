@@ -20,8 +20,8 @@ export async function GET(req: Request) {
   const supabase = createClient(config.url, config.anonKey);
   const { data, error } = await supabase
     .from("beneficiaries")
-    .select("registration_number,status,first_name,middle_name,last_name,phone,region,kebele")
-    .eq("registration_number", registrationNumber)
+    .select("beneficiary_id,registration_number,status,first_name,middle_name,last_name,phone,region,kebele")
+    .or(`beneficiary_id.eq.${registrationNumber},registration_number.eq.${registrationNumber}`)
     .maybeSingle();
 
   if (error) {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { buildPublicBeneficiaryPayload, validatePublicBeneficiaryFields } from "@/lib/beneficiaryRegistration";
+import { buildPublicBeneficiaryPayload, normalizeEthiopianPhone, validatePublicBeneficiaryFields } from "@/lib/beneficiaryRegistration";
 import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
 
 const MAX_PHOTO_SIZE_BYTES = 3 * 1024 * 1024;
@@ -91,8 +91,27 @@ export async function POST(req: Request) {
     }
 
     const payload = buildPublicBeneficiaryPayload(values, photoUrl);
+    const normalizedPhone = normalizeEthiopianPhone(values.phone);
+
+    if (!normalizedPhone) {
+      return NextResponse.json({ error: "Please enter a valid Ethiopian phone number." }, { status: 400 });
+    }
 
     const supabaseAdmin = getSupabaseAdminClient();
+
+    const { data: existingMatch, error: duplicateLookupError } = await supabaseAdmin
+      .from("beneficiaries")
+      .select("id,first_name,last_name,phone")
+      .or(`phone.eq.${normalizedPhone},phone.eq.${values.phone?.trim() ?? ""}`)
+      .limit(10);
+
+    if (duplicateLookupError) {
+      return NextResponse.json({ error: duplicateLookupError.message }, { status: 500 });
+    }
+
+    if (existingMatch && existingMatch.length > 0) {
+      return NextResponse.json({ error: "This phone number is already registered to a beneficiary." }, { status: 409 });
+    }
 
     const { data, error } = await supabaseAdmin.from("beneficiaries").insert([payload]).select().single();
 
