@@ -192,7 +192,6 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
           date_of_birth: editData.date_of_birth || null,
           gender: editData.gender,
           phone: normalizedPhone,
-          phone_normalized: normalizedPhone,
           region: editData.region?.trim(),
           kifle_ketema: editData.kifle_ketema?.trim() || null,
           kebele: editData.kebele?.trim(),

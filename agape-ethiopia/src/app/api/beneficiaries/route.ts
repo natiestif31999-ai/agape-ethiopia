@@ -92,8 +92,8 @@ export async function POST(req: Request) {
   const lookupPhone = phone?.trim() ?? "";
   const { data: existingMatch, error: lookupError } = await supabase
     .from("beneficiaries")
-    .select("id,first_name,last_name,phone,phone_normalized")
-    .or(`phone_normalized.eq.${normalizedPhone},phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
+    .select("id,first_name,last_name,phone")
+    .or(`phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
     .limit(20);
 
   if (lookupError) {
@@ -116,7 +116,6 @@ export async function POST(req: Request) {
         date_of_birth: date_of_birth || null,
         gender,
         phone: normalizedPhone,
-        phone_normalized: normalizedPhone,
         region: region.trim(),
         region_code: normalizeRegionCode(region),
         kifle_ketema: kifle_ketema?.trim() ?? null,

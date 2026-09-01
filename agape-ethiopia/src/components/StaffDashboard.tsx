@@ -90,7 +90,6 @@ export default function StaffDashboard() {
           first_name: editingRecord.first_name.trim() || null,
           last_name: editingRecord.last_name.trim() || null,
           phone: normalizedPhone,
-          phone_normalized: normalizedPhone,
           region: editingRecord.region.trim() || null,
           disability_type: editingRecord.disability_type.trim() || null,
           notes: editingRecord.notes.trim() || null,

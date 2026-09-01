@@ -102,8 +102,8 @@ export async function POST(req: Request) {
 
     const { data: existingMatch, error: duplicateLookupError } = await supabaseAdmin
       .from("beneficiaries")
-      .select("id,first_name,last_name,phone,phone_normalized")
-      .or(`phone_normalized.eq.${normalizedPhone},phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
+      .select("id,first_name,last_name,phone")
+      .or(`phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
       .limit(10);
 
     if (duplicateLookupError) {

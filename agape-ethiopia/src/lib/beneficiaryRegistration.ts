@@ -112,7 +112,6 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
     date_of_birth: normalized.date_of_birth || null,
     gender: normalized.gender || "",
     phone: normalized.phone,
-    phone_normalized: normalized.phone,
     region: normalized.region,
     kifle_ketema: normalized.kifle_ketema || null,
     kebele: normalized.kebele,
