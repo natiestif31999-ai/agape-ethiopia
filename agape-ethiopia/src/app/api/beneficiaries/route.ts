@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
-import { normalizeEthiopianPhone } from "@/lib/beneficiaryRegistration";
-
-function normalizeRegionCode(value?: string | null) {
-  const cleaned = (value ?? "").trim().toUpperCase().replace(/[^A-Z]/g, "");
-  return cleaned ? cleaned.slice(0, 3) : null;
-}
+import { normalizeEthiopianPhone, normalizeRegionCode } from "@/lib/beneficiaryRegistration";
 
 export async function GET(req: Request) {
   const profile = await requireStaff();
@@ -24,13 +19,12 @@ export async function GET(req: Request) {
 
   let query = supabase
     .from("beneficiaries")
-    .select("id,beneficiary_id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
+    .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
     .order("region", { ascending: true })
     .order("created_at", { ascending: true });
 
   if (search) {
     const orFilter = [
-      `beneficiary_id.ilike.%${search}%`,
       `registration_number.ilike.%${search}%`,
       `first_name.ilike.%${search}%`,
       `middle_name.ilike.%${search}%`,
@@ -87,7 +81,7 @@ export async function POST(req: Request) {
 
   const normalizedPhone = normalizeEthiopianPhone(phone);
   if (!normalizedPhone) {
-    return NextResponse.json({ error: "Please enter a valid Ethiopian phone number." }, { status: 400 });
+    return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
   }
 
   const supabase = getSupabaseServerClient();
@@ -95,10 +89,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
 
+  const lookupPhone = phone?.trim() ?? "";
   const { data: existingMatch, error: lookupError } = await supabase
     .from("beneficiaries")
-    .select("id,first_name,last_name,phone")
-    .or(`phone.eq.${normalizedPhone},phone.eq.${phone.trim()},phone.ilike.%${phone.trim()}%`)
+    .select("id,first_name,last_name,phone,phone_normalized")
+    .or(`phone_normalized.eq.${normalizedPhone},phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
     .limit(20);
 
   if (lookupError) {
@@ -113,7 +108,6 @@ export async function POST(req: Request) {
     .from("beneficiaries")
     .insert([
       {
-        beneficiary_id: null,
         registration_number: null,
         registration_date: registration_date || new Date().toISOString().slice(0, 10),
         first_name: first_name.trim(),

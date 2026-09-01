@@ -1,3 +1,5 @@
+import { normalizeRegionCode as normalizeRegionCodeFromMap } from "@/lib/regionCodes";
+
 export const PUBLIC_BENEFICIARY_REQUIRED_FIELDS = [
   "first_name",
   "last_name",
@@ -13,93 +15,51 @@ function normalizeValue(value: string | undefined | null) {
   return value?.trim() ?? "";
 }
 
-export function normalizeEthiopianPhone(value: string | undefined | null): string {
+export function normalizePhoneForComparison(value: string | undefined | null): string {
   const raw = normalizeValue(value);
   if (!raw) {
     return "";
   }
 
-  const digitsOnly = raw.replace(/\D/g, "");
-  if (!digitsOnly) {
+  let normalized = raw.replace(/\s+/g, "");
+  normalized = normalized.replace(/[()\-+]/g, "");
+  normalized = normalized.replace(/^00/, "+");
+  normalized = normalized.replace(/[^\d+]/g, "");
+
+  if (!normalized) {
     return "";
   }
 
-  let compact = digitsOnly;
-  if (compact.startsWith("251")) {
-    compact = compact.slice(3);
+  if (normalized.startsWith("+")) {
+    return `+${normalized.slice(1).replace(/\D/g, "")}`;
   }
 
-  if (compact.startsWith("0")) {
-    compact = compact.slice(1);
+  let digits = normalized.replace(/\D/g, "");
+  if (digits.length > 0 && digits.startsWith("251")) {
+    digits = digits.slice(3);
+  }
+  if (digits.length > 0 && digits.startsWith("0")) {
+    digits = digits.slice(1);
   }
 
-  if (compact.length !== 9 || !/^9\d{8}$/.test(compact)) {
-    return "";
-  }
+  return digits ? `+${digits}` : "";
+}
 
-  return `+251${compact}`;
+export function normalizeEthiopianPhone(value: string | undefined | null): string {
+  return normalizePhoneForComparison(value);
 }
 
 export function isValidEthiopianPhone(value: string | undefined | null): boolean {
-  return normalizeEthiopianPhone(value).length > 0;
+  return normalizePhoneForComparison(value).length > 0;
 }
 
 export function normalizeRegionCode(value: string | undefined | null) {
-  const cleaned = normalizeValue(value).trim();
-  if (!cleaned) {
-    return "";
-  }
-
-  const normalized = cleaned
-    .toUpperCase()
-    .replace(/[_-]/g, " ")
-    .replace(/[^A-Z ]/g, "")
-    .trim();
-
-  const regionMap: Record<string, string> = {
-    "ADDIS ABABA": "AA",
-    "ADDISABABA": "AA",
-    AFA: "AFA",
-    AFAR: "AFA",
-    AMH: "AMH",
-    AMHARA: "AMH",
-    BEN: "BEN",
-    "BENISHANGUL GUMUZ": "BEN",
-    "BENISHANGULGUMUZ": "BEN",
-    DD: "DD",
-    "DIRE DAWA": "DD",
-    "DIREDAWA": "DD",
-    GAM: "GAM",
-    GAMBELA: "GAM",
-    HAR: "HAR",
-    HARARI: "HAR",
-    OR: "ORO",
-    ORO: "ORO",
-    OROMIA: "ORO",
-    SID: "SID",
-    SIDAMA: "SID",
-    SOM: "SOM",
-    SOMALI: "SOM",
-    SNN: "SNN",
-    SNNP: "SNN",
-    "SOUTH ETHIOPIA": "SET",
-    "SOUTHETHIOPIA": "SET",
-    "CENTRAL ETHIOPIA": "CET",
-    "CENTRALETHIOPIA": "CET",
-    TIG: "TIG",
-    TIGRAY: "TIG",
-    SWE: "SWE",
-    "SOUTHWEST ETHIOPIA": "SWE",
-    "SOUTHWESTETHIOPIA": "SWE",
-  };
-
-  return regionMap[normalized] || normalized.replace(/\s+/g, "").slice(0, 3) || "";
+  return normalizeRegionCodeFromMap(value);
 }
 
 export function buildBeneficiaryId(region: string | undefined | null) {
-  const code = normalizeRegionCode(region);
-  const regionCode = code || "GEN";
-  return `AG-B-${regionCode}-`;
+  const code = normalizeRegionCode(region); 
+  return `AG-B-${code}-`;
 }
 
 export function validatePublicBeneficiaryFields(values: Record<string, string | undefined | null>) {
@@ -113,7 +73,7 @@ export function validatePublicBeneficiaryFields(values: Record<string, string | 
   }
 
   if (!isValidEthiopianPhone(values.phone)) {
-    errors.push("Please enter a valid Ethiopian phone number.");
+    errors.push("Please enter a valid phone number.");
   }
 
   const gender = normalizeValue(values.gender).toLowerCase();
@@ -132,7 +92,7 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
     last_name: normalizeValue(values.last_name),
     date_of_birth: normalizeValue(values.date_of_birth),
     gender: normalizeValue(values.gender).toLowerCase(),
-    phone: normalizeEthiopianPhone(values.phone),
+    phone: normalizePhoneForComparison(values.phone),
     region: normalizeValue(values.region),
     kifle_ketema: normalizeValue(values.kifle_ketema),
     kebele: normalizeValue(values.kebele),
@@ -144,7 +104,6 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
 
   return {
     registration_date: normalized.registration_date || new Date().toISOString().slice(0, 10),
-    beneficiary_id: null,
     registration_number: null,
     region_code: normalizeRegionCode(values.region),
     first_name: normalized.first_name,

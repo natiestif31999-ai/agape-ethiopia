@@ -1,9 +1,33 @@
 BEGIN;
 
 ALTER TABLE IF EXISTS beneficiaries
-  ADD COLUMN IF NOT EXISTS beneficiary_id text;
+  ADD COLUMN IF NOT EXISTS region_code text;
 
--- Normalize region code for the permanent identifier.
+-- Keep the existing registration_number as the only business identifier.
+-- If a legacy beneficiary_id column exists, reconcile it into registration_number;
+-- then remove the duplicate identifier column.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'beneficiaries'
+      AND column_name = 'beneficiary_id'
+  ) THEN
+    UPDATE beneficiaries
+    SET registration_number = COALESCE(NULLIF(trim(registration_number), ''), beneficiary_id)
+    WHERE registration_number IS NULL OR registration_number = '';
+
+    UPDATE beneficiaries
+    SET registration_number = beneficiary_id
+    WHERE registration_number IS NULL
+      AND beneficiary_id IS NOT NULL
+      AND trim(beneficiary_id) <> '';
+  END IF;
+END $$;
+
+-- Normalize region-derived registration numbers to AG-B-<REGION>-NNNNNN.
 CREATE OR REPLACE FUNCTION normalize_beneficiary_region_code(p_region text)
 RETURNS text
 LANGUAGE plpgsql
@@ -31,8 +55,7 @@ CREATE TABLE IF NOT EXISTS beneficiary_identifier_counters (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Single source of truth for the permanent identifier.
-CREATE OR REPLACE FUNCTION generate_beneficiary_identifier(p_region text)
+CREATE OR REPLACE FUNCTION generate_beneficiary_registration_number(p_region text)
 RETURNS text
 LANGUAGE plpgsql
 AS $$
@@ -53,7 +76,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION sync_beneficiary_identifier()
+CREATE OR REPLACE FUNCTION sync_registration_number()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -61,37 +84,30 @@ DECLARE
   v_region_value text;
   v_generated text;
 BEGIN
-  IF NEW.beneficiary_id IS NULL AND NEW.registration_number IS NULL THEN
+  -- Only registration_number is the business identifier.
+  IF NEW.registration_number IS NULL OR trim(NEW.registration_number) = '' THEN
     v_region_value := COALESCE(NEW.region_code, NEW.region, 'GEN');
-    v_generated := generate_beneficiary_identifier(v_region_value);
-    NEW.beneficiary_id := v_generated;
+    v_generated := generate_beneficiary_registration_number(v_region_value);
     NEW.registration_number := v_generated;
     RETURN NEW;
   END IF;
 
-  IF NEW.beneficiary_id IS NULL AND NEW.registration_number IS NOT NULL THEN
-    NEW.beneficiary_id := NEW.registration_number;
-    RETURN NEW;
-  END IF;
-
-  IF NEW.registration_number IS NULL AND NEW.beneficiary_id IS NOT NULL THEN
-    NEW.registration_number := NEW.beneficiary_id;
-    RETURN NEW;
-  END IF;
-
-  IF NEW.beneficiary_id <> NEW.registration_number THEN
-    RAISE EXCEPTION 'beneficiary_id and registration_number must match exactly';
+  -- Preserve valid existing registration numbers.
+  IF NEW.registration_number !~ '^AG-B-[A-Z]{2,5}-[0-9]{6}$' THEN
+    v_region_value := COALESCE(NEW.region_code, NEW.region, 'GEN');
+    v_generated := generate_beneficiary_registration_number(v_region_value);
+    NEW.registration_number := v_generated;
   END IF;
 
   RETURN NEW;
 END;
 $$;
 
-DROP TRIGGER IF EXISTS trg_sync_beneficiary_identifier ON beneficiaries;
-CREATE TRIGGER trg_sync_beneficiary_identifier
-BEFORE INSERT OR UPDATE OF beneficiary_id, registration_number, region, region_code
+DROP TRIGGER IF EXISTS trg_sync_registration_number ON beneficiaries;
+CREATE TRIGGER trg_sync_registration_number
+BEFORE INSERT OR UPDATE OF registration_number, region, region_code
 ON beneficiaries
-FOR EACH ROW EXECUTE FUNCTION sync_beneficiary_identifier();
+FOR EACH ROW EXECUTE FUNCTION sync_registration_number();
 
 DO $$
 DECLARE
@@ -99,44 +115,20 @@ DECLARE
   v_generated text;
 BEGIN
   FOR rec IN
-    SELECT id, region_code, region, registration_number, beneficiary_id
+    SELECT id, registration_number, region_code, region
     FROM beneficiaries
-    WHERE beneficiary_id IS NULL
-       OR registration_number IS NULL
-       OR beneficiary_id <> registration_number
+    WHERE registration_number IS NULL OR trim(registration_number) = ''
   LOOP
-    IF rec.registration_number IS NULL AND rec.beneficiary_id IS NULL THEN
-      SELECT generate_beneficiary_identifier(COALESCE(rec.region_code, rec.region, 'GEN'))
-      INTO v_generated;
-
-      UPDATE beneficiaries
-      SET beneficiary_id = v_generated,
-          registration_number = v_generated
-      WHERE id = rec.id;
-    ELSIF rec.registration_number IS NULL THEN
-      UPDATE beneficiaries
-      SET registration_number = rec.beneficiary_id
-      WHERE id = rec.id;
-    ELSIF rec.beneficiary_id IS NULL THEN
-      UPDATE beneficiaries
-      SET beneficiary_id = rec.registration_number
-      WHERE id = rec.id;
-    ELSE
-      UPDATE beneficiaries
-      SET beneficiary_id = rec.registration_number,
-          registration_number = rec.registration_number
-      WHERE id = rec.id;
-    END IF;
+    v_generated := generate_beneficiary_registration_number(COALESCE(rec.region_code, rec.region, 'GEN'));
+    UPDATE beneficiaries
+    SET registration_number = v_generated
+    WHERE id = rec.id;
   END LOOP;
 END $$;
 
+-- Remove legacy separate beneficiary_id column if present to prevent duplicate identifiers.
 ALTER TABLE IF EXISTS beneficiaries
-  ADD CONSTRAINT IF NOT EXISTS beneficiaries_identifier_consistency
-  CHECK (beneficiary_id IS NULL OR registration_number IS NULL OR beneficiary_id = registration_number);
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_beneficiaries_beneficiary_id_unique
-ON beneficiaries(beneficiary_id)
-WHERE beneficiary_id IS NOT NULL;
+  DROP COLUMN IF EXISTS beneficiary_id;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_beneficiaries_registration_number_unique
 ON beneficiaries(registration_number)

@@ -94,15 +94,16 @@ export async function POST(req: Request) {
     const normalizedPhone = normalizeEthiopianPhone(values.phone);
 
     if (!normalizedPhone) {
-      return NextResponse.json({ error: "Please enter a valid Ethiopian phone number." }, { status: 400 });
+      return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
     }
 
     const supabaseAdmin = getSupabaseAdminClient();
+    const lookupPhone = values.phone?.trim() ?? "";
 
     const { data: existingMatch, error: duplicateLookupError } = await supabaseAdmin
       .from("beneficiaries")
-      .select("id,first_name,last_name,phone")
-      .or(`phone.eq.${normalizedPhone},phone.eq.${values.phone?.trim() ?? ""}`)
+      .select("id,first_name,last_name,phone,phone_normalized")
+      .or(`phone_normalized.eq.${normalizedPhone},phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
       .limit(10);
 
     if (duplicateLookupError) {

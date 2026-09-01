@@ -9,7 +9,6 @@ interface Beneficiary {
   first_name: string;
   last_name: string;
   registration_number: string;
-  beneficiary_id?: string;
   region?: string;
   status: string;
   created_at: string;
@@ -28,7 +27,7 @@ export default function AdminBeneficiariesSection() {
         const supabase = getSupabaseClient();
         let query = supabase
           .from("beneficiaries")
-          .select("id,first_name,last_name,registration_number,status,created_at,region,beneficiary_id")
+          .select("id,first_name,last_name,registration_number,status,created_at,region")
           .order("region", { ascending: true })
           .order("created_at", { ascending: true });
 
@@ -155,8 +154,7 @@ export default function AdminBeneficiariesSection() {
                     <thead className="bg-slate-50 border-b border-slate-200">
                       <tr>
                         <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Beneficiary ID</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold">Reg #</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Registration Number</th>
                         <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
                         <th className="px-6 py-3 text-left text-sm font-semibold">Registered</th>
                         <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
@@ -166,8 +164,7 @@ export default function AdminBeneficiariesSection() {
                       {items.map((ben) => (
                         <tr key={ben.id} className="border-b border-slate-100 hover:bg-slate-50">
                           <td className="px-6 py-4">{ben.first_name} {ben.last_name}</td>
-                          <td className="px-6 py-4 text-sm text-slate-700">{ben.beneficiary_id || ben.registration_number || "-"}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600">{ben.registration_number || "-"}</td>
+                          <td className="px-6 py-4 text-sm text-slate-700">{ben.registration_number || "-"}</td>
                           <td className="px-6 py-4">
                             <span
                               className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${

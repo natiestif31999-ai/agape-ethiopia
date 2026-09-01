@@ -9,7 +9,6 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 
 type Beneficiary = {
   id: string;
-  beneficiary_id?: string;
   registration_number?: string;
   first_name?: string;
   middle_name?: string;
@@ -39,7 +38,7 @@ export default function BeneficiarySearch() {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("beneficiaries")
-      .select("id,beneficiary_id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
+      .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
       .order("region", { ascending: true })
       .order("created_at", { ascending: true })
       .limit(25);
@@ -76,7 +75,6 @@ export default function BeneficiarySearch() {
 
       if (trimmedSearch) {
         const orFilter = [
-          `beneficiary_id.ilike.%${trimmedSearch}%`,
           `registration_number.ilike.%${trimmedSearch}%`,
           `first_name.ilike.%${trimmedSearch}%`,
           `middle_name.ilike.%${trimmedSearch}%`,
@@ -88,7 +86,7 @@ export default function BeneficiarySearch() {
 
         const { data, error } = await supabase
           .from("beneficiaries")
-          .select("id,beneficiary_id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
+          .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
           .or(orFilter)
           .order("region", { ascending: true })
           .order("created_at", { ascending: true })
@@ -113,7 +111,7 @@ export default function BeneficiarySearch() {
         if (assignmentIds.length > 0) {
           const { data, error } = await supabase
             .from("beneficiaries")
-            .select("id,beneficiary_id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
+            .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
             .in("id", assignmentIds)
             .order("region", { ascending: true })
             .order("created_at", { ascending: true })
