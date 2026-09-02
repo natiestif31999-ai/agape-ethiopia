@@ -14,6 +14,7 @@ import { useLanguage } from "@/components/layout/LanguageProvider";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { normalizeEthiopianPhone } from "@/lib/beneficiaryRegistration";
 import Link from "next/link";
+import BeneficiaryApprovalWidget from "./BeneficiaryApprovalWidget";
 
 interface Beneficiary {
   id: string;
@@ -297,6 +298,13 @@ export default function BeneficiaryProfileDetails({ beneficiaryId }: Beneficiary
           Registered: {new Date(beneficiary.created_at).toLocaleDateString()}
         </span>
       </div>
+
+      {/* Approval Widget */}
+      <BeneficiaryApprovalWidget 
+        beneficiaryId={beneficiaryId}
+        currentStatus={beneficiary.status}
+        onStatusChange={(newStatus) => setBeneficiary({ ...beneficiary, status: newStatus })}
+      />
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">

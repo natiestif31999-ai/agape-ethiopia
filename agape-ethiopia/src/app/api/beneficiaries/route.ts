@@ -10,7 +10,12 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const search = url.searchParams.get("search")?.trim() ?? "";
-  const limit = Number(url.searchParams.get("limit") ?? 25);
+  const status = url.searchParams.get("status")?.trim() ?? "";
+  const region = url.searchParams.get("region")?.trim() ?? "";
+  const startDate = url.searchParams.get("startDate")?.trim() ?? "";
+  const endDate = url.searchParams.get("endDate")?.trim() ?? "";
+  const limit = Number(url.searchParams.get("limit") ?? 50);
+  const offset = Number(url.searchParams.get("offset") ?? 0);
 
   const supabase = getSupabaseServerClient();
   if (!supabase) {
@@ -19,30 +24,60 @@ export async function GET(req: Request) {
 
   let query = supabase
     .from("beneficiaries")
-    .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,created_at")
+    .select("id,registration_number,first_name,middle_name,last_name,phone,region,kebele,photo_url,status,created_at", { count: "exact" })
     .order("region", { ascending: true })
     .order("created_at", { ascending: true });
 
+  // Apply filters
   if (search) {
-    const orFilter = [
+    const normalizedPhone = normalizeEthiopianPhone(search);
+    const orFilters = [
       `registration_number.ilike.%${search}%`,
       `first_name.ilike.%${search}%`,
       `middle_name.ilike.%${search}%`,
       `last_name.ilike.%${search}%`,
-      `phone.ilike.%${search}%`,
       `region.ilike.%${search}%`,
       `kebele.ilike.%${search}%`,
-    ].join(",");
-    query = query.or(orFilter);
+    ];
+    
+    // Add phone search if search is a valid phone format
+    if (normalizedPhone) {
+      orFilters.push(`phone.ilike.%${search}%`);
+    }
+    
+    query = query.or(orFilters.join(","));
   }
 
-  const { data, error } = await query.limit(Math.max(1, Math.min(limit, 100)));
+  if (status && status.toLowerCase() !== "all") {
+    query = query.eq("status", status);
+  }
+
+  if (region && region.toLowerCase() !== "all") {
+    const normalizedRegion = normalizeRegionCode(region);
+    query = query.eq("region", normalizedRegion);
+  }
+
+  if (startDate) {
+    query = query.gte("created_at", startDate);
+  }
+
+  if (endDate) {
+    query = query.lte("created_at", endDate);
+  }
+
+  const { data, error, count } = await query
+    .range(offset, offset + Math.max(1, Math.min(limit, 100)) - 1);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ data });
+  return NextResponse.json({ 
+    data,
+    total: count,
+    offset,
+    limit: Math.max(1, Math.min(limit, 100))
+  });
 }
 
 export async function POST(req: Request) {

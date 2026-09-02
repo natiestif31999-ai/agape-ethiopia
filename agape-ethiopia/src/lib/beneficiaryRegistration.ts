@@ -45,10 +45,12 @@ export function normalizePhoneForComparison(value: string | undefined | null): s
   return digits ? `+${digits}` : "";
 }
 
+// Flexible phone normalization that accepts ANY valid phone format (not just Ethiopian)
 export function normalizeEthiopianPhone(value: string | undefined | null): string {
   return normalizePhoneForComparison(value);
 }
 
+// Flexible validation that accepts ANY valid phone format (not just Ethiopian)
 export function isValidEthiopianPhone(value: string | undefined | null): boolean {
   return normalizePhoneForComparison(value).length > 0;
 }
