@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Agape Mobility Ethiopia",
+    "slug": "agape-mobility-ethiopia",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "../../agape-ethiopia/public/app-icons/icon-512.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "../../agape-ethiopia/public/app-icons/icon-512.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F6F8F4"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.agapemobilityethiopia",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Agape uses the camera to capture beneficiary photos.",
+        "NSPhotoLibraryUsageDescription": "Agape uses your photo library to attach beneficiary photos."
+      }
+    },
+    "android": {
+      "package": "com.agapemobilityethiopia",
+      "adaptiveIcon": {
+        "foregroundImage": "../../agape-ethiopia/public/app-icons/maskable-icon-512.png",
+        "backgroundColor": "#0E766E"
+      },
+      "permissions": ["CAMERA", "READ_MEDIA_IMAGES"]
+    },
+    "plugins": [
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Agape uses the camera to capture beneficiary photos.",
+          "photosPermission": "Agape uses your photo library to attach beneficiary photos.",
+          "microphonePermission": false
+        }
+      ]
+    ]
+  }
+}
