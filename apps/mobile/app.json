@@ -6,11 +6,6 @@
     "orientation": "portrait",
     "icon": "../../agape-ethiopia/public/app-icons/icon-512.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "../../agape-ethiopia/public/app-icons/icon-512.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F6F8F4"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.agapemobilityethiopia",
@@ -25,9 +20,17 @@
         "foregroundImage": "../../agape-ethiopia/public/app-icons/maskable-icon-512.png",
         "backgroundColor": "#0E766E"
       },
-      "permissions": ["CAMERA", "READ_MEDIA_IMAGES"]
+      "permissions": [
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
     },
     "plugins": [
+      ["expo-splash-screen", {
+        "image": "../../agape-ethiopia/public/app-icons/icon-512.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#F6F8F4"
+      }],
       "expo-sqlite",
       [
         "expo-image-picker",
@@ -36,7 +39,8 @@
           "photosPermission": "Agape uses your photo library to attach beneficiary photos.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-splash-screen"
     ]
   }
 }

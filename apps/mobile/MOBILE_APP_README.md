@@ -22,7 +22,7 @@ Use Expo Go on a physical Android/iOS device by scanning the terminal QR code. A
 - `src/types.ts`: sync and domain types
 - `src/regions.ts`: centralized region map for the mobile client
 
-The mobile app must not ship `SUPABASE_SERVICE_ROLE_KEY`. Official registration-number assignment and duplicate-phone enforcement remain backend responsibilities. Set `EXPO_PUBLIC_WEB_API_URL` to the existing web origin before enabling network sync. The existing endpoint does not yet accept an idempotency key, so duplicate-safe synchronization remains a backend contract requirement and is not claimed complete here.
+The mobile app must not ship `SUPABASE_SERVICE_ROLE_KEY`. Official registration-number assignment and duplicate-phone enforcement remain backend responsibilities. Set `EXPO_PUBLIC_WEB_API_URL=https://agape-ethiopia-navy.vercel.app` before enabling network sync. The existing endpoint does not yet accept an idempotency key, so duplicate-safe synchronization remains a backend contract requirement and is not claimed complete here.
 
 ## Builds
 

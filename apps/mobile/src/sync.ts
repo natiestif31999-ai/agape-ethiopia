@@ -35,7 +35,11 @@ export async function syncPendingRecords() {
   if (!pending.length) return { synced: 0, failed: 0, skipped: 0 };
 
   const endpoint = apiUrl("/api/public-registration");
-  if (!endpoint) return { synced: 0, failed: 0, skipped: pending.length };
+  if (!endpoint) {
+    const message = "Sync is unavailable: configure EXPO_PUBLIC_WEB_API_URL.";
+    await Promise.all(pending.map((record) => updateLocalBeneficiary({ ...record, syncState: "FAILED", error: message })));
+    return { synced: 0, failed: pending.length, skipped: 0 };
+  }
 
   let synced = 0;
   let failed = 0;
