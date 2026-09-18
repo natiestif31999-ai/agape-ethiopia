@@ -15,9 +15,7 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_WEB_API_URL": "https://agape-ethiopia-navy.vercel.app",
-        "EXPO_PUBLIC_SUPABASE_URL": "${EXPO_PUBLIC_SUPABASE_URL}",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "${EXPO_PUBLIC_SUPABASE_ANON_KEY}"
+        "EXPO_PUBLIC_WEB_API_URL": "https://agape-ethiopia-navy.vercel.app"
       }
     },
     "preview": {
@@ -28,9 +26,7 @@
         "gradleCommand": ":app:assembleRelease"
       },
       "env": {
-        "EXPO_PUBLIC_WEB_API_URL": "https://agape-ethiopia-navy.vercel.app",
-        "EXPO_PUBLIC_SUPABASE_URL": "${EXPO_PUBLIC_SUPABASE_URL}",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "${EXPO_PUBLIC_SUPABASE_ANON_KEY}"
+        "EXPO_PUBLIC_WEB_API_URL": "https://agape-ethiopia-navy.vercel.app"
       }
     },
     "production": {
@@ -40,9 +36,7 @@
         "gradleCommand": ":app:bundleRelease"
       },
       "env": {
-        "EXPO_PUBLIC_WEB_API_URL": "https://agape-ethiopia-navy.vercel.app",
-        "EXPO_PUBLIC_SUPABASE_URL": "${EXPO_PUBLIC_SUPABASE_URL}",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "${EXPO_PUBLIC_SUPABASE_ANON_KEY}"
+        "EXPO_PUBLIC_WEB_API_URL": "https://agape-ethiopia-navy.vercel.app"
       }
     }
   },
