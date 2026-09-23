@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { getSupabaseConfig } from "@/lib/supabase/env";
-import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
+import { requireStaff } from "@/lib/auth/serverAuth";
 
 const BUCKET = "organization-agreements";
 

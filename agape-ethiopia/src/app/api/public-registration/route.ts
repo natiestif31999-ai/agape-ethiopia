@@ -111,7 +111,7 @@ export async function POST(req: Request) {
     }
 
     if (existingMatch && existingMatch.length > 0) {
-      return NextResponse.json({ error: "This phone number is already registered to a beneficiary." }, { status: 409 });
+      return NextResponse.json({ error: "This phone number is already registered. Please use a different number." }, { status: 409 });
     }
 
     const { data, error } = await supabaseAdmin.from("beneficiaries").insert([payload]).select().single();
