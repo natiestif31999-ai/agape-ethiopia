@@ -51,7 +51,46 @@ export async function listLocalBeneficiaries(): Promise<BeneficiaryDraft[]> {
 
 export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
   const db = await dbPromise;
-  await db.runAsync(`INSERT OR REPLACE INTO beneficiary_queue (local_id, client_change_id, first_name, middle_name, last_name, phone, region, gender, notes, date_of_birth, kebele, disability_type, referral_source, photo_uri, registration_number, sync_state, error, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, record.localId, record.clientChangeId, record.firstName, record.middleName, record.lastName, record.phone, record.region, record.gender, record.notes, record.dateOfBirth, record.kebele, record.disabilityType, record.referralSource, record.photoUri ?? null, record.registrationNumber ?? null, record.syncState, record.error ?? null, record.createdAt);
+  await db.runAsync(
+    `INSERT OR REPLACE INTO beneficiary_queue (
+      local_id,
+      client_change_id,
+      first_name,
+      middle_name,
+      last_name,
+      phone,
+      region,
+      gender,
+      notes,
+      date_of_birth,
+      kebele,
+      disability_type,
+      referral_source,
+      photo_uri,
+      registration_number,
+      sync_state,
+      error,
+      created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    record.localId,
+    record.clientChangeId,
+    record.firstName,
+    record.middleName,
+    record.lastName,
+    record.phone,
+    record.region,
+    record.gender,
+    record.notes,
+    record.dateOfBirth,
+    record.kebele,
+    record.disabilityType,
+    record.referralSource,
+    record.photoUri ?? null,
+    record.registrationNumber ?? null,
+    record.syncState,
+    record.error ?? null,
+    record.createdAt,
+  );
 }
 
 export async function updateLocalBeneficiary(record: BeneficiaryDraft) {

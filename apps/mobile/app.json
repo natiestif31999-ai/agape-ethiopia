@@ -6,6 +6,15 @@
     "orientation": "portrait",
     "icon": "../../agape-ethiopia/public/app-icons/icon-512.png",
     "userInterfaceStyle": "light",
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 3000,
+      "url": "https://u.expo.dev/1bcb5307-7f7c-4044-82a5-6ccaaf7a435c"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.agapemobilityethiopia",
@@ -21,16 +30,21 @@
         "backgroundColor": "#0E766E"
       },
       "permissions": [
-        "CAMERA",
-        "READ_MEDIA_IMAGES"
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "plugins": [
-      ["expo-splash-screen", {
-        "image": "../../agape-ethiopia/public/app-icons/icon-512.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#F6F8F4"
-      }],
+      [
+        "expo-splash-screen",
+        {
+          "image": "../../agape-ethiopia/public/app-icons/icon-512.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#F6F8F4"
+        }
+      ],
       "expo-sqlite",
       [
         "expo-image-picker",
@@ -39,8 +53,13 @@
           "photosPermission": "Agape uses your photo library to attach beneficiary photos.",
           "microphonePermission": false
         }
-      ],
-      "expo-splash-screen"
-    ]
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1bcb5307-7f7c-4044-82a5-6ccaaf7a435c"
+      }
+    },
+    "owner": "semerina"
   }
 }
