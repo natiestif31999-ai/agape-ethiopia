@@ -22,11 +22,11 @@ export function normalizePhoneForComparison(value: string | undefined | null): s
   }
 
   let normalized = raw.replace(/\s+/g, "");
-  normalized = normalized.replace(/[()\-+]/g, "");
+  normalized = normalized.replace(/[()\-_]/g, "");
   normalized = normalized.replace(/^00/, "+");
   normalized = normalized.replace(/[^\d+]/g, "");
 
-  if (!normalized) {
+  if (!normalized || normalized === "+") {
     return "";
   }
 
@@ -34,14 +34,7 @@ export function normalizePhoneForComparison(value: string | undefined | null): s
     return `+${normalized.slice(1).replace(/\D/g, "")}`;
   }
 
-  let digits = normalized.replace(/\D/g, "");
-  if (digits.length > 0 && digits.startsWith("251")) {
-    digits = digits.slice(3);
-  }
-  if (digits.length > 0 && digits.startsWith("0")) {
-    digits = digits.slice(1);
-  }
-
+  const digits = normalized.replace(/\D/g, "");
   return digits ? `+${digits}` : "";
 }
 

@@ -23,12 +23,11 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   }
 
   const { id } = await context.params;
-  const userClient = getSupabaseServerClient();
-  if (!userClient) {
-    return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
-  }
+  const adminClient = createClient(config.url, config.serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 
-  const { data: agreement, error: agreementError } = await userClient
+  const { data: agreement, error: agreementError } = await adminClient
     .from("organization_agreements")
     .select("agreement_file_path, email")
     .eq("id", id)
@@ -43,9 +42,6 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     }
   }
 
-  const adminClient = createClient(config.url, config.serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
   const { data, error } = await adminClient.storage
     .from(BUCKET)
     .createSignedUrl(agreement.agreement_file_path, 3600);
