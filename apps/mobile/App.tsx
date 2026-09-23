@@ -7,7 +7,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { initializeStorage, listLocalBeneficiaries, saveLocalBeneficiary, updateLocalBeneficiary } from "./src/storage";
-import { syncPendingRecords } from "./src/sync";
+import { submitBeneficiaryToBackend, syncPendingRecords } from "./src/sync";
 import { APP_NAME, WEB_API_URL } from "./src/config";
 import { REGIONS } from "./src/regions";
 import PartnershipMobileScreen from "./src/PartnershipScreen";
@@ -27,6 +27,10 @@ async function initializeApp() {
     initializeStorage(),
     new Promise<void>((resolve) => setTimeout(resolve, 5000)),
   ]);
+  const networkState = await NetInfo.fetch();
+  if (networkState.isConnected && WEB_API_URL) {
+    await syncPendingRecords();
+  }
 }
 
 function Button({ label, onPress, secondary = false }: { label: string; onPress: () => void; secondary?: boolean }) {
@@ -61,23 +65,87 @@ function HomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "
 function Action({ icon, title, body, onPress }: { icon: string; title: string; body: string; onPress: () => void }) { return <Pressable onPress={onPress} style={styles.action}><View style={styles.actionIcon}><Text style={styles.actionIconText}>{icon}</Text></View><View style={styles.actionCopy}><Text style={styles.actionTitle}>{title}</Text><Text style={styles.actionBody}>{body}</Text></View><Text style={styles.actionArrow}>›</Text></Pressable>; }
 
 function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackParamList, "Register">) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const multiple = route.params?.multiple ?? false;
+  const duplicatePhoneMessages: Record<string, string> = {
+    en: "This phone number is already registered. Please use a different phone number.",
+    am: "ይህ ስልክ ቁጥር አስቀድሞ ተመዝግቧል። እባክዎ የተለየ ስልክ ቁጥር ይጠቀሙ።",
+    om: "Lakkoofsi bilbilaa kana duraanuu galmee keessatti galchameera. Maaloo lakkoofsa bilbilaa adda ta'e fayyadamaa.",
+    ti: "ይህ ስልኪ ቁጽሪ ኣስተዋይቂ ተመዝገቡ ኣሎ። እባካዮ ዝተፈላለየ ስልኪ ቁጽሪ ተጠቐሙ።",
+  };
+  const registrationAlertTitles: Record<string, string> = {
+    en: "Registration issue",
+    am: "የምዝገባ ችግር",
+    om: "Rakkoon galmee",
+    ti: "ናይ ምዝገባ ኣዕንቲ",
+  };
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [saved, setSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"LOCAL" | "SYNCED" | "FAILED" | null>(null);
   const [saving, setSaving] = useState(false);
   const [batchCount, setBatchCount] = useState(0);
   function update(key: keyof FormState, value: string) { setForm((current) => ({ ...current, [key]: value })); }
   async function chooseCameraPhoto() { const permission = await ImagePicker.requestCameraPermissionsAsync(); if (!permission.granted) { Alert.alert(t("cameraPermission"), t("cameraPermissionBody")); return; } const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) update("photoUri", result.assets[0].uri); }
   async function chooseLibraryPhoto() { const permission = await ImagePicker.requestMediaLibraryPermissionsAsync(); if (!permission.granted) { Alert.alert(t("galleryPermission"), t("galleryPermissionBody")); return; } const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) update("photoUri", result.assets[0].uri); }
   async function save() {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim() || !form.disabilityType.trim()) { Alert.alert(t("missing"), t("requiredBody")); return; }
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim() || !form.disabilityType.trim()) {
+      Alert.alert(t("missing"), t("requiredBody"));
+      return;
+    }
+
+    const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const record: BeneficiaryDraft = {
+      localId,
+      clientChangeId: localId,
+      firstName: form.firstName.trim(),
+      middleName: form.middleName.trim(),
+      lastName: form.lastName.trim(),
+      phone: form.phone.trim(),
+      region: form.region,
+      gender: form.gender,
+      notes: form.notes.trim(),
+      dateOfBirth: form.dateOfBirth,
+      kebele: form.kebele.trim(),
+      disabilityType: form.disabilityType.trim(),
+      referralSource: form.referralSource.trim(),
+      photoUri: form.photoUri,
+      syncState: "PENDING_SYNC",
+      createdAt: new Date().toISOString(),
+    };
+
     setSaving(true);
-    try { const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`; const record: BeneficiaryDraft = { localId, clientChangeId: localId, ...form, syncState: "PENDING_SYNC", createdAt: new Date().toISOString() }; await saveLocalBeneficiary(record); setSaved(true); setBatchCount((count) => count + 1); }
-    finally { setSaving(false); }
+    try {
+      const onlineState = await NetInfo.fetch();
+      if (onlineState.isConnected && WEB_API_URL) {
+        try {
+          const submitted = await submitBeneficiaryToBackend(record);
+          await saveLocalBeneficiary(submitted);
+          setSaveStatus("SYNCED");
+          Alert.alert(t("saved"), submitted.registrationNumber ? `Registration number: ${submitted.registrationNumber}` : t("saved"));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Submission failed.";
+          await saveLocalBeneficiary({ ...record, syncState: "FAILED", error: message });
+          setSaveStatus("FAILED");
+          const displayMessage = message.toLowerCase().includes("already registered") ? duplicatePhoneMessages[locale] ?? duplicatePhoneMessages.en : message;
+          Alert.alert(registrationAlertTitles[locale] ?? registrationAlertTitles.en, displayMessage);
+        }
+      } else {
+        await saveLocalBeneficiary(record);
+        setSaveStatus("LOCAL");
+        Alert.alert(t("saved"), t("saved"));
+      }
+      setBatchCount((count) => count + 1);
+      if (multiple) {
+        setForm({ ...emptyForm });
+      } else {
+        setForm({ ...emptyForm });
+      }
+    } finally {
+      setSaving(false);
+    }
   }
-  function reset() { setForm({ ...emptyForm }); setSaved(false); }
-  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={multiple ? t("multiple") : t("newBeneficiary")} title={multiple ? `${t("beneficiary")} ${batchCount + 1}` : t("newTitle")} body={t("requiredBody")} /><View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>{([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", t("dateOfBirth")], ["phone", `${t("phone")} *`], ["kebele", `${t("kebele")} *`], ["referralSource", t("referral")] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label}</Text><TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Text style={styles.label}>{t("region")} *</Text><View style={styles.chips}>{REGIONS.slice(0, 7).map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View><Text style={styles.label}>{t("gender")} *</Text><View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View><View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View><View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View><Button label={t("camera")} secondary onPress={chooseCameraPhoto} /><Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />{form.photoUri ? <Text style={styles.photoStatus}>{t("photoSaved")}</Text> : null}{saved ? <View style={styles.success}><Text style={styles.successText}>{t("saved")}</Text></View> : null}<Button label={saving ? t("saving") : t("save")} onPress={save} />{multiple ? <Button label={t("addAnother")} secondary onPress={reset} /> : null}<Button label={t("viewOffline")} secondary onPress={() => navigation.navigate("Offline")} /></ScrollView></SafeAreaView>;
+  function reset() { setForm({ ...emptyForm }); setSaveStatus(null); }
+  const statusMessage = saveStatus === "SYNCED" ? t("synced") : saveStatus === "FAILED" ? t("failedSummary") : t("saved");
+  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={multiple ? t("multiple") : t("newBeneficiary")} title={multiple ? `${t("beneficiary")} ${batchCount + 1}` : t("newTitle")} body={t("requiredBody")} /><View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>{([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", t("dateOfBirth")], ["phone", `${t("phone")} *`], ["kebele", `${t("kebele")} *`], ["referralSource", t("referral")] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label}</Text><TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Text style={styles.label}>{t("region")} *</Text><View style={styles.chips}>{REGIONS.slice(0, 7).map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View><Text style={styles.label}>{t("gender")} *</Text><View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View><View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View><View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View><Button label={t("camera")} secondary onPress={chooseCameraPhoto} /><Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />{form.photoUri ? <Text style={styles.photoStatus}>{t("photoSaved")}</Text> : null}{saveStatus ? <View style={styles.success}><Text style={styles.successText}>{statusMessage}</Text></View> : null}<Button label={saving ? t("saving") : t("save")} onPress={save} />{multiple ? <Button label={t("addAnother")} secondary onPress={reset} /> : null}<Button label={t("viewOffline")} secondary onPress={() => navigation.navigate("Offline")} /></ScrollView></SafeAreaView>;
 }
 
 function OfflineScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "Offline">) { const { t } = useTranslation(); const [records, setRecords] = useState<BeneficiaryDraft[]>([]); const [syncing, setSyncing] = useState(false); async function refresh() { setRecords(await listLocalBeneficiaries()); } useEffect(() => { void refresh(); }, []); async function retry() { setSyncing(true); await syncPendingRecords(); await refresh(); setSyncing(false); } return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={t("offlineRecords")} title={t("offlineTitle")} body={t("offlineBody")} />{records.length === 0 ? <View style={styles.empty}><Text style={styles.actionTitle}>{t("noRecords")}</Text><Text style={styles.actionBody}>{t("noRecordsBody")}</Text></View> : records.map((record) => <View key={record.localId} style={styles.record}><Text style={styles.actionTitle}>{record.firstName} {record.lastName}</Text><Text style={styles.actionBody}>{record.phone} · {record.region}</Text>{record.registrationNumber ? <Text style={styles.registration}>{record.registrationNumber}</Text> : null}<Text style={[styles.state, record.syncState === "FAILED" && styles.failed]}>{record.syncState}</Text>{record.error ? <Text style={styles.error}>{record.error}</Text> : null}</View>)}<Button label={syncing ? t("syncing") : t("retry")} onPress={retry} /><Button label={t("backHome")} secondary onPress={() => navigation.navigate("Home")} /></ScrollView></SafeAreaView>; }

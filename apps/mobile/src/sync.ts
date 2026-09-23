@@ -9,24 +9,58 @@ function apiUrl(path: string) {
 
 function toFormData(record: BeneficiaryDraft) {
   const form = new FormData();
-  form.append("first_name", record.firstName);
+  form.append("first_name", record.firstName ?? "");
   form.append("middle_name", record.middleName ?? "");
-  form.append("last_name", record.lastName);
+  form.append("last_name", record.lastName ?? "");
   form.append("date_of_birth", record.dateOfBirth ?? "");
-  form.append("gender", record.gender);
-  form.append("phone", record.phone);
-  form.append("region", record.region);
+  form.append("gender", record.gender ?? "");
+  form.append("phone", record.phone ?? "");
+  form.append("region", record.region ?? "");
   form.append("kifle_ketema", "");
   form.append("kebele", record.kebele ?? "");
   form.append("house_number", "");
   form.append("disability_type", record.disabilityType ?? "");
   form.append("referral_source", record.referralSource ?? "");
   form.append("notes", record.notes ?? "");
-  form.append("client_change_id", record.clientChangeId);
+  form.append("client_change_id", record.clientChangeId ?? record.localId);
   if (record.photoUri) {
     form.append("photo", { uri: record.photoUri, name: "beneficiary-photo.jpg", type: "image/jpeg" } as unknown as Blob);
   }
   return form;
+}
+
+export async function submitBeneficiaryToBackend(record: BeneficiaryDraft): Promise<BeneficiaryDraft> {
+  const endpoint = apiUrl("/api/public-registration");
+  if (!endpoint) {
+    throw new Error("Sync is unavailable: configure EXPO_PUBLIC_WEB_API_URL.");
+  }
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "X-Client-Change-Id": record.clientChangeId || record.localId },
+    body: toFormData(record),
+  });
+
+  const body = (await response.json().catch(() => null)) as {
+    data?: { registration_number?: string };
+    error?: string;
+    errors?: string[];
+  } | null;
+
+  if (!response.ok) {
+    const errorText = body?.error ?? body?.errors?.[0] ?? "The server rejected this registration.";
+    if (response.status === 409 || errorText.toLowerCase().includes("already registered")) {
+      throw new Error("This phone number is already registered. Please use a different phone number.");
+    }
+    throw new Error(errorText);
+  }
+
+  return {
+    ...record,
+    syncState: "SYNCED",
+    registrationNumber: body?.data?.registration_number ?? record.registrationNumber,
+    error: undefined,
+  };
 }
 
 export async function syncPendingRecords() {
@@ -47,15 +81,8 @@ export async function syncPendingRecords() {
     const syncing = { ...record, syncState: "SYNCING" as const, error: undefined };
     await updateLocalBeneficiary(syncing);
     try {
-      const response = await fetch(endpoint, { method: "POST", headers: { "X-Client-Change-Id": record.clientChangeId }, body: toFormData(record) });
-      const body = await response.json().catch(() => null) as { data?: { registration_number?: string }; error?: string } | null;
-      if (!response.ok) {
-        if (response.status === 409 || body?.error?.toLowerCase().includes("phone number is already registered")) {
-          throw new Error("This phone number is already registered. Please use a different phone number.");
-        }
-        throw new Error(body?.error ?? "The server rejected this registration.");
-      }
-      await updateLocalBeneficiary({ ...record, syncState: "SYNCED", registrationNumber: body?.data?.registration_number });
+      const syncedRecord = await submitBeneficiaryToBackend(record);
+      await updateLocalBeneficiary(syncedRecord);
       synced += 1;
     } catch (error) {
       await updateLocalBeneficiary({ ...record, syncState: "FAILED", error: error instanceof Error ? error.message : "Synchronization failed." });
