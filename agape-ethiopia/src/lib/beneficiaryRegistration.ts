@@ -35,6 +35,9 @@ export function normalizePhoneForComparison(value: string | undefined | null): s
   }
 
   const digits = normalized.replace(/\D/g, "");
+  if (digits.startsWith("0") && digits.length > 1) {
+    return `+251${digits.slice(1)}`;
+  }
   return digits ? `+${digits}` : "";
 }
 
