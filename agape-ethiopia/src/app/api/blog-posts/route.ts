@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
+import { getSupabaseServerClient, requireAdmin } from "@/lib/auth/serverAuth";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -15,18 +15,13 @@ export async function GET(req: Request) {
   try {
     let query = supabase.from("blog_posts").select("*", { count: "exact" });
 
-    // Public only sees published posts
-    // Staff sees all posts
-    const profile = await getSupabaseServerClient();
-    if (profile) {
-      // Authenticated - allow all statuses
-    } else {
-      // Public - only published
+    const admin = await requireAdmin();
+    if (!admin) {
       query = query.eq("status", "published");
-    }
-
-    if (status && status.toLowerCase() !== "all") {
-      query = query.eq("status", status);
+    } else if (status?.toLowerCase() === "all") {
+      // Admin explicitly requested all drafts and published posts.
+    } else {
+      query = query.eq("status", status ?? "published");
     }
 
     const { data, error, count } = await query.order("published_at", { ascending: false }).range(offset, offset + limit - 1);
@@ -42,7 +37,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const profile = await requireStaff();
+  const profile = await requireAdmin();
   if (!profile) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -54,12 +49,19 @@ export async function POST(req: Request) {
     if (!title || !content) {
       return NextResponse.json({ error: "title and content are required." }, { status: 400 });
     }
+    const postStatus = status ?? "draft";
+    if (postStatus !== "draft" && postStatus !== "published") {
+      return NextResponse.json({ error: "Status must be draft or published." }, { status: 400 });
+    }
 
     const slug = title
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, "")
       .replace(/\s+/g, "-");
+    if (!slug) {
+      return NextResponse.json({ error: "Title must include letters or numbers." }, { status: 400 });
+    }
 
     const supabase = getSupabaseServerClient();
     if (!supabase) {
@@ -76,9 +78,9 @@ export async function POST(req: Request) {
           excerpt: excerpt || content.slice(0, 200),
           featured_image_url,
           author_id: profile.id,
-          status: status || "draft",
+          status: postStatus,
           is_featured: is_featured || false,
-          published_at: status === "published" ? new Date().toISOString() : null,
+          published_at: postStatus === "published" ? new Date().toISOString() : null,
         },
       ])
       .select()

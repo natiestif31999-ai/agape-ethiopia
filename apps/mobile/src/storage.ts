@@ -16,10 +16,14 @@ export async function initializeStorage() {
     gender TEXT NOT NULL,
     notes TEXT NOT NULL,
     date_of_birth TEXT NOT NULL DEFAULT '',
+    kifle_ketema TEXT NOT NULL DEFAULT '',
     kebele TEXT NOT NULL DEFAULT '',
+    house_number TEXT NOT NULL DEFAULT '',
     disability_type TEXT NOT NULL DEFAULT '',
     referral_source TEXT NOT NULL DEFAULT '',
     photo_uri TEXT,
+    photo_file_name TEXT,
+    photo_mime_type TEXT,
     registration_number TEXT,
     sync_state TEXT NOT NULL,
     error TEXT,
@@ -29,11 +33,15 @@ export async function initializeStorage() {
   const existingColumns = new Set(columns.map((column) => column.name));
   const additions = [
     ["date_of_birth", "TEXT NOT NULL DEFAULT ''"],
+    ["kifle_ketema", "TEXT NOT NULL DEFAULT ''"],
     ["client_change_id", "TEXT NOT NULL DEFAULT ''"],
     ["kebele", "TEXT NOT NULL DEFAULT ''"],
+    ["house_number", "TEXT NOT NULL DEFAULT ''"],
     ["disability_type", "TEXT NOT NULL DEFAULT ''"],
     ["referral_source", "TEXT NOT NULL DEFAULT ''"],
     ["photo_uri", "TEXT"],
+    ["photo_file_name", "TEXT"],
+    ["photo_mime_type", "TEXT"],
     ["registration_number", "TEXT"],
   ] as const;
   for (const [name, definition] of additions) {
@@ -53,7 +61,7 @@ export async function recoverInterruptedSyncs() {
 export async function listLocalBeneficiaries(): Promise<BeneficiaryDraft[]> {
   const db = await dbPromise;
   const rows = await db.getAllAsync<Record<string, string>>("SELECT * FROM beneficiary_queue ORDER BY created_at DESC");
-  return rows.map((row) => ({ localId: row.local_id, clientChangeId: row.client_change_id || row.local_id, firstName: row.first_name, middleName: row.middle_name, lastName: row.last_name, phone: row.phone, region: row.region, gender: row.gender, notes: row.notes, dateOfBirth: row.date_of_birth, kebele: row.kebele, disabilityType: row.disability_type, referralSource: row.referral_source, photoUri: row.photo_uri ?? undefined, registrationNumber: row.registration_number ?? undefined, syncState: row.sync_state as SyncState, error: row.error ?? undefined, createdAt: row.created_at }));
+  return rows.map((row) => ({ localId: row.local_id, clientChangeId: row.client_change_id || row.local_id, firstName: row.first_name, middleName: row.middle_name, lastName: row.last_name, phone: row.phone, region: row.region, gender: row.gender, notes: row.notes, dateOfBirth: row.date_of_birth, kifleKetema: row.kifle_ketema ?? "", kebele: row.kebele, houseNumber: row.house_number ?? "", disabilityType: row.disability_type, referralSource: row.referral_source, photoUri: row.photo_uri ?? undefined, photoFileName: row.photo_file_name ?? undefined, photoMimeType: row.photo_mime_type ?? undefined, registrationNumber: row.registration_number ?? undefined, syncState: row.sync_state as SyncState, error: row.error ?? undefined, createdAt: row.created_at }));
 }
 
 export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
@@ -70,15 +78,19 @@ export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
       gender,
       notes,
       date_of_birth,
+      kifle_ketema,
       kebele,
+      house_number,
       disability_type,
       referral_source,
       photo_uri,
+      photo_file_name,
+      photo_mime_type,
       registration_number,
       sync_state,
       error,
       created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     record.localId,
     record.clientChangeId,
     record.firstName,
@@ -89,10 +101,14 @@ export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
     record.gender,
     record.notes,
     record.dateOfBirth,
+    record.kifleKetema,
     record.kebele,
+    record.houseNumber,
     record.disabilityType,
     record.referralSource,
     record.photoUri ?? null,
+    record.photoFileName ?? null,
+    record.photoMimeType ?? null,
     record.registrationNumber ?? null,
     record.syncState,
     record.error ?? null,

@@ -12,10 +12,14 @@ export type BeneficiaryDraft = {
   gender: string;
   notes: string;
   dateOfBirth: string;
+  kifleKetema: string;
   kebele: string;
+  houseNumber: string;
   disabilityType: string;
   referralSource: string;
   photoUri?: string;
+  photoFileName?: string;
+  photoMimeType?: string;
   registrationNumber?: string;
   syncState: SyncState;
   error?: string;

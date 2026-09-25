@@ -7,6 +7,7 @@ import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import { useAuth } from "@/components/layout/SupabaseProvider";
 import PublicAnnouncements from "@/components/home/PublicAnnouncements";
+import PublishedBlogPosts from "@/components/home/PublishedBlogPosts";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 const defaultVisitUs = {
@@ -18,7 +19,7 @@ const defaultVisitUs = {
   hours: "Mon–Sat | 8:00 AM – 5:00 PM",
 };
 
-const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "" };
+const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "" };
 
 function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -38,6 +39,8 @@ export default function HomePageContent() {
   const socialLinks = parseJsonSetting(settings.homepage_social_links, defaultSocialLinks);
   const heroTitle = settings.homepage_hero_title?.trim() || "AGAPE MOBILITY ETHIOPIA";
   const heroSubtitle = settings.homepage_hero_subtitle?.trim() || "Supporting mobility, dignity, and inclusive access for persons with disabilities across Ethiopia.";
+  const beneficiaryCount = settings.homepage_beneficiary_count?.trim() || "1,200+";
+  const partnerCount = settings.homepage_partner_count?.trim() || "35+";
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 lg:px-8">
@@ -95,12 +98,12 @@ export default function HomePageContent() {
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">{t("impactStats")}</p>
-                <p className="mt-2 text-3xl font-bold text-slate-900">1,200+</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">{beneficiaryCount}</p>
                 <p className="text-sm text-slate-600">{t("beneficiariesSupported")}</p>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-700">{t("partnerNetwork")}</p>
-                <p className="mt-2 text-3xl font-bold text-slate-900">35+</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">{partnerCount}</p>
                 <p className="text-sm text-slate-600">{t("partnerOrganizations")}</p>
               </div>
             </div>
@@ -150,13 +153,18 @@ export default function HomePageContent() {
               {socialLinks.instagram && <Link href={socialLinks.instagram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Instagram</Link>}
               {socialLinks.linkedin && <Link href={socialLinks.linkedin} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">LinkedIn</Link>}
               {socialLinks.x && <Link href={socialLinks.x} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">X / Twitter</Link>}
-              {!socialLinks.facebook && !socialLinks.instagram && !socialLinks.linkedin && !socialLinks.x && (
+              {socialLinks.tiktok && <Link href={socialLinks.tiktok} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">TikTok</Link>}
+              {socialLinks.telegram && <Link href={socialLinks.telegram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Telegram</Link>}
+              {socialLinks.youtube && <Link href={socialLinks.youtube} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">YouTube</Link>}
+              {!Object.values(socialLinks).some(Boolean) && (
                 <p className="text-sm text-slate-600">Social links will appear here once saved by an admin.</p>
               )}
             </div>
           </div>
         </div>
       </section>
+
+      <PublishedBlogPosts />
 
       {isAdmin && <TabPanel />}
     </main>

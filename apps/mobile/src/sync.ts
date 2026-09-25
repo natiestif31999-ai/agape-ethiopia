@@ -19,15 +19,15 @@ function toFormData(record: BeneficiaryDraft) {
   form.append("gender", record.gender ?? "");
   form.append("phone", record.phone ?? "");
   form.append("region", record.region ?? "");
-  form.append("kifle_ketema", "");
+  form.append("kifle_ketema", record.kifleKetema ?? "");
   form.append("kebele", record.kebele ?? "");
-  form.append("house_number", "");
+  form.append("house_number", record.houseNumber ?? "");
   form.append("disability_type", record.disabilityType ?? "");
   form.append("referral_source", record.referralSource ?? "");
   form.append("notes", record.notes ?? "");
   form.append("client_change_id", record.clientChangeId ?? record.localId);
   if (record.photoUri) {
-    form.append("photo", { uri: record.photoUri, name: "beneficiary-photo.jpg", type: "image/jpeg" } as unknown as Blob);
+    form.append("photo", { uri: record.photoUri, name: record.photoFileName ?? "beneficiary-photo.jpg", type: record.photoMimeType ?? "image/jpeg" } as unknown as Blob);
   }
   return form;
 }

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/serverAuth";
 import AdminLayout from "@/components/AdminLayout";
-import AdminSettingsSection from "@/components/admin/AdminSettingsSection";
+import AdminWebsiteSettings from "@/components/admin/AdminWebsiteSettings";
 
 export const metadata = {
   title: "Settings",
@@ -17,7 +17,7 @@ export default async function AdminSettingsPage() {
   return (
     <AdminLayout currentSection="settings">
       <div className="p-6">
-        <AdminSettingsSection />
+        <AdminWebsiteSettings />
       </div>
     </AdminLayout>
   );

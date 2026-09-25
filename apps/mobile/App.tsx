@@ -15,10 +15,10 @@ import { TranslationProvider, useTranslation } from "./src/i18n";
 import type { BeneficiaryDraft } from "./src/types";
 
 type RootStackParamList = { Home: undefined; Register: { multiple?: boolean } | undefined; Offline: undefined; Partnership: undefined };
-type FormState = { firstName: string; middleName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; region: string; kebele: string; disabilityType: string; referralSource: string; notes: string; photoUri?: string };
+type FormState = { firstName: string; middleName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; region: string; kifleKetema: string; kebele: string; houseNumber: string; disabilityType: string; referralSource: string; notes: string; photoUri?: string; photoFileName?: string; photoMimeType?: string };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const logo = require("./assets/agape-logo.png");
-const emptyForm: FormState = { firstName: "", middleName: "", lastName: "", dateOfBirth: "", gender: "", phone: "", region: "", kebele: "", disabilityType: "", referralSource: "", notes: "" };
+const emptyForm: FormState = { firstName: "", middleName: "", lastName: "", dateOfBirth: "", gender: "", phone: "", region: "", kifleKetema: "", kebele: "", houseNumber: "", disabilityType: "", referralSource: "", notes: "" };
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -78,8 +78,14 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   const [saving, setSaving] = useState(false);
   const [batchCount, setBatchCount] = useState(0);
   function update(key: keyof FormState, value: string) { setForm((current) => ({ ...current, [key]: value })); }
-  async function chooseCameraPhoto() { const permission = await ImagePicker.requestCameraPermissionsAsync(); if (!permission.granted) { Alert.alert(t("cameraPermission"), t("cameraPermissionBody")); return; } const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) update("photoUri", result.assets[0].uri); }
-  async function chooseLibraryPhoto() { const permission = await ImagePicker.requestMediaLibraryPermissionsAsync(); if (!permission.granted) { Alert.alert(t("galleryPermission"), t("galleryPermissionBody")); return; } const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) update("photoUri", result.assets[0].uri); }
+  function attachPhoto(asset: ImagePicker.ImagePickerAsset) {
+    const fileName = asset.fileName || `beneficiary-photo.${asset.mimeType?.split("/")[1] || "jpg"}`;
+    const extension = fileName.split(".").pop()?.toLowerCase();
+    const mimeType = asset.mimeType || (extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg");
+    setForm((current) => ({ ...current, photoUri: asset.uri, photoFileName: fileName, photoMimeType: mimeType }));
+  }
+  async function chooseCameraPhoto() { const permission = await ImagePicker.requestCameraPermissionsAsync(); if (!permission.granted) { Alert.alert(t("cameraPermission"), t("cameraPermissionBody")); return; } const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
+  async function chooseLibraryPhoto() { const permission = await ImagePicker.requestMediaLibraryPermissionsAsync(); if (!permission.granted) { Alert.alert(t("galleryPermission"), t("galleryPermissionBody")); return; } const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
   async function save() {
     if (!form.firstName.trim() || !form.lastName.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim() || !form.disabilityType.trim()) {
       Alert.alert(t("missing"), t("requiredBody"));
@@ -102,10 +108,14 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         gender: form.gender,
         notes: form.notes.trim(),
         dateOfBirth: form.dateOfBirth,
+        kifleKetema: form.kifleKetema.trim(),
         kebele: form.kebele.trim(),
+        houseNumber: form.houseNumber.trim(),
         disabilityType: form.disabilityType.trim(),
         referralSource: form.referralSource.trim(),
         photoUri: form.photoUri,
+        photoFileName: form.photoFileName,
+        photoMimeType: form.photoMimeType,
         syncState: submitOnline ? "SYNCING" : "PENDING_SYNC",
         createdAt: new Date().toISOString(),
       };
@@ -140,10 +150,58 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   }
   function reset() { setForm({ ...emptyForm }); setSaveStatus(null); }
   const statusMessage = saveStatus === "SYNCED" ? t("synced") : saveStatus === "SYNCING" ? t("syncing") : saveStatus === "FAILED" ? t("failedSummary") : t("saved");
-  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={multiple ? t("multiple") : t("newBeneficiary")} title={multiple ? `${t("beneficiary")} ${batchCount + 1}` : t("newTitle")} body={t("requiredBody")} /><View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>{([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", t("dateOfBirth")], ["phone", `${t("phone")} *`], ["kebele", `${t("kebele")} *`], ["referralSource", t("referral")] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label}</Text><TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Text style={styles.label}>{t("region")} *</Text><View style={styles.chips}>{REGIONS.slice(0, 7).map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View><Text style={styles.label}>{t("gender")} *</Text><View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View><View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View><View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View><Button label={t("camera")} secondary onPress={chooseCameraPhoto} /><Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />{form.photoUri ? <Text style={styles.photoStatus}>{t("photoSaved")}</Text> : null}{saveStatus ? <View style={styles.success}><Text style={styles.successText}>{statusMessage}</Text></View> : null}<Button label={saving ? t("saving") : t("save")} onPress={save} />{multiple ? <Button label={t("addAnother")} secondary onPress={reset} /> : null}<Button label={t("viewOffline")} secondary onPress={() => navigation.navigate("Offline")} /></ScrollView></SafeAreaView>;
+  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={multiple ? t("multiple") : t("newBeneficiary")} title={multiple ? `${t("beneficiary")} ${batchCount + 1}` : t("newTitle")} body={t("requiredBody")} /><View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>{([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", t("dateOfBirth")], ["phone", `${t("phone")} *`], ["kifleKetema", t("kifleKetema")], ["kebele", `${t("kebele")} *`], ["houseNumber", t("houseNumber")], ["referralSource", t("referral")] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label}</Text><TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Text style={styles.label}>{t("region")} *</Text><View style={styles.chips}>{REGIONS.slice(0, 7).map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View><Text style={styles.label}>{t("gender")} *</Text><View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View><View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View><View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View><Button label={t("camera")} secondary onPress={chooseCameraPhoto} /><Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />{form.photoUri ? <Text style={styles.photoStatus}>{t("photoSaved")}</Text> : null}{saveStatus ? <View style={styles.success}><Text style={styles.successText}>{statusMessage}</Text></View> : null}<Button label={saving ? t("saving") : t("save")} onPress={save} />{multiple ? <Button label={t("addAnother")} secondary onPress={reset} /> : null}<Button label={t("viewOffline")} secondary onPress={() => navigation.navigate("Offline")} /></ScrollView></SafeAreaView>;
 }
 
-function OfflineScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "Offline">) { const { t } = useTranslation(); const [records, setRecords] = useState<BeneficiaryDraft[]>([]); const [syncing, setSyncing] = useState(false); async function refresh() { setRecords(await listLocalBeneficiaries()); } useEffect(() => { void refresh(); }, []); async function retry() { setSyncing(true); await syncPendingRecords(); await refresh(); setSyncing(false); } return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={t("offlineRecords")} title={t("offlineTitle")} body={t("offlineBody")} />{records.length === 0 ? <View style={styles.empty}><Text style={styles.actionTitle}>{t("noRecords")}</Text><Text style={styles.actionBody}>{t("noRecordsBody")}</Text></View> : records.map((record) => <View key={record.localId} style={styles.record}><Text style={styles.actionTitle}>{record.firstName} {record.lastName}</Text><Text style={styles.actionBody}>{record.phone} · {record.region}</Text>{record.registrationNumber ? <Text style={styles.registration}>{record.registrationNumber}</Text> : null}<Text style={[styles.state, record.syncState === "FAILED" && styles.failed]}>{record.syncState}</Text>{record.error ? <Text style={styles.error}>{record.error}</Text> : null}</View>)}<Button label={syncing ? t("syncing") : t("retry")} onPress={retry} /><Button label={t("backHome")} secondary onPress={() => navigation.navigate("Home")} /></ScrollView></SafeAreaView>; }
+function OfflineScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "Offline">) {
+  const { t } = useTranslation();
+  const [records, setRecords] = useState<BeneficiaryDraft[]>([]);
+  const [syncing, setSyncing] = useState(false);
+  const [retryError, setRetryError] = useState("");
+
+  async function refresh() {
+    setRecords(await listLocalBeneficiaries());
+  }
+
+  useEffect(() => {
+    void refresh().catch(() => setRetryError(t("offlineBody")));
+  }, []);
+
+  async function retry() {
+    setSyncing(true);
+    setRetryError("");
+    try {
+      await syncPendingRecords();
+      await refresh();
+    } catch {
+      setRetryError(t("offlineBody"));
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Header eyebrow={t("offlineRecords")} title={t("offlineTitle")} body={t("offlineBody")} />
+        {retryError ? <Text style={styles.error}>{retryError}</Text> : null}
+        {records.length === 0 ? (
+          <View style={styles.empty}><Text style={styles.actionTitle}>{t("noRecords")}</Text><Text style={styles.actionBody}>{t("noRecordsBody")}</Text></View>
+        ) : records.map((record) => (
+          <View key={record.localId} style={styles.record}>
+            <Text style={styles.actionTitle}>{record.firstName} {record.lastName}</Text>
+            <Text style={styles.actionBody}>{record.phone} · {record.region}</Text>
+            {record.registrationNumber ? <Text style={styles.registration}>{record.registrationNumber}</Text> : null}
+            <Text style={[styles.state, record.syncState === "FAILED" && styles.failed]}>{record.syncState}</Text>
+            {record.error ? <Text style={styles.error}>{record.error}</Text> : null}
+          </View>
+        ))}
+        <Button label={syncing ? t("syncing") : t("retry")} onPress={() => void retry()} />
+        <Button label={t("backHome")} secondary onPress={() => navigation.navigate("Home")} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
 function PartnershipScreen() { const [form, setForm] = useState({ organization_name: "", organization_type: "", contact_person: "", email: "", phone: "", region: "", city: "", address: "", message: "" }); const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null); const [status, setStatus] = useState(""); async function pick() { const result = await DocumentPicker.getDocumentAsync({ type: "application/pdf", copyToCacheDirectory: true }); if (!result.canceled) setFile(result.assets[0]); } async function submit() { if (!WEB_API_URL) { setStatus("Set EXPO_PUBLIC_WEB_API_URL to enable agreement submission."); return; } if (!file) { setStatus("Choose a signed PDF first."); return; } const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value)); data.append("signed_pdf", { uri: file.uri, name: file.name, type: "application/pdf" } as unknown as Blob); setStatus("Uploading agreement..."); try { const response = await fetch(`${WEB_API_URL}/api/organization-agreements`, { method: "POST", body: data }); setStatus(response.ok ? "Agreement uploaded successfully." : "Upload failed — please retry."); } catch { setStatus("Upload failed — please retry."); } } return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow="PARTNERSHIP" title="Partnership agreement" body="Submit a signed PDF through the existing Agape agreement workflow." />{([ ["organization_name", "Organization name"], ["organization_type", "Organization type"], ["contact_person", "Contact person"], ["email", "Email"], ["phone", "Phone"], ["region", "Region"], ["city", "City"], ["address", "Address"] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label} *</Text><TextInput value={form[key]} onChangeText={(value) => setForm((current) => ({ ...current, [key]: value }))} placeholder={label} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Button label={file ? `Selected: ${file.name}` : "Choose signed PDF"} secondary onPress={pick} /><Button label="Upload agreement" onPress={submit} />{status ? <Text style={styles.statusMessage}>{status}</Text> : null}</ScrollView></SafeAreaView>; }
 

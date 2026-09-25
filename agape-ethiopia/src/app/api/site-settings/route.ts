@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { getSupabaseServerClient, requireAdmin } from "@/lib/auth/serverAuth";
 
 export async function GET(req: Request) {
+  const profile = await requireAdmin();
+  if (!profile) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const url = new URL(req.url);
   const key = url.searchParams.get("key");
   const category = url.searchParams.get("category");
@@ -17,7 +22,10 @@ export async function GET(req: Request) {
     if (key) {
       query = query.eq("key", key);
     } else if (category) {
-      query = query.eq("category", category);
+      const categories = category.split(",").map((value) => value.trim()).filter(Boolean);
+      if (categories.length) {
+        query = query.in("category", categories);
+      }
     }
 
     const { data, error } = await query;
@@ -44,7 +52,7 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json();
-    const { key, value } = body;
+    const { key, value, category, description, is_json } = body;
 
     if (!key || value === undefined) {
       return NextResponse.json({ error: "key and value are required." }, { status: 400 });
@@ -58,7 +66,14 @@ export async function PUT(req: Request) {
     const { data, error } = await supabase
       .from("site_settings")
       .upsert(
-        { key, value, updated_at: new Date().toISOString() },
+        {
+          key,
+          value,
+          ...(typeof category === "string" ? { category } : {}),
+          ...(typeof description === "string" ? { description } : {}),
+          ...(typeof is_json === "boolean" ? { is_json } : {}),
+          updated_at: new Date().toISOString(),
+        },
         { onConflict: "key" }
       )
       .select()

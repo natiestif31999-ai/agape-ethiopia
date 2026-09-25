@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import AppHeader from "@/components/layout/AppHeader";
-import LocalizedSectionHeader from "@/components/LocalizedSectionHeader";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
 const defaultVisitUs = {
@@ -14,7 +14,7 @@ const defaultVisitUs = {
   hours: "Mon–Sat | 8:00 AM – 5:00 PM",
 };
 
-const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "" };
+const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "" };
 
 function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -28,6 +28,7 @@ function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
 
 export default function AboutPage() {
   const { settings } = useSiteSettings();
+  const { t } = useLanguage();
   const visitUs = parseJsonSetting(settings.homepage_visit_us, defaultVisitUs);
   const socialLinks = parseJsonSetting(settings.homepage_social_links, defaultSocialLinks);
 
@@ -36,19 +37,17 @@ export default function AboutPage() {
       <AppHeader />
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-6 lg:px-8">
         <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <LocalizedSectionHeader
-            titleKey="about"
-            subtitleKey="aboutTitle"
-            descriptionKey="aboutDescription"
-          />
+          <p className="text-sm font-semibold uppercase text-emerald-700">{t("about")}</p>
+          <h1 className="mt-3 text-3xl font-bold text-slate-900">{settings.about_title || t("aboutTitle")}</h1>
+          <p className="mt-4 max-w-3xl text-slate-700">{settings.about_content || t("aboutDescription")}</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl bg-blue-50 p-5">
               <h2 className="text-lg font-semibold text-slate-900">{"Mission"}</h2>
-              <p className="mt-2 text-slate-700">{"Provide compassionate mobility support and restore dignity for persons with disabilities across Ethiopia."}</p>
+              <p className="mt-2 text-slate-700">{settings.about_mission || "Provide compassionate mobility support and restore dignity for persons with disabilities across Ethiopia."}</p>
             </div>
             <div className="rounded-2xl bg-emerald-50 p-5">
               <h2 className="text-lg font-semibold text-slate-900">{"Vision"}</h2>
-              <p className="mt-2 text-slate-700">{"Build a connected network that ensures access to mobility aids, rehabilitation, and inclusive community participation."}</p>
+              <p className="mt-2 text-slate-700">{settings.about_vision || "Build a connected network that ensures access to mobility aids, rehabilitation, and inclusive community participation."}</p>
             </div>
           </div>
         </section>
@@ -71,7 +70,10 @@ export default function AboutPage() {
                 {socialLinks.instagram && <Link href={socialLinks.instagram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Instagram</Link>}
                 {socialLinks.linkedin && <Link href={socialLinks.linkedin} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">LinkedIn</Link>}
                 {socialLinks.x && <Link href={socialLinks.x} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">X / Twitter</Link>}
-                {!socialLinks.facebook && !socialLinks.instagram && !socialLinks.linkedin && !socialLinks.x && (
+                {socialLinks.tiktok && <Link href={socialLinks.tiktok} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">TikTok</Link>}
+                {socialLinks.telegram && <Link href={socialLinks.telegram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Telegram</Link>}
+                {socialLinks.youtube && <Link href={socialLinks.youtube} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">YouTube</Link>}
+                {!Object.values(socialLinks).some(Boolean) && (
                   <p className="text-sm text-slate-600">Social links will appear here once saved by an admin.</p>
                 )}
               </div>
