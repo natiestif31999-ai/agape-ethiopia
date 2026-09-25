@@ -43,6 +43,13 @@ export async function initializeStorage() {
   }
 }
 
+export async function recoverInterruptedSyncs() {
+  const db = await dbPromise;
+  await db.runAsync(
+    "UPDATE beneficiary_queue SET sync_state = 'PENDING_SYNC', error = NULL WHERE sync_state = 'SYNCING'",
+  );
+}
+
 export async function listLocalBeneficiaries(): Promise<BeneficiaryDraft[]> {
   const db = await dbPromise;
   const rows = await db.getAllAsync<Record<string, string>>("SELECT * FROM beneficiary_queue ORDER BY created_at DESC");

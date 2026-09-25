@@ -7,6 +7,9 @@ function apiUrl(path: string) {
   return WEB_API_URL ? `${WEB_API_URL}${path}` : null;
 }
 
+type SyncResult = { synced: number; failed: number; skipped: number };
+let activeSync: Promise<SyncResult> | null = null;
+
 function toFormData(record: BeneficiaryDraft) {
   const form = new FormData();
   form.append("first_name", record.firstName ?? "");
@@ -42,7 +45,7 @@ export async function submitBeneficiaryToBackend(record: BeneficiaryDraft): Prom
   });
 
   const body = (await response.json().catch(() => null)) as {
-    data?: { registration_number?: string };
+    data?: { phone?: string; registration_number?: string };
     error?: string;
     errors?: string[];
   } | null;
@@ -50,20 +53,29 @@ export async function submitBeneficiaryToBackend(record: BeneficiaryDraft): Prom
   if (!response.ok) {
     const errorText = body?.error ?? body?.errors?.[0] ?? "The server rejected this registration.";
     if (response.status === 409 || errorText.toLowerCase().includes("already registered")) {
-      throw new Error("This phone number is already registered. Please use a different phone number.");
+      throw new Error("This phone number is already registered. Please use a different number.");
     }
     throw new Error(errorText);
   }
 
   return {
     ...record,
+    phone: body?.data?.phone ?? record.phone,
     syncState: "SYNCED",
     registrationNumber: body?.data?.registration_number ?? record.registrationNumber,
     error: undefined,
   };
 }
 
-export async function syncPendingRecords() {
+export function syncPendingRecords(): Promise<SyncResult> {
+  if (activeSync) return activeSync;
+  activeSync = syncPendingRecordsOnce().finally(() => {
+    activeSync = null;
+  });
+  return activeSync;
+}
+
+async function syncPendingRecordsOnce(): Promise<SyncResult> {
   const records = await listLocalBeneficiaries();
   const pending = records.filter((record) => record.syncState === "PENDING_SYNC" || record.syncState === "FAILED");
   if (!pending.length) return { synced: 0, failed: 0, skipped: 0 };

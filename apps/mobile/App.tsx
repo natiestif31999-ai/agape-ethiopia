@@ -6,7 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as SplashScreen from "expo-splash-screen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack";
-import { initializeStorage, listLocalBeneficiaries, saveLocalBeneficiary, updateLocalBeneficiary } from "./src/storage";
+import { initializeStorage, listLocalBeneficiaries, recoverInterruptedSyncs, saveLocalBeneficiary, updateLocalBeneficiary } from "./src/storage";
 import { submitBeneficiaryToBackend, syncPendingRecords } from "./src/sync";
 import { APP_NAME, WEB_API_URL } from "./src/config";
 import { REGIONS } from "./src/regions";
@@ -23,14 +23,8 @@ const emptyForm: FormState = { firstName: "", middleName: "", lastName: "", date
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 async function initializeApp() {
-  await Promise.race([
-    initializeStorage(),
-    new Promise<void>((resolve) => setTimeout(resolve, 5000)),
-  ]);
-  const networkState = await NetInfo.fetch();
-  if (networkState.isConnected && WEB_API_URL) {
-    await syncPendingRecords();
-  }
+  await initializeStorage();
+  await recoverInterruptedSyncs();
 }
 
 function Button({ label, onPress, secondary = false }: { label: string; onPress: () => void; secondary?: boolean }) {
@@ -46,7 +40,7 @@ function useQueueStatus() {
   const [pending, setPending] = useState(0);
   const [failed, setFailed] = useState(0);
   async function refresh() { const records = await listLocalBeneficiaries(); setPending(records.filter((record) => record.syncState !== "SYNCED").length); setFailed(records.filter((record) => record.syncState === "FAILED").length); }
-  useEffect(() => { void NetInfo.fetch().then((state) => setOnline(Boolean(state.isConnected))); void refresh(); const unsubscribe = NetInfo.addEventListener((state) => { const connected = Boolean(state.isConnected); setOnline(connected); if (connected) void syncPendingRecords().then(refresh); }); return unsubscribe; }, []);
+  useEffect(() => { void NetInfo.fetch().then((state) => { const connected = Boolean(state.isConnected); setOnline(connected); if (connected) void syncPendingRecords().then(refresh); }); void refresh(); const unsubscribe = NetInfo.addEventListener((state) => { const connected = Boolean(state.isConnected); setOnline(connected); if (connected) void syncPendingRecords().then(refresh); }); return unsubscribe; }, []);
   return { online, pending, failed, refresh };
 }
 
@@ -68,7 +62,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   const { t, locale } = useTranslation();
   const multiple = route.params?.multiple ?? false;
   const duplicatePhoneMessages: Record<string, string> = {
-    en: "This phone number is already registered. Please use a different phone number.",
+    en: "This phone number is already registered. Please use a different number.",
     am: "ይህ ስልክ ቁጥር አስቀድሞ ተመዝግቧል። እባክዎ የተለየ ስልክ ቁጥር ይጠቀሙ።",
     om: "Lakkoofsi bilbilaa kana duraanuu galmee keessatti galchameera. Maaloo lakkoofsa bilbilaa adda ta'e fayyadamaa.",
     ti: "ይህ ስልኪ ቁጽሪ ኣስተዋይቂ ተመዝገቡ ኣሎ። እባካዮ ዝተፈላለየ ስልኪ ቁጽሪ ተጠቐሙ።",
@@ -80,7 +74,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
     ti: "ናይ ምዝገባ ኣዕንቲ",
   };
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [saveStatus, setSaveStatus] = useState<"LOCAL" | "SYNCED" | "FAILED" | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"LOCAL" | "SYNCING" | "SYNCED" | "FAILED" | null>(null);
   const [saving, setSaving] = useState(false);
   const [batchCount, setBatchCount] = useState(0);
   function update(key: keyof FormState, value: string) { setForm((current) => ({ ...current, [key]: value })); }
@@ -92,44 +86,45 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
       return;
     }
 
-    const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const record: BeneficiaryDraft = {
-      localId,
-      clientChangeId: localId,
-      firstName: form.firstName.trim(),
-      middleName: form.middleName.trim(),
-      lastName: form.lastName.trim(),
-      phone: form.phone.trim(),
-      region: form.region,
-      gender: form.gender,
-      notes: form.notes.trim(),
-      dateOfBirth: form.dateOfBirth,
-      kebele: form.kebele.trim(),
-      disabilityType: form.disabilityType.trim(),
-      referralSource: form.referralSource.trim(),
-      photoUri: form.photoUri,
-      syncState: "PENDING_SYNC",
-      createdAt: new Date().toISOString(),
-    };
-
     setSaving(true);
     try {
       const onlineState = await NetInfo.fetch();
-      if (onlineState.isConnected && WEB_API_URL) {
+      const submitOnline = Boolean(onlineState.isConnected && WEB_API_URL);
+      const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const record: BeneficiaryDraft = {
+        localId,
+        clientChangeId: localId,
+        firstName: form.firstName.trim(),
+        middleName: form.middleName.trim(),
+        lastName: form.lastName.trim(),
+        phone: form.phone.trim(),
+        region: form.region,
+        gender: form.gender,
+        notes: form.notes.trim(),
+        dateOfBirth: form.dateOfBirth,
+        kebele: form.kebele.trim(),
+        disabilityType: form.disabilityType.trim(),
+        referralSource: form.referralSource.trim(),
+        photoUri: form.photoUri,
+        syncState: submitOnline ? "SYNCING" : "PENDING_SYNC",
+        createdAt: new Date().toISOString(),
+      };
+      await saveLocalBeneficiary(record);
+      if (submitOnline) {
+        setSaveStatus("SYNCING");
         try {
           const submitted = await submitBeneficiaryToBackend(record);
-          await saveLocalBeneficiary(submitted);
+          await updateLocalBeneficiary(submitted);
           setSaveStatus("SYNCED");
-          Alert.alert(t("saved"), submitted.registrationNumber ? `Registration number: ${submitted.registrationNumber}` : t("saved"));
+          Alert.alert(t("synced"), submitted.registrationNumber ? `Registration number: ${submitted.registrationNumber}` : t("synced"));
         } catch (error) {
           const message = error instanceof Error ? error.message : "Submission failed.";
-          await saveLocalBeneficiary({ ...record, syncState: "FAILED", error: message });
+          await updateLocalBeneficiary({ ...record, syncState: "FAILED", error: message });
           setSaveStatus("FAILED");
           const displayMessage = message.toLowerCase().includes("already registered") ? duplicatePhoneMessages[locale] ?? duplicatePhoneMessages.en : message;
           Alert.alert(registrationAlertTitles[locale] ?? registrationAlertTitles.en, displayMessage);
         }
       } else {
-        await saveLocalBeneficiary(record);
         setSaveStatus("LOCAL");
         Alert.alert(t("saved"), t("saved"));
       }
@@ -144,7 +139,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
     }
   }
   function reset() { setForm({ ...emptyForm }); setSaveStatus(null); }
-  const statusMessage = saveStatus === "SYNCED" ? t("synced") : saveStatus === "FAILED" ? t("failedSummary") : t("saved");
+  const statusMessage = saveStatus === "SYNCED" ? t("synced") : saveStatus === "SYNCING" ? t("syncing") : saveStatus === "FAILED" ? t("failedSummary") : t("saved");
   return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={multiple ? t("multiple") : t("newBeneficiary")} title={multiple ? `${t("beneficiary")} ${batchCount + 1}` : t("newTitle")} body={t("requiredBody")} /><View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>{([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", t("dateOfBirth")], ["phone", `${t("phone")} *`], ["kebele", `${t("kebele")} *`], ["referralSource", t("referral")] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label}</Text><TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Text style={styles.label}>{t("region")} *</Text><View style={styles.chips}>{REGIONS.slice(0, 7).map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View><Text style={styles.label}>{t("gender")} *</Text><View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View><View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View><View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View><Button label={t("camera")} secondary onPress={chooseCameraPhoto} /><Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />{form.photoUri ? <Text style={styles.photoStatus}>{t("photoSaved")}</Text> : null}{saveStatus ? <View style={styles.success}><Text style={styles.successText}>{statusMessage}</Text></View> : null}<Button label={saving ? t("saving") : t("save")} onPress={save} />{multiple ? <Button label={t("addAnother")} secondary onPress={reset} /> : null}<Button label={t("viewOffline")} secondary onPress={() => navigation.navigate("Offline")} /></ScrollView></SafeAreaView>;
 }
 
@@ -153,13 +148,18 @@ function OfflineScreen({ navigation }: NativeStackScreenProps<RootStackParamList
 function PartnershipScreen() { const [form, setForm] = useState({ organization_name: "", organization_type: "", contact_person: "", email: "", phone: "", region: "", city: "", address: "", message: "" }); const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null); const [status, setStatus] = useState(""); async function pick() { const result = await DocumentPicker.getDocumentAsync({ type: "application/pdf", copyToCacheDirectory: true }); if (!result.canceled) setFile(result.assets[0]); } async function submit() { if (!WEB_API_URL) { setStatus("Set EXPO_PUBLIC_WEB_API_URL to enable agreement submission."); return; } if (!file) { setStatus("Choose a signed PDF first."); return; } const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value)); data.append("signed_pdf", { uri: file.uri, name: file.name, type: "application/pdf" } as unknown as Blob); setStatus("Uploading agreement..."); try { const response = await fetch(`${WEB_API_URL}/api/organization-agreements`, { method: "POST", body: data }); setStatus(response.ok ? "Agreement uploaded successfully." : "Upload failed — please retry."); } catch { setStatus("Upload failed — please retry."); } } return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow="PARTNERSHIP" title="Partnership agreement" body="Submit a signed PDF through the existing Agape agreement workflow." />{([ ["organization_name", "Organization name"], ["organization_type", "Organization type"], ["contact_person", "Contact person"], ["email", "Email"], ["phone", "Phone"], ["region", "Region"], ["city", "City"], ["address", "Address"] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label} *</Text><TextInput value={form[key]} onChangeText={(value) => setForm((current) => ({ ...current, [key]: value }))} placeholder={label} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Button label={file ? `Selected: ${file.name}` : "Choose signed PDF"} secondary onPress={pick} /><Button label="Upload agreement" onPress={submit} />{status ? <Text style={styles.statusMessage}>{status}</Text> : null}</ScrollView></SafeAreaView>; }
 
 export default function App() {
+  const [storageReady, setStorageReady] = useState(false);
+
   useEffect(() => {
     void initializeApp()
       .catch(() => undefined)
       .finally(() => {
+        setStorageReady(true);
         void SplashScreen.hideAsync().catch(() => undefined);
       });
   }, []);
+
+  if (!storageReady) return null;
 
   return <TranslationProvider><NavigationContainer><Stack.Navigator screenOptions={{ headerShown: false }}><Stack.Screen name="Home" component={HomeScreen} /><Stack.Screen name="Register" component={RegisterScreen} /><Stack.Screen name="Offline" component={OfflineScreen} /><Stack.Screen name="Partnership">{({ navigation }) => <PartnershipMobileScreen onBack={() => navigation.navigate("Home")} />}</Stack.Screen></Stack.Navigator></NavigationContainer></TranslationProvider>;
 }
