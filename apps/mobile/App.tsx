@@ -9,6 +9,7 @@ import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navig
 import { initializeStorage, listLocalBeneficiaries, recoverInterruptedSyncs, saveLocalBeneficiary, updateLocalBeneficiary } from "./src/storage";
 import { submitBeneficiaryToBackend, syncPendingRecords } from "./src/sync";
 import { APP_NAME, WEB_API_URL } from "./src/config";
+import { userFacingRequestError } from "./src/requestErrors";
 import { REGIONS } from "./src/regions";
 import PartnershipMobileScreen from "./src/PartnershipScreen";
 import { TranslationProvider, useTranslation } from "./src/i18n";
@@ -78,6 +79,11 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   const [saving, setSaving] = useState(false);
   const saveInProgress = useRef(false);
   const [batchCount, setBatchCount] = useState(0);
+  const [stagedRecords, setStagedRecords] = useState<BeneficiaryDraft[]>([]);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [submittingBatch, setSubmittingBatch] = useState(false);
+  const batchInProgress = useRef(false);
+  const [batchFeedback, setBatchFeedback] = useState("");
   function update(key: keyof FormState, value: string) { setForm((current) => ({ ...current, [key]: value })); }
   function attachPhoto(asset: ImagePicker.ImagePickerAsset) {
     const fileName = asset.fileName || `beneficiary-photo.${asset.mimeType?.split("/")[1] || "jpg"}`;
@@ -88,7 +94,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   async function chooseCameraPhoto() { const permission = await ImagePicker.requestCameraPermissionsAsync(); if (!permission.granted) { Alert.alert(t("cameraPermission"), t("cameraPermissionBody")); return; } const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
   async function chooseLibraryPhoto() { const permission = await ImagePicker.requestMediaLibraryPermissionsAsync(); if (!permission.granted) { Alert.alert(t("galleryPermission"), t("galleryPermissionBody")); return; } const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
   async function save() {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim() || !form.disabilityType.trim()) {
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.dateOfBirth.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim() || !form.disabilityType.trim()) {
       Alert.alert(t("missing"), t("requiredBody"));
       return;
     }
@@ -99,10 +105,11 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
     try {
       const onlineState = await NetInfo.fetch();
       const submitOnline = Boolean(onlineState.isConnected && WEB_API_URL);
-      const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const editingRecord = stagedRecords.find((item) => item.localId === editingRecordId);
+      const localId = editingRecord?.localId ?? `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const record: BeneficiaryDraft = {
         localId,
-        clientChangeId: localId,
+        clientChangeId: editingRecord?.clientChangeId ?? localId,
         firstName: form.firstName.trim(),
         middleName: form.middleName.trim(),
         lastName: form.lastName.trim(),
@@ -119,9 +126,23 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         photoUri: form.photoUri,
         photoFileName: form.photoFileName,
         photoMimeType: form.photoMimeType,
-        syncState: submitOnline ? "SYNCING" : "PENDING_SYNC",
-        createdAt: new Date().toISOString(),
+        syncState: multiple ? "LOCAL" : submitOnline ? "SYNCING" : "PENDING_SYNC",
+        createdAt: editingRecord?.createdAt ?? new Date().toISOString(),
       };
+
+      if (multiple) {
+        const wasEditing = Boolean(editingRecordId);
+        setStagedRecords((current) => editingRecordId
+          ? current.map((item) => item.localId === editingRecordId ? record : item)
+          : [...current, record]);
+        if (!editingRecordId) setBatchCount((count) => count + 1);
+        setEditingRecordId(null);
+        setSaveStatus(null);
+        setBatchFeedback(wasEditing ? "Staged record updated; submit the batch to save it." : "Added to batch; submit the batch to save these records on this device.");
+        setForm({ ...emptyForm });
+        return;
+      }
+
       await saveLocalBeneficiary(record);
       if (submitOnline) {
         setSaveStatus("SYNCING");
@@ -131,7 +152,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
           setSaveStatus("SYNCED");
           Alert.alert(t("synced"), submitted.registrationNumber ? `Registration number: ${submitted.registrationNumber}` : t("synced"));
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Submission failed.";
+          const message = userFacingRequestError(error, "Submission failed.");
           await updateLocalBeneficiary({ ...record, syncState: "FAILED", error: message });
           setSaveStatus("FAILED");
           const displayMessage = message.toLowerCase().includes("already registered") ? duplicatePhoneMessages[locale] ?? duplicatePhoneMessages.en : message;
@@ -142,19 +163,98 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         Alert.alert(t("saved"), t("saved"));
       }
       setBatchCount((count) => count + 1);
-      if (multiple) {
-        setForm({ ...emptyForm });
-      } else {
-        setForm({ ...emptyForm });
-      }
+      setForm({ ...emptyForm });
     } finally {
       saveInProgress.current = false;
       setSaving(false);
     }
   }
-  function reset() { setForm({ ...emptyForm }); setSaveStatus(null); }
+  function reset() { setForm({ ...emptyForm }); setSaveStatus(null); setEditingRecordId(null); }
+  function editStagedRecord(record: BeneficiaryDraft) {
+    setForm({ ...record });
+    setEditingRecordId(record.localId);
+    setSaveStatus(null);
+  }
+  function removeStagedRecord(localId: string) {
+    setStagedRecords((current) => current.filter((record) => record.localId !== localId));
+    if (editingRecordId === localId) reset();
+  }
+  async function submitStagedBatch() {
+    if (!stagedRecords.length || batchInProgress.current) return;
+    batchInProgress.current = true;
+    setSubmittingBatch(true);
+    setBatchFeedback("");
+    const pendingRecords = stagedRecords.map((record) => ({ ...record, syncState: "PENDING_SYNC" as const, error: undefined }));
+    try {
+      await Promise.all(pendingRecords.map((record) => saveLocalBeneficiary(record)));
+      setStagedRecords([]);
+      setEditingRecordId(null);
+      const network = await NetInfo.fetch();
+      if (!network.isConnected || !WEB_API_URL) {
+        setBatchFeedback(`${pendingRecords.length} record(s) saved on this device and waiting to sync.`);
+        return;
+      }
+      try {
+        await syncPendingRecords();
+        const savedRecords = await listLocalBeneficiaries();
+        const batchIds = new Set(pendingRecords.map((record) => record.localId));
+        const results = savedRecords.filter((record) => batchIds.has(record.localId));
+        const synced = results.filter((record) => record.syncState === "SYNCED").length;
+        const failed = results.filter((record) => record.syncState === "FAILED").length;
+        const pending = results.filter((record) => record.syncState !== "SYNCED" && record.syncState !== "FAILED").length;
+        setBatchFeedback(`Batch complete: ${synced} synced, ${failed} failed, ${pending} still pending. Unfinished records remain available to retry.`);
+      } catch {
+        setBatchFeedback("Batch saved on this device. Sync failed; retry from offline records.");
+      }
+    } catch {
+      setBatchFeedback("The batch could not be saved completely. Your staged entries are still here; retry submission.");
+    } finally {
+      batchInProgress.current = false;
+      setSubmittingBatch(false);
+    }
+  }
   const statusMessage = saveStatus === "SYNCED" ? t("synced") : saveStatus === "SYNCING" ? t("syncing") : saveStatus === "FAILED" ? t("failedSummary") : t("saved");
-  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.container}><Header eyebrow={multiple ? t("multiple") : t("newBeneficiary")} title={multiple ? `${t("beneficiary")} ${batchCount + 1}` : t("newTitle")} body={t("requiredBody")} /><View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>{([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", t("dateOfBirth")], ["phone", `${t("phone")} *`], ["kifleKetema", t("kifleKetema")], ["kebele", `${t("kebele")} *`], ["houseNumber", t("houseNumber")], ["referralSource", t("referral")] ] as const).map(([key, label]) => <View key={key} style={styles.field}><Text style={styles.label}>{label}</Text><TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} /></View>)}<Text style={styles.label}>{t("region")} *</Text><View style={styles.chips}>{REGIONS.slice(0, 7).map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View><Text style={styles.label}>{t("gender")} *</Text><View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View><View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View><View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View><Button label={t("camera")} secondary onPress={chooseCameraPhoto} /><Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />{form.photoUri ? <Text style={styles.photoStatus}>{t("photoSaved")}</Text> : null}{saveStatus ? <View style={styles.success}><Text style={styles.successText}>{statusMessage}</Text></View> : null}<Button label={saving ? t("saving") : t("save")} onPress={save} />{multiple ? <Button label={t("addAnother")} secondary onPress={reset} /> : null}<Button label={t("viewOffline")} secondary onPress={() => navigation.navigate("Offline")} /></ScrollView></SafeAreaView>;
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Header eyebrow={multiple ? t("multiple") : t("newBeneficiary")} title={multiple ? `${t("beneficiary")} ${batchCount + 1}` : t("newTitle")} body={t("requiredBody")} />
+        {multiple ? (
+          <View>
+            {stagedRecords.map((record, index) => (
+              <View key={record.localId} style={styles.record}>
+                <Text style={styles.actionTitle}>{index + 1}. {record.firstName} {record.lastName}</Text>
+                <Text style={styles.actionBody}>{record.phone} · {record.region}</Text>
+                <Button label="Edit staged record" secondary onPress={() => editStagedRecord(record)} />
+                <Button label="Remove staged record" secondary onPress={() => removeStagedRecord(record.localId)} />
+              </View>
+            ))}
+            {batchFeedback ? <Text accessibilityRole="alert" style={styles.error}>{batchFeedback}</Text> : null}
+            {stagedRecords.length ? <Button label={submittingBatch ? "Submitting batch..." : `Submit batch (${stagedRecords.length})`} secondary onPress={() => void submitStagedBatch()} /> : null}
+          </View>
+        ) : null}
+        <View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>
+        {([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", `${t("dateOfBirth")} *`], ["phone", `${t("phone")} *`], ["kifleKetema", t("kifleKetema")], ["kebele", `${t("kebele")} *`], ["houseNumber", t("houseNumber")], ["referralSource", t("referral")] ] as const).map(([key, label]) => (
+          <View key={key} style={styles.field}>
+            <Text style={styles.label}>{label}</Text>
+            <TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} />
+          </View>
+        ))}
+        <Text style={styles.label}>{t("region")} *</Text>
+        <View style={styles.chips}>{REGIONS.map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View>
+        <Text style={styles.label}>{t("gender")} *</Text>
+        <View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View>
+        <View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View>
+        <View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View>
+        <Button label={t("camera")} secondary onPress={chooseCameraPhoto} />
+        <Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />
+        {form.photoUri ? <Text style={styles.photoStatus}>{t("photoSaved")}</Text> : null}
+        {saveStatus ? <View style={styles.success}><Text style={styles.successText}>{statusMessage}</Text></View> : null}
+        <Button label={saving ? t("saving") : multiple ? editingRecordId ? "Update staged record" : "Add to batch" : t("save")} onPress={save} />
+        {multiple && editingRecordId ? <Button label="Cancel staged edit" secondary onPress={reset} /> : null}
+        <Button label={t("viewOffline")} secondary onPress={() => navigation.navigate("Offline")} />
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 function OfflineScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "Offline">) {

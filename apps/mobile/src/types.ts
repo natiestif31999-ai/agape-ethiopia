@@ -20,6 +20,8 @@ export type BeneficiaryDraft = {
   photoUri?: string;
   photoFileName?: string;
   photoMimeType?: string;
+  photoUrl?: string;
+  serverId?: string;
   registrationNumber?: string;
   syncState: SyncState;
   error?: string;

@@ -27,6 +27,8 @@ function readRecords(): BeneficiaryDraft[] {
       photoUri: record.photoUri,
       photoFileName: record.photoFileName,
       photoMimeType: record.photoMimeType,
+      photoUrl: record.photoUrl,
+      serverId: record.serverId,
       registrationNumber: record.registrationNumber,
       syncState: record.syncState ?? "PENDING_SYNC",
       error: record.error,

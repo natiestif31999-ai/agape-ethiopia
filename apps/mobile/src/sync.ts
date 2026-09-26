@@ -1,6 +1,8 @@
 import { supabase } from "./supabase";
 import { WEB_API_URL } from "./config";
+import { File } from "expo-file-system";
 import { listLocalBeneficiaries, updateLocalBeneficiary } from "./storage";
+import { userFacingRequestError } from "./requestErrors";
 import type { BeneficiaryDraft } from "./types";
 
 function apiUrl(path: string) {
@@ -27,7 +29,8 @@ function toFormData(record: BeneficiaryDraft) {
   form.append("notes", record.notes ?? "");
   form.append("client_change_id", record.clientChangeId ?? record.localId);
   if (record.photoUri) {
-    form.append("photo", { uri: record.photoUri, name: record.photoFileName ?? "beneficiary-photo.jpg", type: record.photoMimeType ?? "image/jpeg" } as unknown as Blob);
+    const photo = new File(record.photoUri);
+    form.append("photo", photo, record.photoFileName ?? photo.name);
   }
   return form;
 }
@@ -45,7 +48,7 @@ export async function submitBeneficiaryToBackend(record: BeneficiaryDraft): Prom
   });
 
   const body = (await response.json().catch(() => null)) as {
-    data?: { phone?: string; registration_number?: string };
+    data?: { id?: string; phone?: string; photo_url?: string | null; registration_number?: string };
     error?: string;
     errors?: string[];
   } | null;
@@ -60,7 +63,9 @@ export async function submitBeneficiaryToBackend(record: BeneficiaryDraft): Prom
 
   return {
     ...record,
+    serverId: body?.data?.id ?? record.serverId,
     phone: body?.data?.phone ?? record.phone,
+    photoUrl: body?.data?.photo_url ?? record.photoUrl,
     syncState: "SYNCED",
     registrationNumber: body?.data?.registration_number ?? record.registrationNumber,
     error: undefined,
@@ -97,7 +102,7 @@ async function syncPendingRecordsOnce(): Promise<SyncResult> {
       await updateLocalBeneficiary(syncedRecord);
       synced += 1;
     } catch (error) {
-      await updateLocalBeneficiary({ ...record, syncState: "FAILED", error: error instanceof Error ? error.message : "Synchronization failed." });
+      await updateLocalBeneficiary({ ...record, syncState: "FAILED", error: userFacingRequestError(error, "Synchronization failed.") });
       failed += 1;
     }
   }
