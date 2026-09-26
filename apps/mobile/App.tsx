@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import * as DocumentPicker from "expo-document-picker";
@@ -76,6 +76,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saveStatus, setSaveStatus] = useState<"LOCAL" | "SYNCING" | "SYNCED" | "FAILED" | null>(null);
   const [saving, setSaving] = useState(false);
+  const saveInProgress = useRef(false);
   const [batchCount, setBatchCount] = useState(0);
   function update(key: keyof FormState, value: string) { setForm((current) => ({ ...current, [key]: value })); }
   function attachPhoto(asset: ImagePicker.ImagePickerAsset) {
@@ -92,6 +93,8 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
       return;
     }
 
+    if (saveInProgress.current) return;
+    saveInProgress.current = true;
     setSaving(true);
     try {
       const onlineState = await NetInfo.fetch();
@@ -145,6 +148,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         setForm({ ...emptyForm });
       }
     } finally {
+      saveInProgress.current = false;
       setSaving(false);
     }
   }

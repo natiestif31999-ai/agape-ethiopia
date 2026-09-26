@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { filterPublicSiteSettings } from "@/lib/siteSettings";
 
 type SiteSettingsContextValue = {
   settings: Record<string, string>;
@@ -21,9 +22,8 @@ export function SiteSettingsProvider({ children }: { children: React.ReactNode }
       const supabase = getSupabaseClient();
       const { data, error } = await supabase.from("site_settings").select("key,value");
       if (error) throw error;
-      const mapped = Object.fromEntries(
-        (data ?? []).map((item: { key: string; value: string }) => [item.key, item.value])
-      );
+      const filtered = filterPublicSiteSettings(data ?? []);
+      const mapped = Object.fromEntries(filtered.map((item) => [item.key, item.value]));
       setSettings(mapped);
     } catch (error) {
       console.warn("Site settings load failed", error);

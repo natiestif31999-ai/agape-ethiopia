@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient, requireAdmin } from "@/lib/auth/serverAuth";
+import { filterPublicSiteSettings } from "@/lib/siteSettings";
 
 export async function GET(req: Request) {
   const profile = await requireAdmin();
@@ -34,11 +35,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    if (key && (!data || data.length === 0)) {
+    const filtered = filterPublicSiteSettings(data ?? []);
+    const selected = key ? filtered.filter((setting) => setting.key === key) : filtered;
+
+    if (key && selected.length === 0) {
       return NextResponse.json({ error: "Setting not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data: selected });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to fetch settings." }, { status: 500 });
   }
