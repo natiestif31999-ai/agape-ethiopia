@@ -315,7 +315,7 @@ export default function PartnershipAgreementPortal() {
               <a href="#upload-agreement" className="rounded-full border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:border-emerald-400 hover:text-emerald-700">
                 {t("uploadSignedAgreementTitle")}
               </a>
-              <a href="#online-agreement" className="rounded-full border border-amber-300 bg-amber-50 px-5 py-3 font-semibold text-amber-800">Fill &amp; sign online</a>
+              <a href="#online-agreement" className="rounded-full border border-amber-300 bg-amber-50 px-5 py-3 font-semibold text-amber-800">{t("fillSignOnline")}</a>
             </div>
           </div>
           <div className="rounded-3xl border border-emerald-200 bg-white/80 p-6 shadow-sm">
@@ -430,7 +430,7 @@ export default function PartnershipAgreementPortal() {
             </div>
 
             <label className="grid gap-1 text-sm font-medium text-slate-700">
-              Message (optional)
+              {t("messageOptional")}
               <textarea
                 value={form.message}
                 onChange={(event) => setForm((value) => ({ ...value, message: event.target.value }))}
@@ -525,7 +525,7 @@ export default function PartnershipAgreementPortal() {
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-lg font-semibold text-slate-900">{agreement.organization_name}</h3>
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">{agreement.organization_type}</span>
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">{agreement.status}</span>
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">{agreement.status === "Pending Review" ? t("statusPendingReview") : agreement.status === "Under Review" ? t("statusUnderReview") : agreement.status === "Pending" ? t("statusPending") : agreement.status === "Approved" ? t("statusApproved") : agreement.status === "Rejected" ? t("statusRejected") : agreement.status}</span>
                       </div>
                       <p className="text-sm text-slate-600">{agreement.contact_person} • {agreement.email} • {agreement.phone}</p>
                       <p className="text-sm text-slate-600">{agreement.region}, {agreement.city}</p>
@@ -571,7 +571,7 @@ export default function PartnershipAgreementPortal() {
 
                   <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
                     <label className="grid gap-1 text-sm font-medium text-slate-700">
-                      Review comment / rejection reason (optional)
+                      {t("reviewCommentOptional")}
                       <textarea
                         value={draftNotes[agreement.id] ?? agreement.internal_notes ?? agreement.notes ?? ""}
                         onChange={(event) => setDraftNotes((value) => ({ ...value, [agreement.id]: event.target.value }))}

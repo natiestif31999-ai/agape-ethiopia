@@ -10,15 +10,6 @@ import PublicAnnouncements from "@/components/home/PublicAnnouncements";
 import PublishedBlogPosts from "@/components/home/PublishedBlogPosts";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
-const defaultVisitUs = {
-  title: "Visit Us",
-  description: "Meet our team and learn how we support mobility and inclusion across Ethiopia.",
-  address: "Addis Ababa, Ethiopia",
-  phone: "+251 900 000 000",
-  email: "info@agapeethiopia.org",
-  hours: "Mon–Sat | 8:00 AM – 5:00 PM",
-};
-
 const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "" };
 
 function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
@@ -35,6 +26,14 @@ export default function HomePageContent() {
   const { t } = useLanguage();
   const { isAdmin } = useAuth();
   const { settings } = useSiteSettings();
+  const defaultVisitUs = {
+    title: t("visitUsTitle"),
+    description: t("visitUsDescription"),
+    address: "Addis Ababa, Ethiopia",
+    phone: "+251 900 000 000",
+    email: "info@agapeethiopia.org",
+    hours: t("visitUsHours"),
+  };
   const visitUs = parseJsonSetting(settings.homepage_visit_us, defaultVisitUs);
   const socialLinks = parseJsonSetting(settings.homepage_social_links, defaultSocialLinks);
   const heroTitle = settings.homepage_hero_title?.trim() || "AGAPE MOBILITY ETHIOPIA";
@@ -65,9 +64,9 @@ export default function HomePageContent() {
           </div>
 
           <div className="relative flex items-center justify-center">
-            <Image
+              <Image
               src="/c2.png"
-              alt="AGAPE MOBILITY ETHIOPIA wheelchair with Ethiopia map logo - mobility assistance"
+                alt={t("homeImpactImageAlt")}
               width={400}
               height={400}
               className="drop-shadow-lg"
@@ -139,15 +138,15 @@ export default function HomePageContent() {
             <h2 className="mt-2 text-3xl font-semibold text-slate-900">{visitUs.title}</h2>
             <p className="mt-3 text-slate-700">{visitUs.description}</p>
             <div className="mt-5 space-y-3 text-sm text-slate-700">
-              <p><span className="font-semibold text-slate-900">Address:</span> {visitUs.address}</p>
-              <p><span className="font-semibold text-slate-900">Phone:</span> {visitUs.phone}</p>
-              <p><span className="font-semibold text-slate-900">Email:</span> {visitUs.email}</p>
-              <p><span className="font-semibold text-slate-900">Hours:</span> {visitUs.hours}</p>
+              <p><span className="font-semibold text-slate-900">{t("addressLabel")}:</span> {visitUs.address}</p>
+              <p><span className="font-semibold text-slate-900">{t("phoneLabel")}:</span> {visitUs.phone}</p>
+              <p><span className="font-semibold text-slate-900">{t("emailLabel")}:</span> {visitUs.email}</p>
+              <p><span className="font-semibold text-slate-900">{t("hoursLabel")}:</span> {visitUs.hours}</p>
             </div>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Connect</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("connect")}</p>
             <div className="mt-4 flex flex-wrap gap-3">
               {socialLinks.facebook && <Link href={socialLinks.facebook} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Facebook</Link>}
               {socialLinks.instagram && <Link href={socialLinks.instagram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Instagram</Link>}
@@ -157,7 +156,7 @@ export default function HomePageContent() {
               {socialLinks.telegram && <Link href={socialLinks.telegram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Telegram</Link>}
               {socialLinks.youtube && <Link href={socialLinks.youtube} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">YouTube</Link>}
               {!Object.values(socialLinks).some(Boolean) && (
-                <p className="text-sm text-slate-600">Social links will appear here once saved by an admin.</p>
+                <p className="text-sm text-slate-600">{t("socialLinksEmpty")}</p>
               )}
             </div>
           </div>

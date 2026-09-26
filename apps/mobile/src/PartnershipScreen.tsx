@@ -91,11 +91,12 @@ export default function PartnershipScreen({ onBack }: Props) {
         <Button label={t("upload")} onPress={upload} />
         <OfficialAgreementMobile />
         <Text style={styles.section}>{t("openAgreement")}</Text>
-        <Text style={styles.helper}>{t("enterAgreement")}</Text>
-        <TextInput value={submissionId} onChangeText={setSubmissionId} placeholder={t("submissionId")} placeholderTextColor="#87928C" style={styles.input} />
-        <TextInput value={statusEmail} onChangeText={setStatusEmail} keyboardType="email-address" placeholder={t("matchingEmail")} placeholderTextColor="#87928C" style={styles.input} autoCapitalize="none" />
-        <Button label="Check agreement status" secondary onPress={checkStatus} />
-        <Button label={t("download")} secondary onPress={openAgreement} />
+        {submissionId && statusEmail ? (
+          <>
+            <Button label="Check agreement status" secondary onPress={checkStatus} />
+            <Button label="Open submitted agreement" secondary onPress={openAgreement} />
+          </>
+        ) : null}
         {status ? <Text accessibilityRole="alert" style={styles.status}>{status}</Text> : null}
         <Button label={t("backHome")} secondary onPress={onBack} />
       </ScrollView>

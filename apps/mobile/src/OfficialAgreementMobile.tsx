@@ -225,11 +225,13 @@ export default function OfficialAgreementMobile() {
       <Button label={busy ? "Working..." : "Submit signed agreement"} onPress={() => void submitAgreement()} disabled={busy || !previewReady} secondary />
       {agreementStatus ? <Text style={styles.status}>Status: {agreementStatus}</Text> : null}
       {feedback ? <Text accessibilityRole="alert" style={styles.feedback}>{feedback}</Text> : null}
-      <Text style={styles.heading}>Check agreement status or open its file</Text>
-      <TextInput value={submissionId} onChangeText={setSubmissionId} placeholder="Submission ID" placeholderTextColor="#87928C" style={styles.input} autoCapitalize="none" />
-      <TextInput value={statusEmail} onChangeText={setStatusEmail} placeholder="Submission email" placeholderTextColor="#87928C" style={styles.input} keyboardType="email-address" autoCapitalize="none" />
-      <Button label={busy ? "Working..." : "Check status"} onPress={() => void checkStatus()} disabled={busy} secondary />
-      <Button label={busy ? "Working..." : "Open submitted agreement"} onPress={() => void downloadAgreement()} disabled={busy} secondary />
+      {submissionId && statusEmail ? (
+        <>
+          <Text style={styles.heading}>Check agreement status or open its file</Text>
+          <Button label={busy ? "Working..." : "Check status"} onPress={() => void checkStatus()} disabled={busy} secondary />
+          <Button label={busy ? "Working..." : "Open submitted agreement"} onPress={() => void downloadAgreement()} disabled={busy} secondary />
+        </>
+      ) : null}
     </View>
   );
 }

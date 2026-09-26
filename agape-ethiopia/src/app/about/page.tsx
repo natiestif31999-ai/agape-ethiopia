@@ -5,15 +5,6 @@ import AppHeader from "@/components/layout/AppHeader";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
-const defaultVisitUs = {
-  title: "Visit Us",
-  description: "Meet our team and learn how we support mobility and inclusion across Ethiopia.",
-  address: "Addis Ababa, Ethiopia",
-  phone: "+251 900 000 000",
-  email: "info@agapeethiopia.org",
-  hours: "Mon–Sat | 8:00 AM – 5:00 PM",
-};
-
 const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "" };
 
 function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
@@ -29,6 +20,14 @@ function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
 export default function AboutPage() {
   const { settings } = useSiteSettings();
   const { t } = useLanguage();
+  const defaultVisitUs = {
+    title: t("visitUsTitle"),
+    description: t("visitUsDescription"),
+    address: "Addis Ababa, Ethiopia",
+    phone: "+251 900 000 000",
+    email: "info@agapeethiopia.org",
+    hours: t("visitUsHours"),
+  };
   const visitUs = parseJsonSetting(settings.homepage_visit_us, defaultVisitUs);
   const socialLinks = parseJsonSetting(settings.homepage_social_links, defaultSocialLinks);
 
@@ -42,12 +41,12 @@ export default function AboutPage() {
           <p className="mt-4 max-w-3xl text-slate-700">{settings.about_content || t("aboutDescription")}</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl bg-blue-50 p-5">
-              <h2 className="text-lg font-semibold text-slate-900">{"Mission"}</h2>
-              <p className="mt-2 text-slate-700">{settings.about_mission || "Provide compassionate mobility support and restore dignity for persons with disabilities across Ethiopia."}</p>
+              <h2 className="text-lg font-semibold text-slate-900">{t("aboutMissionLabel")}</h2>
+              <p className="mt-2 text-slate-700">{settings.about_mission || t("ourMissionText")}</p>
             </div>
             <div className="rounded-2xl bg-emerald-50 p-5">
-              <h2 className="text-lg font-semibold text-slate-900">{"Vision"}</h2>
-              <p className="mt-2 text-slate-700">{settings.about_vision || "Build a connected network that ensures access to mobility aids, rehabilitation, and inclusive community participation."}</p>
+              <h2 className="text-lg font-semibold text-slate-900">{t("aboutVisionLabel")}</h2>
+              <p className="mt-2 text-slate-700">{settings.about_vision || t("aboutVisionFallback")}</p>
             </div>
           </div>
         </section>
@@ -58,13 +57,13 @@ export default function AboutPage() {
           <p className="mt-3 max-w-2xl text-slate-700">{visitUs.description}</p>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="space-y-3 text-sm text-slate-700">
-              <p><span className="font-semibold text-slate-900">Address:</span> {visitUs.address}</p>
-              <p><span className="font-semibold text-slate-900">Phone:</span> {visitUs.phone}</p>
-              <p><span className="font-semibold text-slate-900">Email:</span> {visitUs.email}</p>
-              <p><span className="font-semibold text-slate-900">Hours:</span> {visitUs.hours}</p>
+              <p><span className="font-semibold text-slate-900">{t("addressLabel")}:</span> {visitUs.address}</p>
+              <p><span className="font-semibold text-slate-900">{t("phoneLabel")}:</span> {visitUs.phone}</p>
+              <p><span className="font-semibold text-slate-900">{t("emailLabel")}:</span> {visitUs.email}</p>
+              <p><span className="font-semibold text-slate-900">{t("hoursLabel")}:</span> {visitUs.hours}</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Social media</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("socialMedia")}</p>
               <div className="mt-4 flex flex-wrap gap-3">
                 {socialLinks.facebook && <Link href={socialLinks.facebook} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Facebook</Link>}
                 {socialLinks.instagram && <Link href={socialLinks.instagram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Instagram</Link>}
@@ -74,7 +73,7 @@ export default function AboutPage() {
                 {socialLinks.telegram && <Link href={socialLinks.telegram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Telegram</Link>}
                 {socialLinks.youtube && <Link href={socialLinks.youtube} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">YouTube</Link>}
                 {!Object.values(socialLinks).some(Boolean) && (
-                  <p className="text-sm text-slate-600">Social links will appear here once saved by an admin.</p>
+                  <p className="text-sm text-slate-600">{t("socialLinksEmpty")}</p>
                 )}
               </div>
             </div>

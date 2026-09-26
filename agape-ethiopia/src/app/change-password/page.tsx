@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { useAuth } from "@/components/layout/SupabaseProvider";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
   const { userProfile } = useAuth();
+  const { t } = useLanguage();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,7 +30,7 @@ export default function ChangePasswordPage() {
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error || "Unable to change password.");
+        throw new Error(result.error || t("passwordChangeFailed"));
       }
 
       // Redirect based on user role
@@ -40,7 +42,7 @@ export default function ChangePasswordPage() {
         router.push("/");
       }
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Unable to change password.");
+      setStatus(error instanceof Error ? error.message : t("passwordChangeFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -51,26 +53,26 @@ export default function ChangePasswordPage() {
       <AppHeader />
       <main className="mx-auto max-w-lg px-4 py-12">
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-semibold text-slate-900">Change Password</h1>
-          <p className="mt-2 text-slate-600">Set a new password to continue to the staff portal.</p>
+          <h1 className="text-3xl font-semibold text-slate-900">{t("changePasswordTitle")}</h1>
+          <p className="mt-2 text-slate-600">{t("changePasswordDescription")}</p>
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <label className="grid gap-2 text-sm font-medium text-slate-700">
-              Current password
+              {t("currentPassword")}
               <input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required className="rounded-xl border border-slate-300 px-4 py-3" />
             </label>
             <label className="grid gap-2 text-sm font-medium text-slate-700">
-              New password
+              {t("newPassword")}
               <input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} required className="rounded-xl border border-slate-300 px-4 py-3" />
             </label>
             <label className="grid gap-2 text-sm font-medium text-slate-700">
-              Confirm new password
+              {t("confirmNewPassword")}
               <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required className="rounded-xl border border-slate-300 px-4 py-3" />
             </label>
             <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
-              Use at least 8 characters with uppercase, lowercase, and a number.
+              {t("passwordRequirements")}
             </div>
             <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white disabled:opacity-60">
-              {isSubmitting ? "Updating password..." : "Update password"}
+              {isSubmitting ? t("updatingPassword") : t("updatePassword")}
             </button>
           </form>
           {status && <p className="mt-4 text-sm text-red-600">{status}</p>}

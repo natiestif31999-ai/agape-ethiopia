@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/components/layout/LanguageProvider";
 
 type PageState = { width: number; height: number; image: HTMLCanvasElement };
 type AgreementValues = {
@@ -31,6 +32,7 @@ const initialValues: AgreementValues = {
 };
 
 export default function OfficialAgreementEditor() {
+  const { t } = useLanguage();
   const [pages, setPages] = useState<PageState[]>([]);
   const [values, setValues] = useState(initialValues);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
@@ -64,7 +66,7 @@ export default function OfficialAgreementEditor() {
         rendered.push({ width: viewport.width, height: viewport.height, image: canvas });
       }
       if (!cancelled) setPages(rendered);
-    }).catch(() => setFeedback("The official agreement could not be opened."));
+    }).catch(() => setFeedback(t("agreementOpenFailed")));
     return () => { cancelled = true; };
   }, []);
 
@@ -124,19 +126,19 @@ export default function OfficialAgreementEditor() {
   async function previewAgreement() {
     const requiredValues = [values.organizationName, values.organizationType, values.representativeName, values.email, values.phone, values.region, values.city, values.address, values.signingDate];
     if (!signatureDataUrl || requiredValues.some((value) => !value.trim())) {
-      setFeedback("Complete the partner information and draw or upload a signature.");
+      setFeedback(t("agreementCompleteFields"));
       return;
     }
     setBusy(true);
     setFeedback(null);
     try {
       const response = await fetch("/api/organization-agreements/online", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload("preview")) });
-      if (!response.ok) throw new Error(((await response.json()) as { error?: string }).error || "Preview could not be generated.");
+      if (!response.ok) throw new Error(((await response.json()) as { error?: string }).error || t("agreementPreviewFailed"));
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(URL.createObjectURL(await response.blob()));
       setMode("preview");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Preview could not be generated.");
+      setFeedback(error instanceof Error ? error.message : t("agreementPreviewFailed"));
     } finally {
       setBusy(false);
     }
@@ -148,8 +150,8 @@ export default function OfficialAgreementEditor() {
     try {
       const response = await fetch("/api/organization-agreements/online", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload("submit")) });
       const result = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(result.error || "The signed agreement could not be submitted.");
-      setFeedback("Your completed Agape Ethiopia agreement was submitted for review.");
+      if (!response.ok) throw new Error(result.error || t("agreementSubmissionFailed"));
+      setFeedback(t("agreementSubmitted"));
       setStatusEmail(values.email);
       const submissionId = (result as { submissionId?: string }).submissionId;
       if (submissionId) {
@@ -164,7 +166,7 @@ export default function OfficialAgreementEditor() {
       setPreviewUrl(null);
       clearSignature();
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "The signed agreement could not be submitted.");
+      setFeedback(error instanceof Error ? error.message : t("agreementSubmissionFailed"));
     } finally {
       setBusy(false);
     }
@@ -177,7 +179,7 @@ export default function OfficialAgreementEditor() {
     const response = await fetch(`/api/organization-agreements/status?id=${encodeURIComponent(statusId)}&email=${encodeURIComponent(statusEmail)}`);
     const result = (await response.json()) as { error?: string; submission?: { id: string; status: string; response: string | null } };
     if (!response.ok || !result.submission) {
-      setFeedback(result.error || "No matching submission was found.");
+      setFeedback(result.error || t("agreementStatusNotFound"));
       return;
     }
     setStatusResult(result.submission);
@@ -187,37 +189,37 @@ export default function OfficialAgreementEditor() {
   const inputClass = "rounded-xl border border-slate-300 px-3 py-2 text-sm";
   return (
     <section id="online-agreement" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">Actual PDF editor</span>
-      <h2 className="mt-4 text-2xl font-semibold text-slate-900">Fill &amp; Sign the Official Agreement</h2>
-      <p className="mt-3 text-slate-600">This editor uses the original three-page Agape Ethiopia PDF. Your entries and signature are embedded into a completed PDF copy.</p>
+      <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">{t("actualPdfEditor")}</span>
+      <h2 className="mt-4 text-2xl font-semibold text-slate-900">{t("fillSignOfficialAgreement")}</h2>
+      <p className="mt-3 text-slate-600">{t("officialAgreementEditorDescription")}</p>
       {feedback && <p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">{feedback}</p>}
       <form onSubmit={lookupStatus} className="mt-5 grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
-        <label className="grid gap-1 text-sm font-medium text-slate-700">Submission ID<input className={inputClass} required value={statusId} onChange={(event) => setStatusId(event.target.value)} placeholder="Your submission ID" /></label>
-        <label className="grid gap-1 text-sm font-medium text-slate-700">Submission email<input className={inputClass} required type="email" value={statusEmail} onChange={(event) => setStatusEmail(event.target.value)} placeholder="Email used for submission" /></label>
-        <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white" type="submit">Check status</button>
+        <label className="grid gap-1 text-sm font-medium text-slate-700">{t("submissionId")}<input className={inputClass} required value={statusId} onChange={(event) => setStatusId(event.target.value)} placeholder={t("yourSubmissionId")} /></label>
+        <label className="grid gap-1 text-sm font-medium text-slate-700">{t("submissionEmail")}<input className={inputClass} required type="email" value={statusEmail} onChange={(event) => setStatusEmail(event.target.value)} placeholder={t("emailUsedForSubmission")} /></label>
+        <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white" type="submit">{t("checkStatus")}</button>
       </form>
-      {statusResult && <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950"><strong>Status: {statusResult.status}</strong>{statusResult.response && <p className="mt-1">Staff/Admin response: {statusResult.response}</p>}{statusResult.status === "Rejected" && <p className="mt-2 font-medium">You can correct the official PDF and submit a new version below.</p>}</div>}
+      {statusResult && <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950"><strong>{t("status")}: {statusResult.status}</strong>{statusResult.response && <p className="mt-1">{t("staffAdminResponse")}: {statusResult.response}</p>}{statusResult.status === "Rejected" && <p className="mt-2 font-medium">{t("rejectedAgreementResubmit")}</p>}</div>}
 
       {mode === "edit" && (
         <>
           <div className="mt-6 grid gap-3 md:grid-cols-2">
-            <input className={inputClass} required placeholder="Organization name" value={values.organizationName} onChange={(e) => update("organizationName", e.target.value)} />
-            <input className={inputClass} required placeholder="Representative name" value={values.representativeName} onChange={(e) => update("representativeName", e.target.value)} />
-            <input className={inputClass} required placeholder="Organization / partnership type" value={values.organizationType} onChange={(e) => update("organizationType", e.target.value)} />
-            <input className={inputClass} required type="email" placeholder="Email" value={values.email} onChange={(e) => update("email", e.target.value)} />
-            <input className={inputClass} required placeholder="Phone" value={values.phone} onChange={(e) => update("phone", e.target.value)} />
-            <input className={inputClass} required placeholder="Region" value={values.region} onChange={(e) => update("region", e.target.value)} />
-            <input className={inputClass} required placeholder="City" value={values.city} onChange={(e) => update("city", e.target.value)} />
-            <input className={inputClass} required placeholder="Address" value={values.address} onChange={(e) => update("address", e.target.value)} />
-            <input className={inputClass} required type="date" value={values.signingDate} onChange={(e) => update("signingDate", e.target.value)} />
-            <input className={inputClass} placeholder="Message (optional)" value={values.message} onChange={(e) => update("message", e.target.value)} />
+            <input className={inputClass} required placeholder={t("organizationName")} value={values.organizationName} onChange={(e) => update("organizationName", e.target.value)} />
+            <input className={inputClass} required placeholder={t("representativeName")} value={values.representativeName} onChange={(e) => update("representativeName", e.target.value)} />
+            <input className={inputClass} required placeholder={t("organizationType")} value={values.organizationType} onChange={(e) => update("organizationType", e.target.value)} />
+            <input className={inputClass} required type="email" placeholder={t("email")} value={values.email} onChange={(e) => update("email", e.target.value)} />
+            <input className={inputClass} required placeholder={t("phone")} value={values.phone} onChange={(e) => update("phone", e.target.value)} />
+            <input className={inputClass} required placeholder={t("region")} value={values.region} onChange={(e) => update("region", e.target.value)} />
+            <input className={inputClass} required placeholder={t("city")} value={values.city} onChange={(e) => update("city", e.target.value)} />
+            <input className={inputClass} required placeholder={t("address")} value={values.address} onChange={(e) => update("address", e.target.value)} />
+            <label className="grid gap-1 text-sm font-medium text-slate-700">{t("signingDate")}<input className={inputClass} required type="date" value={values.signingDate} onChange={(e) => update("signingDate", e.target.value)} /></label>
+            <input className={inputClass} placeholder={`${t("message")} (${t("optional").toLowerCase()})`} value={values.message} onChange={(e) => update("message", e.target.value)} />
           </div>
 
           <div className="mt-5 rounded-2xl border border-slate-200 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold text-slate-900">Signature</h3><button type="button" onClick={clearSignature} className="text-sm font-medium text-rose-700">Clear</button></div>
-            <p className="mt-1 text-sm text-slate-600">Draw with a mouse, finger, or stylus. You can also upload a signature image.</p>
+            <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold text-slate-900">{t("signature")}</h3><button type="button" onClick={clearSignature} className="text-sm font-medium text-rose-700">{t("clear")}</button></div>
+            <p className="mt-1 text-sm text-slate-600">{t("signatureInstructions")}</p>
             <canvas ref={signatureRef} width={720} height={180} onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); drawSignature(event); }} onPointerMove={drawSignature} onPointerUp={(event) => { event.currentTarget.releasePointerCapture(event.pointerId); setDrawing(false); }} onPointerCancel={() => setDrawing(false)} className="mt-3 h-36 w-full touch-none rounded-xl border border-dashed border-slate-400 bg-white" />
-            <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700">Upload signature image<input className="sr-only" type="file" accept="image/png,image/jpeg" onChange={uploadSignature} /></label>
+            <label className="mt-3 inline-flex cursor-pointer rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700">{t("uploadSignatureImage")}<input className="sr-only" type="file" accept="image/png,image/jpeg" onChange={uploadSignature} /></label>
           </div>
 
             <div className="mt-6 overflow-auto rounded-2xl border border-slate-200 bg-slate-100 p-3">
