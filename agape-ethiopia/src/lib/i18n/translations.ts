@@ -13,6 +13,7 @@ export type TranslationDictionary = Record<string, string>;
 
 export const translations: Record<Locale, TranslationDictionary> = {
   en: {
+    "AGAPE MOBILITY ETHIOPIA":"አጋፔ ሞቢሊቲ ኢትዮጵያ",
     "home": "Home",
     "about": "About",
     "services": "Services",
