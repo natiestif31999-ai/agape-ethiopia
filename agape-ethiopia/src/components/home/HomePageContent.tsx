@@ -36,7 +36,7 @@ export default function HomePageContent() {
   };
   const visitUs = parseJsonSetting(settings.homepage_visit_us, defaultVisitUs);
   const socialLinks = parseJsonSetting(settings.homepage_social_links, defaultSocialLinks);
-  const heroTitle = settings.homepage_hero_title?.trim() || "AGAPE MOBILITY ETHIOPIA";
+  const heroTitle = settings.homepage_hero_title?.trim() || "NO MORE CRAWLING ON THE FLOOR";
   const heroSubtitle = settings.homepage_hero_subtitle?.trim() || "Supporting mobility, dignity, and inclusive access for persons with disabilities across Ethiopia.";
   const beneficiaryCount = settings.homepage_beneficiary_count?.trim() || "1,200+";
   const partnerCount = settings.homepage_partner_count?.trim() || "35+";
