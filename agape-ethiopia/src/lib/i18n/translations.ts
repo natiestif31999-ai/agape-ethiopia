@@ -743,6 +743,7 @@ export const translations: Record<Locale, TranslationDictionary> = {
     "statusPendingReview": "Pending review"
   },
   am: {
+    "No more crawling on the floor": "መሬት የመንፏቀቅ ዘመን ይብቃ!",
     "home": "ቤት",
     "partners": "አጋርዎች",
     "partnerPortalTitle": "የአጋርነት ፖርታል",
