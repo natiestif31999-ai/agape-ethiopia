@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
+import { getSupabaseAdminClient, requireStaff } from "@/lib/auth/serverAuth";
 
 const allowedStatuses = new Set(["Pending Review", "Pending", "Under Review", "Approved", "Rejected"]);
 
@@ -36,7 +36,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ error: "No agreement changes were provided." }, { status: 400 });
   }
 
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }

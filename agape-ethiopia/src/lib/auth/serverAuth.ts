@@ -33,7 +33,7 @@ export function getSupabaseServerClient() {
   });
 }
 
-function getSupabaseAdminClient() {
+export function getSupabaseAdminClient() {
   const config = getSupabaseConfig();
   if (!config.serviceRoleKey) {
     return null;

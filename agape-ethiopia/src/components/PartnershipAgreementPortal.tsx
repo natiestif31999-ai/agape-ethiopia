@@ -96,17 +96,10 @@ export default function PartnershipAgreementPortal() {
   const loadAgreements = useCallback(async () => {
     try {
       setIsLoadingAgreements(true);
-      const supabase = getSupabaseClient();
-      const { data, error } = await supabase
-        .from("organization_agreements")
-        .select("*")
-        .order("submitted_at", { ascending: false });
-
-      if (error) {
-        throw error;
-      }
-
-      setAgreements((data as AgreementRecord[]) ?? []);
+      const response = await fetch("/api/organization-agreements", { cache: "no-store" });
+      const result = await response.json() as { agreements?: AgreementRecord[]; error?: string };
+      if (!response.ok) throw new Error(result.error || "Unable to load agreements.");
+      setAgreements(result.agreements ?? []);
     } catch (error) {
       console.error("Unable to load agreements:", error);
       setFeedback(t("unableToLoadApplications"));
@@ -255,10 +248,9 @@ export default function PartnershipAgreementPortal() {
 
   async function openAgreement(agreement: AgreementRecord) {
     try {
-      let fileUrl = agreement.agreement_file_url;
-      if (!fileUrl && agreement.agreement_file_path) {
-        fileUrl = await resolveSignedAgreementUrl(agreement.id, agreement.email);
-      }
+      const fileUrl = agreement.agreement_file_path
+        ? await resolveSignedAgreementUrl(agreement.id, agreement.email)
+        : agreement.agreement_file_url;
 
       if (!fileUrl) {
         setFeedback(t("agreementUnavailable") || "This agreement is not available right now.");
@@ -275,15 +267,8 @@ export default function PartnershipAgreementPortal() {
   }
 
   async function getAgreementDownloadUrl(agreement: AgreementRecord) {
-    if (agreement.agreement_file_url) {
-      return agreement.agreement_file_url;
-    }
-
-    if (!agreement.agreement_file_path) {
-      return null;
-    }
-
-    return resolveSignedAgreementUrl(agreement.id, agreement.email);
+    if (agreement.agreement_file_path) return resolveSignedAgreementUrl(agreement.id, agreement.email);
+    return agreement.agreement_file_url;
   }
 
   async function handleDelete(id: string, filePath: string | null) {

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { getSupabaseConfig } from "@/lib/supabase/env";
-import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
+import { getSupabaseAdminClient, getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
 
 const BUCKET = "organization-agreements";
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -38,7 +38,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }

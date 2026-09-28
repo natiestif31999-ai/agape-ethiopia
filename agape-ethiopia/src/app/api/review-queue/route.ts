@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServerClient, requireStaff } from "@/lib/auth/serverAuth";
+import { getSupabaseAdminClient, requireStaff } from "@/lib/auth/serverAuth";
 
 type AssessmentQueueRow = {
   id: string;
@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseAdminClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
   }
