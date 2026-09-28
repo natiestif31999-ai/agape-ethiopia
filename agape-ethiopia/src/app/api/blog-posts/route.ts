@@ -4,6 +4,7 @@ import { getSupabaseServerClient, requireAdmin } from "@/lib/auth/serverAuth";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const status = url.searchParams.get("status");
+  const featured = url.searchParams.get("featured") === "true";
   const limit = Number(url.searchParams.get("limit") ?? 20);
   const offset = Number(url.searchParams.get("offset") ?? 0);
 
@@ -22,6 +23,9 @@ export async function GET(req: Request) {
       // Admin explicitly requested all drafts and published posts.
     } else {
       query = query.eq("status", status ?? "published");
+    }
+    if (featured) {
+      query = query.eq("is_featured", true);
     }
 
     const { data, error, count } = await query.order("published_at", { ascending: false }).range(offset, offset + limit - 1);

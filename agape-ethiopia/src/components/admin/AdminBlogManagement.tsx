@@ -37,6 +37,7 @@ export default function AdminBlogManagement() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -120,6 +121,44 @@ export default function AdminBlogManagement() {
     }
   }
 
+  async function handleFeaturedImageUpload(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    const allowedMimeTypes = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
+    if (!allowedMimeTypes.has(file.type) && !/\.(jpe?g|png|webp)$/i.test(file.name)) {
+      setError("Please select a JPG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Please upload an image smaller than 5 MB.");
+      return;
+    }
+
+    setUploadingImage(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const data = new FormData();
+      data.append("image", file);
+      const response = await fetch("/api/blog-images", { method: "POST", body: data });
+      const result = await response.json().catch(() => null) as { publicUrl?: string; error?: string } | null;
+      if (!response.ok || !result?.publicUrl) {
+        throw new Error(result?.error || `Image upload failed (HTTP ${response.status}).`);
+      }
+
+      setForm((current) => ({ ...current, featured_image_url: result.publicUrl! }));
+      setMessage("Featured image uploaded successfully.");
+    } catch (imageUploadError) {
+      console.error("Blog image upload failed:", imageUploadError);
+      setError(imageUploadError instanceof Error ? imageUploadError.message : "Image upload failed. Please try again.");
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
   return (
     <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
       <div className="rounded-xl border border-slate-200 bg-white p-5">
@@ -155,11 +194,15 @@ export default function AdminBlogManagement() {
         <label className="grid gap-1.5 text-sm font-medium text-slate-700">Title<input required value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} className="rounded-lg border border-slate-300 px-3 py-2" /></label>
         <label className="grid gap-1.5 text-sm font-medium text-slate-700">Excerpt<textarea rows={2} value={form.excerpt} onChange={(event) => setForm((current) => ({ ...current, excerpt: event.target.value }))} className="rounded-lg border border-slate-300 px-3 py-2" /></label>
         <label className="grid gap-1.5 text-sm font-medium text-slate-700">Content<textarea required rows={6} value={form.content} onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))} className="rounded-lg border border-slate-300 px-3 py-2" /></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Featured image URL<input type="url" value={form.featured_image_url} onChange={(event) => setForm((current) => ({ ...current, featured_image_url: event.target.value }))} className="rounded-lg border border-slate-300 px-3 py-2" /></label>
+        <div className="grid gap-2">
+          <label className="grid gap-1.5 text-sm font-medium text-slate-700">Featured image<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void handleFeaturedImageUpload(event.target.files?.[0] ?? null)} className="rounded-lg border border-slate-300 px-3 py-2" /></label>
+          {uploadingImage && <p className="text-xs text-slate-500">Uploading image...</p>}
+        </div>
+        {form.featured_image_url && <img src={form.featured_image_url} alt="Featured preview" className="h-32 w-full rounded-lg border border-slate-200 object-cover" />}
         <label className="grid gap-1.5 text-sm font-medium text-slate-700">Publication status<select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value as BlogForm["status"] }))} className="rounded-lg border border-slate-300 px-3 py-2"><option value="draft">Draft</option><option value="published">Published</option></select></label>
         <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={form.is_featured} onChange={(event) => setForm((current) => ({ ...current, is_featured: event.target.checked }))} />Featured post</label>
         <div className="flex flex-wrap gap-2">
-          <button disabled={saving} className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{saving ? "Saving..." : editingId ? "Save changes" : "Create post"}</button>
+          <button disabled={saving || uploadingImage} className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{saving ? "Saving..." : editingId ? "Save changes" : "Create post"}</button>
           {editingId && <button type="button" onClick={resetForm} className="rounded-lg border border-slate-300 px-4 py-2 text-sm">Cancel edit</button>}
         </div>
       </form>

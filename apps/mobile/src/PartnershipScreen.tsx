@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { Linking, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import { File } from "expo-file-system";
 import { WEB_API_URL } from "./config";
 import OfficialAgreementMobile from "./OfficialAgreementMobile";
 import { userFacingRequestError } from "./requestErrors";
@@ -35,12 +34,15 @@ export default function PartnershipScreen({ onBack }: Props) {
     try {
       const data = new FormData();
       Object.entries(form).forEach(([key, value]) => data.append(key, value));
-      const signedPdf = new File(file.uri);
-      data.append("signed_pdf", signedPdf, file.name);
+      data.append("signed_pdf", {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType || "application/pdf",
+      } as unknown as Blob);
       const response = await fetch(`${WEB_API_URL}/api/organization-agreements`, { method: "POST", body: data });
       const body = await response.json().catch(() => null) as { submissionId?: string; error?: string } | null;
-      if (!response.ok) throw new Error(body?.error ?? t("uploadFailed"));
-      setSubmissionId(body?.submissionId ?? "");
+      if (!response.ok || !body?.submissionId) throw new Error(body?.error ?? t("uploadFailed"));
+      setSubmissionId(body.submissionId);
       setStatusEmail(form.email);
       setStatus(t("uploadSuccess"));
     } catch (error) { setStatus(userFacingRequestError(error, t("uploadFailed"))); }

@@ -5,7 +5,7 @@ import AppHeader from "@/components/layout/AppHeader";
 import { useLanguage } from "@/components/layout/LanguageProvider";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
-const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "" };
+const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "", whatsapp: "", threads: "" };
 
 function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -64,6 +64,7 @@ export default function AboutPage() {
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">{t("socialMedia")}</p>
+              <p className="mt-3 text-sm text-slate-600">Click here to visit us.</p>
               <div className="mt-4 flex flex-wrap gap-3">
                 {socialLinks.facebook && <Link href={socialLinks.facebook} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Facebook</Link>}
                 {socialLinks.instagram && <Link href={socialLinks.instagram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Instagram</Link>}
@@ -72,9 +73,14 @@ export default function AboutPage() {
                 {socialLinks.tiktok && <Link href={socialLinks.tiktok} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">TikTok</Link>}
                 {socialLinks.telegram && <Link href={socialLinks.telegram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Telegram</Link>}
                 {socialLinks.youtube && <Link href={socialLinks.youtube} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">YouTube</Link>}
+                {socialLinks.whatsapp && <Link href={socialLinks.whatsapp} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">WhatsApp</Link>}
+                {socialLinks.threads && <Link href={socialLinks.threads} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Threads</Link>}
                 {!Object.values(socialLinks).some(Boolean) && (
                   <p className="text-sm text-slate-600">{t("socialLinksEmpty")}</p>
                 )}
+              </div>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link href="/login" className="rounded-full bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800">Sign In</Link>
               </div>
             </div>
           </div>

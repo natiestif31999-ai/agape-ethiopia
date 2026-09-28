@@ -21,6 +21,8 @@ type SocialLinks = {
   tiktok: string;
   telegram: string;
   youtube: string;
+  whatsapp: string;
+  threads: string;
 };
 
 const inputClass = "rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-emerald-500";
@@ -32,7 +34,7 @@ const defaultVisitUs: VisitUsSettings = {
   email: "info@agapeethiopia.org",
   hours: "Mon–Sat | 8:00 AM – 5:00 PM",
 };
-const defaultSocialLinks: SocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "" };
+const defaultSocialLinks: SocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "", whatsapp: "", threads: "" };
 
 function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -137,8 +139,8 @@ export default function AdminWebsiteSettings() {
           <label className="grid gap-2 text-sm font-medium text-slate-700">Email<input type="email" value={visitUs.email} onChange={(event) => setVisitUs((current) => ({ ...current, email: event.target.value }))} className={inputClass} /></label>
           <h3 className="mt-3 text-lg font-semibold text-slate-900">Social links</h3>
           <div className="grid gap-4 md:grid-cols-2">
-            {(["facebook", "instagram", "linkedin", "x", "tiktok", "telegram", "youtube"] as const).map((platform) => (
-              <label key={platform} className="grid gap-2 text-sm font-medium capitalize text-slate-700">{platform === "x" ? "X / Twitter" : platform} URL<input type="url" value={socialLinks[platform]} onChange={(event) => setSocialLinks((current) => ({ ...current, [platform]: event.target.value }))} className={inputClass} /></label>
+            {(["facebook", "instagram", "linkedin", "x", "tiktok", "telegram", "youtube", "whatsapp", "threads"] as const).map((platform) => (
+              <label key={platform} className="grid gap-2 text-sm font-medium capitalize text-slate-700">{platform === "x" ? "X / Twitter" : platform === "whatsapp" ? "WhatsApp" : platform === "threads" ? "Threads" : platform} URL<input type="url" value={socialLinks[platform]} onChange={(event) => setSocialLinks((current) => ({ ...current, [platform]: event.target.value }))} className={inputClass} /></label>
             ))}
           </div>
           <h3 className="mt-3 text-lg font-semibold text-slate-900">About page</h3>

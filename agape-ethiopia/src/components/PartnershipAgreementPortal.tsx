@@ -138,9 +138,13 @@ export default function PartnershipAgreementPortal() {
   async function resolveSignedAgreementUrl(agreementId: string, agreementEmail?: string | null) {
     try {
       const query = new URLSearchParams();
-      if (agreementEmail) {
-        query.set("email", agreementEmail);
+      if (canManageAgreements) {
+        const response = await fetch(`/api/organization-agreements/${agreementId}/file`);
+        const result = (await response.json()) as { url?: string };
+        return response.ok ? result.url ?? null : null;
       }
+
+      if (agreementEmail) query.set("email", agreementEmail);
       query.set("public", "1");
       const response = await fetch(`/api/organization-agreements/${agreementId}/file?${query.toString()}`);
       const result = (await response.json()) as { url?: string };

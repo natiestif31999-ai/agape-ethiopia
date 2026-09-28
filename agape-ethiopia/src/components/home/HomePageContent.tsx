@@ -10,7 +10,7 @@ import PublicAnnouncements from "@/components/home/PublicAnnouncements";
 import PublishedBlogPosts from "@/components/home/PublishedBlogPosts";
 import { useSiteSettings } from "@/components/SiteSettingsProvider";
 
-const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "" };
+const defaultSocialLinks = { facebook: "", instagram: "", linkedin: "", x: "", tiktok: "", telegram: "", youtube: "", whatsapp: "", threads: "" };
 
 function parseJsonSetting<T>(value: string | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -45,34 +45,37 @@ export default function HomePageContent() {
     <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 lg:px-8">
       <PublicAnnouncements />
       <section className="relative overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 via-white to-emerald-50 p-6 shadow-sm md:p-8">
-        <div className="grid gap-8 md:grid-cols-2 md:items-center">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-700">{t("applicationName")}</p>
-            <h1 className="mt-3 text-3xl font-bold text-slate-900 md:text-5xl">{heroTitle}</h1>
-            <p className="mt-3 max-w-xl text-base text-slate-700 md:text-lg">{heroSubtitle}</p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              {[
-                t("beneficiaryRegistration") || "Beneficiary registration",
-                t("equipmentTracking") || "Equipment tracking",
-                t("assessmentManagement") || "Assessment management",
-              ].map((item) => (
-                <span key={item} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm">
-                  {item}
-                </span>
-              ))}
+        <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch">
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-700">{t("applicationName")}</p>
+              <h1 className="mt-3 text-3xl font-bold text-slate-900 md:text-5xl">{heroTitle}</h1>
+              <p className="mt-3 max-w-xl text-base text-slate-700 md:text-lg">{heroSubtitle}</p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                {[
+                  t("beneficiaryRegistration") || "Beneficiary registration",
+                  t("equipmentTracking") || "Equipment tracking",
+                  t("assessmentManagement") || "Assessment management",
+                ].map((item) => (
+                  <span key={item} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative flex items-center justify-center">
+              <Image
+                src="/c2.png"
+                alt={t("homeImpactImageAlt")}
+                width={400}
+                height={400}
+                className="drop-shadow-lg"
+                priority
+              />
             </div>
           </div>
-
-          <div className="relative flex items-center justify-center">
-              <Image
-              src="/c2.png"
-                alt={t("homeImpactImageAlt")}
-              width={400}
-              height={400}
-              className="drop-shadow-lg"
-              priority
-            />
-          </div>
+          <PublishedBlogPosts />
         </div>
       </section>
 
@@ -155,6 +158,8 @@ export default function HomePageContent() {
               {socialLinks.tiktok && <Link href={socialLinks.tiktok} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">TikTok</Link>}
               {socialLinks.telegram && <Link href={socialLinks.telegram} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Telegram</Link>}
               {socialLinks.youtube && <Link href={socialLinks.youtube} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">YouTube</Link>}
+              {socialLinks.whatsapp && <Link href={socialLinks.whatsapp} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">WhatsApp</Link>}
+              {socialLinks.threads && <Link href={socialLinks.threads} target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">Threads</Link>}
               {!Object.values(socialLinks).some(Boolean) && (
                 <p className="text-sm text-slate-600">{t("socialLinksEmpty")}</p>
               )}
@@ -162,8 +167,6 @@ export default function HomePageContent() {
           </div>
         </div>
       </section>
-
-      <PublishedBlogPosts />
 
       {isAdmin && <TabPanel />}
     </main>
