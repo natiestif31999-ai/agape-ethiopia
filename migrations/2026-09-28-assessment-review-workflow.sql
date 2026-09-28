@@ -1,6 +1,8 @@
 BEGIN;
 
 ALTER TABLE public.assessments
+  ADD COLUMN IF NOT EXISTS assessor_name text,
+  ADD COLUMN IF NOT EXISTS assessment_date date DEFAULT CURRENT_DATE,
   ADD COLUMN IF NOT EXISTS review_status text NOT NULL DEFAULT 'Pending Review',
   ADD COLUMN IF NOT EXISTS reviewed_by uuid REFERENCES public.users(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS reviewed_at timestamptz;
