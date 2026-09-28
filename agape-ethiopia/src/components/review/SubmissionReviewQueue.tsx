@@ -89,6 +89,9 @@ function statusTone(status: string) {
 export default function SubmissionReviewQueue() {
   const [queue, setQueue] = useState<ReviewQueueData>(emptyQueue);
   const [filter, setFilter] = useState("pending");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | ReviewItem["type"]>("all");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name" | "status">("newest");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -170,11 +173,40 @@ export default function SubmissionReviewQueue() {
       .sort((left, right) => new Date(right.submittedAt || 0).getTime() - new Date(left.submittedAt || 0).getTime());
   }, [queue]);
 
-  const visibleItems = items.filter((item) => {
-    if (filter === "pending") return isPending(item.status);
-    if (filter === "approved" || filter === "rejected") return item.status.toLowerCase() === filter;
-    return true;
-  });
+  const categoryCounts = useMemo(() => {
+    const counts = { all: items.length, beneficiary: 0, assessment: 0, request: 0, agreement: 0 };
+    for (const item of items) {
+      counts[item.type] += 1;
+    }
+    return counts;
+  }, [items]);
+
+  const visibleItems = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    const filtered = items.filter((item) => {
+      const matchesStatus = filter === "pending" ? isPending(item.status) : filter === "approved" || filter === "rejected" ? item.status.toLowerCase() === filter : true;
+      const matchesCategory = categoryFilter === "all" || item.type === categoryFilter;
+      const haystack = [item.title, item.submitter, item.status, item.type, ...(item.details || [])].join(" ").toLowerCase();
+      const matchesSearch = normalizedSearch.length === 0 || haystack.includes(normalizedSearch);
+      return matchesStatus && matchesCategory && matchesSearch;
+    });
+
+    filtered.sort((left, right) => {
+      switch (sortBy) {
+        case "oldest":
+          return new Date(left.submittedAt || 0).getTime() - new Date(right.submittedAt || 0).getTime();
+        case "name":
+          return left.title.localeCompare(right.title);
+        case "status":
+          return left.status.localeCompare(right.status) || new Date(right.submittedAt || 0).getTime() - new Date(left.submittedAt || 0).getTime();
+        case "newest":
+        default:
+          return new Date(right.submittedAt || 0).getTime() - new Date(left.submittedAt || 0).getTime();
+      }
+    });
+
+    return filtered;
+  }, [categoryFilter, filter, items, search, sortBy]);
 
   async function updateStatus(item: ReviewItem, decision: "approve" | "reject" | "reopen") {
     setBusyId(item.id);
@@ -235,28 +267,68 @@ export default function SubmissionReviewQueue() {
 
   return (
     <section className="space-y-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Pending reviews</h1>
-          <p className="mt-2 text-sm text-slate-600">Review registrations, assessments, equipment requests, and partnership agreements.</p>
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Pending reviews</h1>
+            <p className="mt-2 text-sm text-slate-600">Review registrations, assessments, equipment requests, and partnership agreements.</p>
+          </div>
+          <label className="grid gap-1 text-sm font-medium text-slate-700">
+            Status
+            <select value={filter} onChange={(event) => setFilter(event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2">
+              <option value="pending">Pending review</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="all">All statuses</option>
+            </select>
+          </label>
         </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {[
+            { key: "all", label: "Total", count: categoryCounts.all },
+            { key: "beneficiary", label: "Registrations", count: categoryCounts.beneficiary },
+            { key: "assessment", label: "Assessments", count: categoryCounts.assessment },
+            { key: "request", label: "Requests", count: categoryCounts.request },
+            { key: "agreement", label: "Agreements", count: categoryCounts.agreement },
+          ].map((metric) => (
+            <button
+              key={metric.key}
+              type="button"
+              onClick={() => setCategoryFilter(metric.key === "all" ? "all" : metric.key as ReviewItem["type"])}
+              className={`rounded-xl border p-3 text-left transition ${categoryFilter === metric.key ? "border-emerald-600 bg-emerald-50" : "border-slate-200 bg-white hover:border-slate-300"}`}
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{metric.label}</div>
+              <div className="mt-2 text-2xl font-bold text-slate-900">{metric.count}</div>
+            </button>
+          ))}
+        </div>
+      </header>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 md:flex-row md:items-center md:justify-between">
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search by name, organization, phone, details..."
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-0 placeholder:text-slate-400 focus:border-emerald-500 md:max-w-md"
+        />
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          Status
-          <select value={filter} onChange={(event) => setFilter(event.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2">
-            <option value="pending">Pending review</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="all">All statuses</option>
+          Sort by
+          <select value={sortBy} onChange={(event) => setSortBy(event.target.value as "newest" | "oldest" | "name" | "status")} className="rounded-lg border border-slate-300 bg-white px-3 py-2">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">Name</option>
+            <option value="status">Status</option>
           </select>
         </label>
-      </header>
+      </div>
 
       {error && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
       {message && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{message}</p>}
       {!queue.assessmentReviewReady && <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Assessment decisions are disabled until migration `2026-09-28-assessment-review-workflow.sql` is applied. Other review queues remain available.</p>}
       <p className="text-sm text-slate-600">{loading ? "Loading submissions..." : `${visibleItems.length} submissions shown`}</p>
 
-      {!loading && visibleItems.length === 0 && <p className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">No submissions match this status.</p>}
+      {!loading && visibleItems.length === 0 && <p className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">No submissions match this status, category, or search.</p>}
 
       <div className="grid gap-4">
         {visibleItems.map((item) => {

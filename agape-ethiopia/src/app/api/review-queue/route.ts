@@ -35,25 +35,33 @@ export async function GET() {
 
   let assessmentRows: AssessmentQueueRow[] = assessments.data ?? [];
   let assessmentReviewReady = true;
-  if (assessments.error?.code === "42703" && /review_status|reviewed_by|reviewed_at/i.test(assessments.error.message)) {
-    const fallback = await supabase
-      .from("assessments")
-      .select("id,beneficiary_id,assessor_name,assessment_date,notes,recommendations,created_at")
-      .order("assessment_date", { ascending: false })
-      .range(0, 999);
-    if (fallback.error) {
-      console.error("Assessment review queue fallback failed:", fallback.error);
-      return NextResponse.json({ error: "Unable to load assessment reviews." }, { status: 500 });
+
+  if (assessments.error?.code === "42703") {
+    const missingAssessmentFields = /assessor_name|review_status|reviewed_by|reviewed_at/i.test(assessments.error.message);
+    if (missingAssessmentFields) {
+      const fallback = await supabase
+        .from("assessments")
+        .select("id,beneficiary_id,assessment_date,notes,recommendations,created_at")
+        .order("assessment_date", { ascending: false })
+        .range(0, 999);
+
+      if (fallback.error) {
+        console.error("Assessment review queue fallback failed:", fallback.error);
+        assessmentRows = [];
+        assessmentReviewReady = false;
+      } else {
+        assessmentReviewReady = false;
+        assessmentRows = (fallback.data ?? []).map((row) => ({
+          ...row,
+          assessor_name: "Assessment record",
+          review_status: "Review setup required",
+          review_ready: false,
+        }));
+      }
     }
-    assessmentReviewReady = false;
-    assessmentRows = (fallback.data ?? []).map((row) => ({
-      ...row,
-      review_status: "Review setup required",
-      review_ready: false,
-    }));
   }
 
-  const failed = [beneficiaries, requests, agreements, ...(assessments.error && assessmentReviewReady ? [assessments] : [])].find((result) => result.error);
+  const failed = [beneficiaries, requests, agreements].find((result) => result.error);
   if (failed?.error) {
     console.error("Review queue load failed:", failed.error);
     return NextResponse.json({ error: "Unable to load submission reviews." }, { status: 500 });
