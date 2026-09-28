@@ -272,7 +272,7 @@ export default function AdminDashboardEnhanced() {
                 label={t("pendingApprovals") || "Pending Approvals"}
                 value={kpiData.pendingApprovals}
                 color="amber"
-                href="/records"
+                href="/dashboard/admin/review-queue"
               />
             </div>
           </section>

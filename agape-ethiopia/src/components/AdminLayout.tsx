@@ -7,7 +7,7 @@ import { useAuth } from "@/components/layout/SupabaseProvider";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  currentSection: "overview" | "staff" | "beneficiaries" | "registrations" | "assessments" | "equipment" | "partners" | "donations" | "reports" | "audit" | "settings";
+  currentSection: "overview" | "staff" | "beneficiaries" | "registrations" | "assessments" | "equipment" | "partners" | "donations" | "reports" | "audit" | "settings" | "review-queue";
 }
 
 export default function AdminLayout({ children, currentSection }: AdminLayoutProps) {
@@ -20,6 +20,7 @@ export default function AdminLayout({ children, currentSection }: AdminLayoutPro
     { id: "staff", label: t("staffManagement") || "Users & Staff", href: "/dashboard/admin/staff", icon: "👨‍💼" },
     { id: "beneficiaries", label: t("beneficiaries") || "Beneficiaries", href: "/dashboard/admin/beneficiaries", icon: "👥" },
     { id: "registrations", label: t("registrations") || "Registrations", href: "/dashboard/admin/registrations", icon: "📋" },
+    { id: "review-queue", label: "Pending Reviews", href: "/dashboard/admin/review-queue", icon: "🗂️" },
     { id: "assessments", label: t("assessments") || "Assessments", href: "/dashboard/admin/assessments", icon: "📏" },
     { id: "equipment", label: t("equipment") || "Equipment", href: "/dashboard/admin/equipment", icon: "📦" },
     { id: "partners", label: t("partners") || "Partners", href: "/dashboard/admin/partners", icon: "🤝" },

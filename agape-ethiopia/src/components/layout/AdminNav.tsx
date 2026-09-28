@@ -18,6 +18,7 @@ export default function AdminNav() {
 
   const navItems: NavItem[] = [
     { href: "/dashboard/admin", labelKey: "dashboard", icon: "📊" },
+    { href: "/dashboard/admin/review-queue", labelKey: "pendingReviews", icon: "🗂️" },
     { href: "/admin", labelKey: "staffManagement", icon: "👨‍💼" },
     { href: "/beneficiaries", labelKey: "beneficiaryManagement", icon: "👥" },
     { href: "/donations", labelKey: "donationControl", icon: "💰" },

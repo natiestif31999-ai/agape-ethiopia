@@ -1,3 +1,6 @@
+import { notFound } from "next/navigation";
+import { getSupabaseServerClient } from "@/lib/auth/serverAuth";
+
 type BlogPost = {
   id: string;
   title: string;
@@ -9,10 +12,22 @@ type BlogPost = {
 };
 
 async function getPost(slug: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/blog-posts?status=published&limit=200`, { cache: "no-store" });
-  if (!response.ok) return null;
-  const result = (await response.json()) as { data?: BlogPost[] };
-  return (result.data ?? []).find((post) => post.slug === slug) ?? null;
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select("id,title,slug,content,excerpt,featured_image_url,published_at")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Unable to load published blog article:", error.message);
+    return null;
+  }
+
+  return data as BlogPost | null;
 }
 
 export default async function NewsDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -20,12 +35,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
   const post = await getPost(slug);
 
   if (!post) {
-    return (
-      <main className="mx-auto max-w-3xl px-4 py-12 text-center md:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-slate-900">Post not found</h1>
-        <p className="mt-3 text-slate-600">The requested news item could not be found.</p>
-      </main>
-    );
+    notFound();
   }
 
   return (

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
+import { requireStaff } from "@/lib/auth/serverAuth";
 
 // List of valid beneficiary status transitions
 const VALID_STATUSES = ["Pending Review", "Approved", "Rejected", "On Hold"];
@@ -24,6 +25,11 @@ interface BeneficiaryUpdateRequest {
 }
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const profile = await requireStaff();
+  if (!profile) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
   try {
     const supabaseAdmin = getSupabaseAdminClient();
@@ -50,6 +56,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const profile = await requireStaff();
+  if (!profile) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await params;
   try {
     let body: BeneficiaryUpdateRequest;

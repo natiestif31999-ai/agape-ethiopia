@@ -18,6 +18,7 @@ export default function StaffNav() {
 
   const navItems: NavItem[] = [
     { href: "/dashboard/staff", labelKey: "dashboard", icon: "📊" },
+    { href: "/dashboard/staff/review-queue", labelKey: "pendingReviews", icon: "🗂️" },
     { href: "/beneficiaries", labelKey: "beneficiaries", icon: "👥" },
     { href: "/assessments", labelKey: "assessments", icon: "📋" },
     { href: "/distributions", labelKey: "distributions", icon: "📦" },
