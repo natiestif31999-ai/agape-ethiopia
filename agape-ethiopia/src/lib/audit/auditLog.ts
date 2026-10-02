@@ -7,6 +7,7 @@ export type AuditAction =
   | "registration_approved"
   | "registration_rejected"
   | "beneficiary_updated"
+  | "beneficiary_export"
   | "beneficiary_message_sent"
   | "assessment_created"
   | "assessment_updated"
@@ -55,13 +56,15 @@ export async function logAudit(
     const supabase = createClient(config.url, serviceRoleKey);
 
     const { error } = await supabase.from("audit_logs").insert({
-      actor_id: userId,
-      actor_email: userEmail,
-      action,
       entity_type: entityType,
       entity_id: entityId,
-      changes,
-      metadata,
+      action,
+      details: {
+        actor_id: userId,
+        actor_email: userEmail,
+        changes,
+        metadata,
+      },
       created_at: new Date().toISOString(),
     });
 

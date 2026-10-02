@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/components/layout/LanguageProvider";
+import BeneficiaryBackupExportCard from "@/components/BeneficiaryBackupExportCard";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
@@ -37,6 +38,7 @@ interface Beneficiary {
   id: string;
   first_name?: string;
   last_name?: string;
+  region?: string;
   registration_number?: string;
   status?: string;
   created_at?: string;
@@ -60,6 +62,7 @@ export default function StaffDashboardEnhanced() {
     recentActivity: [],
   });
   const [recentBeneficiaries, setRecentBeneficiaries] = useState<RecentBeneficiary[]>([]);
+  const [totalRegions, setTotalRegions] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,7 +76,7 @@ export default function StaffDashboardEnhanced() {
       const [beneficiariesResult, assessmentsResult] = await Promise.all([
         supabase
           .from("beneficiaries")
-          .select("id,first_name,last_name,registration_number,status,created_at")
+          .select("id,first_name,last_name,registration_number,status,created_at,region")
           .order("created_at", { ascending: false }),
         supabase.from("assessments").select("id,beneficiary_id,assessment_date").order("assessment_date", { ascending: false }).limit(100),
       ]);
@@ -84,6 +87,10 @@ export default function StaffDashboardEnhanced() {
 
       const beneficiaries = (beneficiariesResult.data || []) as Beneficiary[];
       const assessments = (assessmentsResult.data || []) as Assessment[];
+      const uniqueRegions = new Set(
+        beneficiaries.map((beneficiary) => (beneficiary.region || "Unassigned").trim() || "Unassigned")
+      );
+      setTotalRegions(uniqueRegions.size);
 
       // Calculate KPIs
       const today = new Date();
@@ -217,6 +224,10 @@ export default function StaffDashboardEnhanced() {
               />
             </div>
           </section>
+
+          <div className="mb-8">
+            <BeneficiaryBackupExportCard totalBeneficiaries={kpiData.totalBeneficiaries} totalRegions={totalRegions} />
+          </div>
 
           {/* Quick Actions */}
           <section className="mb-8">

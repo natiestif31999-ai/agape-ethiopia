@@ -8,7 +8,7 @@ interface AuditLog {
   action: string;
   entity_type: string;
   entity_id: string;
-  user_id: string;
+  details: { actor_id?: string } | null;
   created_at: string;
 }
 
@@ -24,7 +24,7 @@ export default function AdminAuditSection() {
         const supabase = getSupabaseClient();
         const { data, error: err } = await supabase
           .from("audit_logs")
-          .select("id,action,entity_type,entity_id,user_id,created_at")
+          .select("id,action,entity_type,entity_id,details,created_at")
           .order("created_at", { ascending: false })
           .limit(100);
 
@@ -86,7 +86,7 @@ export default function AdminAuditSection() {
                     </td>
                     <td className="px-6 py-4 font-medium">{log.action}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{log.entity_type}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{log.user_id.substring(0, 8)}...</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{log.details?.actor_id ? `${log.details.actor_id.substring(0, 8)}...` : "-"}</td>
                   </tr>
                 ))}
               </tbody>

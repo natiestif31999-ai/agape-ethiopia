@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import BeneficiaryBackupExportCard from "@/components/BeneficiaryBackupExportCard";
 import Link from "next/link";
 
 interface Beneficiary {
@@ -54,6 +55,10 @@ export default function AdminBeneficiariesSection() {
     rejected: beneficiaries.filter((b) => b.status === "rejected").length,
   };
 
+  const totalRegions = new Set(
+    beneficiaries.map((beneficiary) => (beneficiary.region || "Unassigned").trim() || "Unassigned")
+  ).size;
+
   const groupedByRegion = Array.from(
     beneficiaries.reduce((groups, beneficiary) => {
       const region = (beneficiary.region || "Unassigned").trim() || "Unassigned";
@@ -99,6 +104,8 @@ export default function AdminBeneficiariesSection() {
           <p className="mt-2 text-3xl font-bold text-rose-700">{statusCounts.rejected}</p>
         </div>
       </div>
+
+      <BeneficiaryBackupExportCard totalBeneficiaries={beneficiaries.length} totalRegions={totalRegions} />
 
       {/* Filter */}
       <div className="flex gap-4">
