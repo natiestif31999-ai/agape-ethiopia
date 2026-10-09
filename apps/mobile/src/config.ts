@@ -1,8 +1,9 @@
 export const APP_NAME = "Agape Mobility Ethiopia";
 export const APP_ID = "com.agapemobilityethiopia";
+export const DEFAULT_WEB_API_URL = "https://agape-ethiopia-navy.vercel.app";
 export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
 export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
-export const WEB_API_URL = (process.env.EXPO_PUBLIC_WEB_API_URL ?? "").replace(/\/$/, "");
+export const WEB_API_URL = (process.env.EXPO_PUBLIC_WEB_API_URL || DEFAULT_WEB_API_URL).replace(/\/$/, "");
 
 export function getPublicConfigDiagnostics() {
   const supabaseHost = SUPABASE_URL ? new URL(SUPABASE_URL).hostname : "missing";
