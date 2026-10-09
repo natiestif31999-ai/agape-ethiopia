@@ -69,6 +69,16 @@ export async function POST(req: Request) {
       }
     });
 
+    const wheelchairSize = values.wheelchair_size?.trim() ?? "";
+    if (wheelchairSize && !["XL", "Large", "Middle", "Small"].includes(wheelchairSize)) {
+      return NextResponse.json({ error: "Please select a valid wheelchair size." }, { status: 400 });
+    }
+
+    const specificApparatusNeed = values.specific_apparatus_need?.trim() ?? "";
+    if (specificApparatusNeed && !["Wheelchair", "Walker"].includes(specificApparatusNeed)) {
+      return NextResponse.json({ error: "Please select a valid apparatus need." }, { status: 400 });
+    }
+
     const errors = validatePublicBeneficiaryFields(values);
     if (errors.length) {
       return NextResponse.json({ error: "Validation failed.", errors }, { status: 400 });

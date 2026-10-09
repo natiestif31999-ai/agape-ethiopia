@@ -20,6 +20,8 @@ export default function BeneficiaryRegistrationForm() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [houseNumber, setHouseNumber] = useState("");
   const [disabilityType, setDisabilityType] = useState("");
+  const [wheelchairSize, setWheelchairSize] = useState("");
+  const [specificApparatusNeed, setSpecificApparatusNeed] = useState("");
   const [otherDisabilityDetail, setOtherDisabilityDetail] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState(t("registrationReady"));
@@ -74,6 +76,8 @@ export default function BeneficiaryRegistrationForm() {
         house_number: houseNumber.trim(),
         notes: notes.trim(),
         disability_type: disabilityType === "Other" ? otherDisabilityDetail.trim() : disabilityType,
+        wheelchair_size: wheelchairSize || null,
+        specific_apparatus_need: specificApparatusNeed || null,
       };
 
       // Log: Before submit
@@ -136,7 +140,10 @@ export default function BeneficiaryRegistrationForm() {
       setRegion("");
       setKifleKetema("");
       setKebele("");
+      setDisabilityType("");
       setHouseNumber("");
+      setWheelchairSize("");
+      setSpecificApparatusNeed("");
       setNotes("");
       setPhotoFile(null);
     } catch (unexpectedError) {
@@ -270,14 +277,13 @@ export default function BeneficiaryRegistrationForm() {
         </label>
 
         <label className="grid gap-1 text-sm font-medium text-slate-700">
-          {t("disabilityType")}
+          {t("diagnosis") || "Diagnosis"}
           <select
             value={disabilityType}
             onChange={(e) => setDisabilityType(e.target.value)}
             className="rounded-xl border border-slate-300 bg-white px-4 py-3"
-            required
           >
-            <option value="">{t("selectDisabilityType")}</option>
+            <option value="">{t("selectDisabilityType") || "Select diagnosis"}</option>
             <option value="Spinal Cord Injury">{t("Spinal Cord Injury") || "Spinal Cord Injury"}</option>
             <option value="Cerebral Palsy">{t("Cerebral Palsy") || "Cerebral Palsy"}</option>
             <option value="Amputation">{t("Amputation") || "Amputation"}</option>
@@ -289,6 +295,26 @@ export default function BeneficiaryRegistrationForm() {
             <option value="Congenital Disability">{t("Congenital Disability") || "Congenital Disability"}</option>
             <option value="Temporary Mobility Impairment">{t("Temporary Mobility Impairment") || "Temporary Mobility Impairment"}</option>
             <option value="Other">{t("other") || "Other"}</option>
+          </select>
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("wheelchairSize") || "Wheelchair Size"}
+          <select value={wheelchairSize} onChange={(e) => setWheelchairSize(e.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3">
+            <option value="">{t("selectWheelchairSize") || "Select wheelchair size"}</option>
+            <option value="XL">XL</option>
+            <option value="Large">Large</option>
+            <option value="Middle">Middle</option>
+            <option value="Small">Small</option>
+          </select>
+        </label>
+
+        <label className="grid gap-1 text-sm font-medium text-slate-700">
+          {t("specificApparatusNeed") || "Specific Apparatus Need"}
+          <select value={specificApparatusNeed} onChange={(e) => setSpecificApparatusNeed(e.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3">
+            <option value="">{t("selectSpecificApparatusNeed") || "Select apparatus need"}</option>
+            <option value="Wheelchair">Wheelchair</option>
+            <option value="Walker">Walker</option>
           </select>
         </label>
 

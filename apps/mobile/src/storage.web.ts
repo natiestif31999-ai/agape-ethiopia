@@ -23,6 +23,8 @@ function readRecords(): BeneficiaryDraft[] {
       kebele: record.kebele ?? "",
       houseNumber: record.houseNumber ?? "",
       disabilityType: record.disabilityType ?? "",
+      wheelchairSize: record.wheelchairSize ?? "",
+      specificApparatusNeed: record.specificApparatusNeed ?? "",
       referralSource: record.referralSource ?? "",
       photoUri: record.photoUri,
       photoFileName: record.photoFileName,

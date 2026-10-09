@@ -16,6 +16,8 @@ export type BeneficiaryDraft = {
   kebele: string;
   houseNumber: string;
   disabilityType: string;
+  wheelchairSize: string;
+  specificApparatusNeed: string;
   referralSource: string;
   photoUri?: string;
   photoFileName?: string;

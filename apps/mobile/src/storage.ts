@@ -20,6 +20,8 @@ export async function initializeStorage() {
     kebele TEXT NOT NULL DEFAULT '',
     house_number TEXT NOT NULL DEFAULT '',
     disability_type TEXT NOT NULL DEFAULT '',
+    wheelchair_size TEXT NOT NULL DEFAULT '',
+    specific_apparatus_need TEXT NOT NULL DEFAULT '',
     referral_source TEXT NOT NULL DEFAULT '',
     photo_uri TEXT,
     photo_file_name TEXT,
@@ -40,6 +42,8 @@ export async function initializeStorage() {
     ["kebele", "TEXT NOT NULL DEFAULT ''"],
     ["house_number", "TEXT NOT NULL DEFAULT ''"],
     ["disability_type", "TEXT NOT NULL DEFAULT ''"],
+    ["wheelchair_size", "TEXT NOT NULL DEFAULT ''"],
+    ["specific_apparatus_need", "TEXT NOT NULL DEFAULT ''"],
     ["referral_source", "TEXT NOT NULL DEFAULT ''"],
     ["photo_uri", "TEXT"],
     ["photo_file_name", "TEXT"],
@@ -65,7 +69,7 @@ export async function recoverInterruptedSyncs() {
 export async function listLocalBeneficiaries(): Promise<BeneficiaryDraft[]> {
   const db = await dbPromise;
   const rows = await db.getAllAsync<Record<string, string>>("SELECT * FROM beneficiary_queue ORDER BY created_at DESC");
-  return rows.map((row) => ({ localId: row.local_id, clientChangeId: row.client_change_id || row.local_id, firstName: row.first_name, middleName: row.middle_name, lastName: row.last_name, phone: row.phone, region: row.region, gender: row.gender, notes: row.notes, dateOfBirth: row.date_of_birth, kifleKetema: row.kifle_ketema ?? "", kebele: row.kebele, houseNumber: row.house_number ?? "", disabilityType: row.disability_type, referralSource: row.referral_source, photoUri: row.photo_uri ?? undefined, photoFileName: row.photo_file_name ?? undefined, photoMimeType: row.photo_mime_type ?? undefined, photoUrl: row.photo_url ?? undefined, serverId: row.server_id ?? undefined, registrationNumber: row.registration_number ?? undefined, syncState: row.sync_state as SyncState, error: row.error ?? undefined, createdAt: row.created_at }));
+  return rows.map((row) => ({ localId: row.local_id, clientChangeId: row.client_change_id || row.local_id, firstName: row.first_name, middleName: row.middle_name, lastName: row.last_name, phone: row.phone, region: row.region, gender: row.gender, notes: row.notes, dateOfBirth: row.date_of_birth, kifleKetema: row.kifle_ketema ?? "", kebele: row.kebele, houseNumber: row.house_number ?? "", disabilityType: row.disability_type ?? "", wheelchairSize: row.wheelchair_size ?? "", specificApparatusNeed: row.specific_apparatus_need ?? "", referralSource: row.referral_source ?? "", photoUri: row.photo_uri ?? undefined, photoFileName: row.photo_file_name ?? undefined, photoMimeType: row.photo_mime_type ?? undefined, photoUrl: row.photo_url ?? undefined, serverId: row.server_id ?? undefined, registrationNumber: row.registration_number ?? undefined, syncState: row.sync_state as SyncState, error: row.error ?? undefined, createdAt: row.created_at }));
 }
 
 export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
@@ -86,6 +90,8 @@ export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
       kebele,
       house_number,
       disability_type,
+      wheelchair_size,
+      specific_apparatus_need,
       referral_source,
       photo_uri,
       photo_file_name,
@@ -96,7 +102,7 @@ export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
       sync_state,
       error,
       created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     record.localId,
     record.clientChangeId,
     record.firstName,
@@ -111,6 +117,8 @@ export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
     record.kebele,
     record.houseNumber,
     record.disabilityType,
+    record.wheelchairSize ?? "",
+    record.specificApparatusNeed ?? "",
     record.referralSource,
     record.photoUri ?? null,
     record.photoFileName ?? null,

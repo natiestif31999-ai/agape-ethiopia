@@ -16,6 +16,8 @@ type BeneficiaryCard = {
   kebele: string;
   house_number: string;
   disability_type: string;
+  wheelchair_size: string;
+  specific_apparatus_need: string;
   notes: string;
   photoDataUrl: string;
   previewOpen: boolean;
@@ -36,6 +38,8 @@ function createEmptyCard(): BeneficiaryCard {
     kebele: "",
     house_number: "",
     disability_type: "",
+    wheelchair_size: "",
+    specific_apparatus_need: "",
     notes: "",
     photoDataUrl: "",
     previewOpen: false,
@@ -144,6 +148,8 @@ export default function MultipleBeneficiaryRegistrationForm() {
     formData.append("kebele", card.kebele);
     formData.append("house_number", card.house_number);
     formData.append("disability_type", card.disability_type);
+    formData.append("wheelchair_size", card.wheelchair_size);
+    formData.append("specific_apparatus_need", card.specific_apparatus_need);
     formData.append("notes", card.notes);
     if (card.photoDataUrl) {
       const photoFile = dataUrlToFile(card.photoDataUrl, `${card.first_name || "photo"}.jpg`);
@@ -299,8 +305,26 @@ export default function MultipleBeneficiaryRegistrationForm() {
                   <input value={card.house_number} onChange={(event) => updateCard(card.id, "house_number", event.target.value)} className="rounded-2xl border border-slate-300 px-4 py-3" />
                 </label>
                 <label className="grid gap-1 text-sm font-medium text-slate-700">
-                  {t("disabilityType")}
+                  {t("diagnosis") || "Diagnosis"}
                   <input value={card.disability_type} onChange={(event) => updateCard(card.id, "disability_type", event.target.value)} className="rounded-2xl border border-slate-300 px-4 py-3" />
+                </label>
+                <label className="grid gap-1 text-sm font-medium text-slate-700">
+                  {t("wheelchairSize") || "Wheelchair Size"}
+                  <select value={card.wheelchair_size} onChange={(event) => updateCard(card.id, "wheelchair_size", event.target.value)} className="rounded-2xl border border-slate-300 bg-white px-4 py-3">
+                    <option value="">{t("selectWheelchairSize") || "Select wheelchair size"}</option>
+                    <option value="XL">XL</option>
+                    <option value="Large">Large</option>
+                    <option value="Middle">Middle</option>
+                    <option value="Small">Small</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 text-sm font-medium text-slate-700">
+                  {t("specificApparatusNeed") || "Specific Apparatus Need"}
+                  <select value={card.specific_apparatus_need} onChange={(event) => updateCard(card.id, "specific_apparatus_need", event.target.value)} className="rounded-2xl border border-slate-300 bg-white px-4 py-3">
+                    <option value="">{t("selectSpecificApparatusNeed") || "Select apparatus need"}</option>
+                    <option value="Wheelchair">Wheelchair</option>
+                    <option value="Walker">Walker</option>
+                  </select>
                 </label>
                 <label className="grid gap-1 text-sm font-medium text-slate-700 lg:col-span-2">
                   {t("uploadPhotoLabel")}
@@ -318,7 +342,9 @@ export default function MultipleBeneficiaryRegistrationForm() {
                   <p><strong>{t("phone")}</strong>: {card.phone}</p>
                   <p><strong>{t("region")}</strong>: {card.region}</p>
                   <p><strong>{t("kebele")}</strong>: {card.kebele}</p>
-                  <p><strong>{t("disabilityType")}</strong>: {card.disability_type || t("unknown")}</p>
+                  <p><strong>{t("diagnosis") || "Diagnosis"}</strong>: {card.disability_type || t("unknown")}</p>
+                  <p><strong>{t("wheelchairSize") || "Wheelchair Size"}</strong>: {card.wheelchair_size || t("unknown")}</p>
+                  <p><strong>{t("specificApparatusNeed") || "Specific Apparatus Need"}</strong>: {card.specific_apparatus_need || t("unknown")}</p>
                 </div>
               ) : null}
 

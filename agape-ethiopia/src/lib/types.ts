@@ -16,6 +16,8 @@ export type Beneficiary = {
   photo_url?: string;
   notes?: string;
   disability_type?: string;
+  wheelchair_size?: string;
+  specific_apparatus_need?: string;
   referral_source?: string;
   status?: string;
 };

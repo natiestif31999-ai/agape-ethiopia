@@ -15,6 +15,8 @@ export const BENEFICIARY_EXPORT_COLUMNS = [
   "kebele",
   "house_number",
   "disability_type",
+  "wheelchair_size",
+  "specific_apparatus_need",
   "referral_source",
   "photo_url",
   "notes",
@@ -159,6 +161,8 @@ const BENEFICIARY_COLUMN_WIDTHS: Record<string, number> = {
   kebele: 20,
   house_number: 18,
   disability_type: 22,
+  wheelchair_size: 18,
+  specific_apparatus_need: 28,
   referral_source: 22,
   photo_url: 32,
   notes: 32,
@@ -186,6 +190,9 @@ function compareBeneficiaries(left: BeneficiaryExportRow, right: BeneficiaryExpo
 }
 
 function getColumnHeader(columnName: string): string {
+  if (columnName === "disability_type") {
+    return "Diagnosis";
+  }
   return columnName.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
 }
 

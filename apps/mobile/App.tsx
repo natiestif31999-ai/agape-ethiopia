@@ -16,10 +16,10 @@ import { TranslationProvider, useTranslation } from "./src/i18n";
 import type { BeneficiaryDraft } from "./src/types";
 
 type RootStackParamList = { Home: undefined; Register: { multiple?: boolean } | undefined; Offline: undefined; Partnership: undefined };
-type FormState = { firstName: string; middleName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; region: string; kifleKetema: string; kebele: string; houseNumber: string; disabilityType: string; referralSource: string; notes: string; photoUri?: string; photoFileName?: string; photoMimeType?: string };
+type FormState = { firstName: string; middleName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; region: string; kifleKetema: string; kebele: string; houseNumber: string; disabilityType: string; wheelchairSize: string; specificApparatusNeed: string; referralSource: string; notes: string; photoUri?: string; photoFileName?: string; photoMimeType?: string };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const logo = require("./assets/agape-logo.png");
-const emptyForm: FormState = { firstName: "", middleName: "", lastName: "", dateOfBirth: "", gender: "", phone: "", region: "", kifleKetema: "", kebele: "", houseNumber: "", disabilityType: "", referralSource: "", notes: "" };
+const emptyForm: FormState = { firstName: "", middleName: "", lastName: "", dateOfBirth: "", gender: "", phone: "", region: "", kifleKetema: "", kebele: "", houseNumber: "", disabilityType: "", wheelchairSize: "", specificApparatusNeed: "", referralSource: "", notes: "" };
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -94,7 +94,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   async function chooseCameraPhoto() { const permission = await ImagePicker.requestCameraPermissionsAsync(); if (!permission.granted) { Alert.alert(t("cameraPermission"), t("cameraPermissionBody")); return; } const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
   async function chooseLibraryPhoto() { const permission = await ImagePicker.requestMediaLibraryPermissionsAsync(); if (!permission.granted) { Alert.alert(t("galleryPermission"), t("galleryPermissionBody")); return; } const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
   async function save() {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.dateOfBirth.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim() || !form.disabilityType.trim()) {
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.dateOfBirth.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim()) {
       Alert.alert(t("missing"), t("requiredBody"));
       return;
     }
@@ -122,6 +122,8 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         kebele: form.kebele.trim(),
         houseNumber: form.houseNumber.trim(),
         disabilityType: form.disabilityType.trim(),
+        wheelchairSize: form.wheelchairSize.trim(),
+        specificApparatusNeed: form.specificApparatusNeed.trim(),
         referralSource: form.referralSource.trim(),
         photoUri: form.photoUri,
         photoFileName: form.photoFileName,
@@ -243,7 +245,13 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         <View style={styles.chips}>{REGIONS.map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View>
         <Text style={styles.label}>{t("gender")} *</Text>
         <View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View>
-        <View style={styles.field}><Text style={styles.label}>{t("disability")} *</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View>
+        <View style={styles.field}><Text style={styles.label}>{t("diagnosis") || "Diagnosis"}</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View>
+        <View style={styles.field}><Text style={styles.label}>{t("wheelchairSize") || "Wheelchair Size"}</Text>
+          <View style={styles.chips}>{["XL", "Large", "Middle", "Small"].map((item) => <Pressable key={item} onPress={() => update("wheelchairSize", item)} style={[styles.chip, form.wheelchairSize === item && styles.chipActive]}><Text style={form.wheelchairSize === item ? styles.chipTextActive : styles.chipText}>{item}</Text></Pressable>)}</View>
+        </View>
+        <View style={styles.field}><Text style={styles.label}>{t("specificApparatusNeed") || "Specific Apparatus Need"}</Text>
+          <View style={styles.chips}>{["Wheelchair", "Walker"].map((item) => <Pressable key={item} onPress={() => update("specificApparatusNeed", item)} style={[styles.chip, form.specificApparatusNeed === item && styles.chipActive]}><Text style={form.specificApparatusNeed === item ? styles.chipTextActive : styles.chipText}>{item}</Text></Pressable>)}</View>
+        </View>
         <View style={styles.field}><Text style={styles.label}>{t("notes")}</Text><TextInput value={form.notes} onChangeText={(value) => update("notes", value)} multiline placeholder={t("notesPlaceholder")} placeholderTextColor="#87928C" style={[styles.input, styles.notes]} /></View>
         <Button label={t("camera")} secondary onPress={chooseCameraPhoto} />
         <Button label={t("gallery")} secondary onPress={chooseLibraryPhoto} />

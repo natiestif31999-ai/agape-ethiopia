@@ -25,6 +25,8 @@ function toFormData(record: BeneficiaryDraft) {
   form.append("kebele", record.kebele ?? "");
   form.append("house_number", record.houseNumber ?? "");
   form.append("disability_type", record.disabilityType ?? "");
+  form.append("wheelchair_size", record.wheelchairSize ?? "");
+  form.append("specific_apparatus_need", record.specificApparatusNeed ?? "");
   form.append("referral_source", record.referralSource ?? "");
   form.append("notes", record.notes ?? "");
   form.append("client_change_id", record.clientChangeId ?? record.localId);

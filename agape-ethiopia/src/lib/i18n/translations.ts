@@ -15,6 +15,11 @@ export const translations: Record<Locale, TranslationDictionary> = {
   en: {
     "AGAPE MOBILITY ETHIOPIA":"አጋፔ ሞቢሊቲ ኢትዮጵያ",
     "home": "Home",
+    "diagnosis": "Diagnosis",
+    "wheelchairSize": "Wheelchair Size",
+    "specificApparatusNeed": "Specific Apparatus Need",
+    "selectWheelchairSize": "Select wheelchair size",
+    "selectSpecificApparatusNeed": "Select apparatus need",
     "about": "About",
     "services": "Services",
     "contact": "Contact",
@@ -756,6 +761,11 @@ export const translations: Record<Locale, TranslationDictionary> = {
   am: {
     "No more crawling on the floor": "መሬት የመንፏቀቅ ዘመን ይብቃ!",
     "home": "ቤት",
+    "diagnosis": "ምርመራ",
+    "wheelchairSize": "የዊልቸር መጠን",
+    "specificApparatusNeed": "የተወሰነ መሳሪያ ፍላጎት",
+    "selectWheelchairSize": "የዊልቸር መጠን ይምረጡ",
+    "selectSpecificApparatusNeed": "የመሳሪያ ፍላጎት ይምረጡ",
     "partners": "አጋርዎች",
     "partnerPortalTitle": "የአጋርነት ፖርታል",
     "partnerPortalHeroTitle": "ከአጋፔ ሞቢሊቲ ኢትዮጵያ ጋር ይተባበሩ",
@@ -1500,6 +1510,11 @@ export const translations: Record<Locale, TranslationDictionary> = {
   },
   om: {
      "home": "Mana",
+  "diagnosis": "Dhibee",
+  "wheelchairSize": "Safartuu kursii",
+  "specificApparatusNeed": "Barbaachisummaa meeshaa addaatiin",
+  "selectWheelchairSize": "Safartuu kursii filadhu",
+  "selectSpecificApparatusNeed": "Barbaachisummaa meeshaa filadhu",
   "about": "Waa'ee",
   "services": "Tajaajilawwan",
   "contact": "Nu Qunnami",
@@ -2205,6 +2220,11 @@ export const translations: Record<Locale, TranslationDictionary> = {
   "noPermission": "Sirna kana seenuuf hayyama hin qabdu."
   },
   ti: {
+  "diagnosis": "ምርመራ",
+  "wheelchairSize": "የዊልቸር መጠን",
+  "specificApparatusNeed": "የተወሰነ መሳርያ ፍላጎት",
+  "selectWheelchairSize": "የዊልቸር መጠን ምረጥ",
+  "selectSpecificApparatusNeed": "የመሳርያ ፍላጎት ምረጥ",
   "assessments": "ገምጋማት",
   "beneficiaryBackupExport": "ተጠቃሚ መጠባበቂ እና ኣስፓርት",
   "downloadFullBeneficiaryBackup": "ሙሉ ተጠቃሚ መጠባበቂ ኣውርድ",

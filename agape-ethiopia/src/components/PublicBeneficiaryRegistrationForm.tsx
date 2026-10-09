@@ -17,6 +17,8 @@ export default function PublicBeneficiaryRegistrationForm() {
   const [kebele, setKebele] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [disabilityType, setDisabilityType] = useState("");
+  const [wheelchairSize, setWheelchairSize] = useState("");
+  const [specificApparatusNeed, setSpecificApparatusNeed] = useState("");
   const [otherDisabilityDetail, setOtherDisabilityDetail] = useState("");
   const [referralSource, setReferralSource] = useState("");
   const [notes, setNotes] = useState("");
@@ -36,9 +38,7 @@ export default function PublicBeneficiaryRegistrationForm() {
         !gender ||
         !phone.trim() ||
         !region.trim() ||
-        !kebele.trim() ||
-        !disabilityType.trim() ||
-        (disabilityType === "Other" && !otherDisabilityDetail.trim())
+        !kebele.trim()
       ) {
         setStatusMessage(t("register.public.validation.required"));
         setIsSubmitting(false);
@@ -60,6 +60,8 @@ export default function PublicBeneficiaryRegistrationForm() {
         "disability_type",
         disabilityType === "Other" ? otherDisabilityDetail.trim() : disabilityType.trim()
       );
+      formData.append("wheelchair_size", wheelchairSize);
+      formData.append("specific_apparatus_need", specificApparatusNeed);
       formData.append("referral_source", referralSource.trim());
       formData.append("notes", notes.trim());
       if (photoFile) {
@@ -90,6 +92,8 @@ export default function PublicBeneficiaryRegistrationForm() {
       setKebele("");
       setHouseNumber("");
       setDisabilityType("");
+      setWheelchairSize("");
+      setSpecificApparatusNeed("");
       setOtherDisabilityDetail("");
       setReferralSource("");
       setNotes("");
@@ -159,7 +163,7 @@ export default function PublicBeneficiaryRegistrationForm() {
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-slate-700">
-        {t("disabilityType")}
+        {t("diagnosis") || "Diagnosis"}
         <select
           value={disabilityType}
           onChange={(event) => {
@@ -170,9 +174,8 @@ export default function PublicBeneficiaryRegistrationForm() {
             }
           }}
           className="rounded-xl border border-slate-300 bg-white px-4 py-3"
-          required
         >
-          <option value="">{t("selectDisabilityType")}</option>
+          <option value="">{t("selectDisabilityType") || "Select diagnosis"}</option>
           <option value="Spinal Cord Injury">{t("Spinal Cord Injury")}</option>
           <option value="Cerebral Palsy">{t("Cerebral Palsy")}</option>
           <option value="Amputation">{t("Amputation")}</option>
@@ -184,6 +187,26 @@ export default function PublicBeneficiaryRegistrationForm() {
           <option value="Congenital Disability">{t("Congenital Disability")}</option>
           <option value="Temporary Mobility Impairment">{t("Temporary Mobility Impairment")}</option>
           <option value="Other">{t("other")}</option>
+        </select>
+      </label>
+
+      <label className="grid gap-1 text-sm font-medium text-slate-700">
+        {t("wheelchairSize") || "Wheelchair Size"}
+        <select value={wheelchairSize} onChange={(event) => setWheelchairSize(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3">
+          <option value="">{t("selectWheelchairSize") || "Select wheelchair size"}</option>
+          <option value="XL">XL</option>
+          <option value="Large">Large</option>
+          <option value="Middle">Middle</option>
+          <option value="Small">Small</option>
+        </select>
+      </label>
+
+      <label className="grid gap-1 text-sm font-medium text-slate-700">
+        {t("specificApparatusNeed") || "Specific Apparatus Need"}
+        <select value={specificApparatusNeed} onChange={(event) => setSpecificApparatusNeed(event.target.value)} className="rounded-xl border border-slate-300 bg-white px-4 py-3">
+          <option value="">{t("selectSpecificApparatusNeed") || "Select apparatus need"}</option>
+          <option value="Wheelchair">Wheelchair</option>
+          <option value="Walker">Walker</option>
         </select>
       </label>
 

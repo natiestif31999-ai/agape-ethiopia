@@ -1,5 +1,8 @@
 import { normalizeRegionCode as normalizeRegionCodeFromMap } from "@/lib/regionCodes";
 
+export const WHEELCHAIR_SIZE_OPTIONS = ["XL", "Large", "Middle", "Small"] as const;
+export const SPECIFIC_APPARATUS_OPTIONS = ["Wheelchair", "Walker"] as const;
+
 export const PUBLIC_BENEFICIARY_REQUIRED_FIELDS = [
   "first_name",
   "last_name",
@@ -13,6 +16,33 @@ export const PUBLIC_REGISTRATION_STATUS = "Pending Review";
 
 function normalizeValue(value: string | undefined | null) {
   return value?.trim() ?? "";
+}
+
+function normalizeChoiceValue<T extends string>(value: string | undefined | null, choices: readonly T[]): T | "" {
+  const candidate = normalizeValue(value);
+  if (!candidate) {
+    return "";
+  }
+
+  const exactMatch = choices.find((choice) => choice.toLowerCase() === candidate.toLowerCase());
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const mapped = {
+    xl: "XL",
+    large: "Large",
+    middle: "Middle",
+    small: "Small",
+    wheelchair: "Wheelchair",
+    walker: "Walker",
+  } as const;
+
+  if (candidate.toLowerCase() in mapped) {
+    return mapped[candidate.toLowerCase() as keyof typeof mapped] as T;
+  }
+
+  return "";
 }
 
 export function normalizePhoneForComparison(value: string | undefined | null): string {
@@ -41,12 +71,10 @@ export function normalizePhoneForComparison(value: string | undefined | null): s
   return digits ? `+${digits}` : "";
 }
 
-// Flexible phone normalization that accepts ANY valid phone format (not just Ethiopian)
 export function normalizeEthiopianPhone(value: string | undefined | null): string {
   return normalizePhoneForComparison(value);
 }
 
-// Flexible validation that accepts ANY valid phone format (not just Ethiopian)
 export function isValidEthiopianPhone(value: string | undefined | null): boolean {
   return normalizePhoneForComparison(value).length > 0;
 }
@@ -56,7 +84,7 @@ export function normalizeRegionCode(value: string | undefined | null) {
 }
 
 export function buildBeneficiaryId(region: string | undefined | null) {
-  const code = normalizeRegionCode(region); 
+  const code = normalizeRegionCode(region);
   return `AG-B-${code}-`;
 }
 
@@ -79,10 +107,29 @@ export function validatePublicBeneficiaryFields(values: Record<string, string | 
     errors.push("Please select a valid gender.");
   }
 
+  const diagnosis = normalizeValue(values.disability_type) || normalizeValue(values.diagnosis);
+  if (diagnosis && diagnosis.length > 250) {
+    errors.push("Diagnosis must be shorter than 250 characters.");
+  }
+
+  const wheelchairSize = normalizeChoiceValue(values.wheelchair_size, WHEELCHAIR_SIZE_OPTIONS);
+  if (values.wheelchair_size && !wheelchairSize) {
+    errors.push("Please select a valid wheelchair size.");
+  }
+
+  const apparatusNeed = normalizeChoiceValue(values.specific_apparatus_need, SPECIFIC_APPARATUS_OPTIONS);
+  if (values.specific_apparatus_need && !apparatusNeed) {
+    errors.push("Please select a valid apparatus need.");
+  }
+
   return errors;
 }
 
 export function buildPublicBeneficiaryPayload(values: Record<string, string | undefined | null>, photoUrl: string | null = null) {
+  const diagnosis = normalizeValue(values.disability_type) || normalizeValue(values.diagnosis);
+  const wheelchairSize = normalizeChoiceValue(values.wheelchair_size, WHEELCHAIR_SIZE_OPTIONS);
+  const apparatusNeed = normalizeChoiceValue(values.specific_apparatus_need, SPECIFIC_APPARATUS_OPTIONS);
+
   const normalized = {
     registration_date: normalizeValue(values.registration_date),
     first_name: normalizeValue(values.first_name),
@@ -96,8 +143,10 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
     kebele: normalizeValue(values.kebele),
     house_number: normalizeValue(values.house_number),
     notes: normalizeValue(values.notes),
-    disability_type: normalizeValue(values.disability_type),
+    disability_type: diagnosis,
     referral_source: normalizeValue(values.referral_source),
+    wheelchair_size: wheelchairSize,
+    specific_apparatus_need: apparatusNeed,
   };
 
   return {
@@ -118,6 +167,8 @@ export function buildPublicBeneficiaryPayload(values: Record<string, string | un
     photo_url: photoUrl,
     disability_type: normalized.disability_type || null,
     referral_source: normalized.referral_source || null,
+    wheelchair_size: normalized.wheelchair_size || null,
+    specific_apparatus_need: normalized.specific_apparatus_need || null,
     status: PUBLIC_REGISTRATION_STATUS,
   };
 }

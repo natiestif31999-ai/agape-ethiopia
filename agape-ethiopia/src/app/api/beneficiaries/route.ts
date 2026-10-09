@@ -102,6 +102,9 @@ export async function POST(req: Request) {
     notes,
     photo_url,
     disability_type,
+    diagnosis,
+    wheelchair_size,
+    specific_apparatus_need,
     referral_source,
     status,
   } = body;
@@ -114,6 +117,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid gender value." }, { status: 400 });
   }
 
+  const allowedWheelchairSizes = ["XL", "Large", "Middle", "Small"];
+  const allowedApparatusNeeds = ["Wheelchair", "Walker"];
+
+  const normalizedWheelchairSize = wheelchair_size?.toString().trim() || "";
+  if (normalizedWheelchairSize && !allowedWheelchairSizes.includes(normalizedWheelchairSize)) {
+    return NextResponse.json({ error: "Invalid wheelchair size value." }, { status: 400 });
+  }
+
+  const normalizedApparatusNeed = specific_apparatus_need?.toString().trim() || "";
+  if (normalizedApparatusNeed && !allowedApparatusNeeds.includes(normalizedApparatusNeed)) {
+    return NextResponse.json({ error: "Invalid apparatus need value." }, { status: 400 });
+  }
+
+  const normalizedDiagnosis = (diagnosis ?? disability_type)?.toString().trim() || null;
   const normalizedPhone = normalizeEthiopianPhone(phone);
   if (!normalizedPhone) {
     return NextResponse.json({ error: "Please enter a valid phone number." }, { status: 400 });
@@ -158,7 +175,9 @@ export async function POST(req: Request) {
         house_number: house_number?.trim() ?? null,
         notes: notes?.trim() ?? null,
         photo_url: photo_url?.trim() ?? null,
-        disability_type: disability_type?.trim() ?? null,
+        disability_type: normalizedDiagnosis,
+        wheelchair_size: normalizedWheelchairSize || null,
+        specific_apparatus_need: normalizedApparatusNeed || null,
         referral_source: referral_source?.trim() ?? null,
         status: status?.trim() || "registered",
       },
