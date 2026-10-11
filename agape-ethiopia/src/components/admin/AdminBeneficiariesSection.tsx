@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { beneficiaryStatusesForFilter, countBeneficiariesByStatus } from "@/lib/beneficiaryAdminStatus";
 import BeneficiaryBackupExportCard from "@/components/BeneficiaryBackupExportCard";
 import Link from "next/link";
 
@@ -32,8 +33,9 @@ export default function AdminBeneficiariesSection() {
           .order("region", { ascending: true })
           .order("created_at", { ascending: true });
 
-        if (filterStatus !== "all") {
-          query = query.eq("status", filterStatus);
+        const statuses = beneficiaryStatusesForFilter(filterStatus as "all" | "pending" | "approved" | "rejected");
+        if (statuses) {
+          query = query.in("status", statuses);
         }
 
         const { data, error: err } = await query;
@@ -46,14 +48,19 @@ export default function AdminBeneficiariesSection() {
       }
     };
 
-    loadData();
+    void loadData();
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void loadData();
+    };
+    window.addEventListener("focus", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      window.removeEventListener("focus", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [filterStatus]);
 
-  const statusCounts = {
-    approved: beneficiaries.filter((b) => b.status === "approved").length,
-    pending: beneficiaries.filter((b) => b.status === "pending" || b.status === "registered").length,
-    rejected: beneficiaries.filter((b) => b.status === "rejected").length,
-  };
+  const statusCounts = countBeneficiariesByStatus(beneficiaries);
 
   const totalRegions = new Set(
     beneficiaries.map((beneficiary) => (beneficiary.region || "Unassigned").trim() || "Unassigned")

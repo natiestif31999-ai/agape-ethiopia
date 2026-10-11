@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { buildPublicBeneficiaryPayload, normalizeEthiopianPhone, validatePublicBeneficiaryFields } from "@/lib/beneficiaryRegistration";
 import { getSupabaseConfig, getSupabaseConfigError } from "@/lib/supabase/env";
+import { persistPublicRegistration } from "@/lib/publicRegistrationPersistence";
 
 const MAX_PHOTO_SIZE_BYTES = 3 * 1024 * 1024;
 const ALLOWED_PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
@@ -110,29 +111,30 @@ export async function POST(req: Request) {
     const supabaseAdmin = getSupabaseAdminClient();
     const lookupPhone = values.phone?.trim() ?? "";
 
-    const { data: existingMatch, error: duplicateLookupError } = await supabaseAdmin
-      .from("beneficiaries")
-      .select("id,first_name,last_name,phone")
-      .or(`phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
-      .limit(10);
+    const persistence = await persistPublicRegistration({
+      findDuplicate: () => supabaseAdmin
+        .from("beneficiaries")
+        .select("id,first_name,last_name,phone")
+        .or(`phone.eq.${normalizedPhone},phone.eq.${lookupPhone},phone.ilike.%${lookupPhone}%`)
+        .limit(10),
+      insert: (newPayload) => supabaseAdmin
+        .from("beneficiaries")
+        .insert([newPayload])
+        .select()
+        .single(),
+    }, payload);
 
-    if (duplicateLookupError) {
-      return NextResponse.json({ error: duplicateLookupError.message }, { status: 500 });
+    if (persistence.kind === "error") {
+      return NextResponse.json({ error: persistence.message }, { status: 500 });
     }
 
-    if (existingMatch && existingMatch.length > 0) {
+    if (persistence.kind === "duplicate") {
       return NextResponse.json({ error: "This phone number is already registered. Please use a different number." }, { status: 409 });
-    }
-
-    const { data, error } = await supabaseAdmin.from("beneficiaries").insert([payload]).select().single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
       message: "Your registration request was received successfully. A staff member will review it shortly.",
-      data,
+      data: persistence.data,
     }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unable to submit registration." }, { status: 500 });

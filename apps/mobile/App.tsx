@@ -8,6 +8,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack";
 import { initializeStorage, listLocalBeneficiaries, recoverInterruptedSyncs, saveLocalBeneficiary, updateLocalBeneficiary } from "./src/storage";
 import { submitBeneficiaryToBackend, syncPendingRecords } from "./src/sync";
+import { saveAndSyncBeneficiary } from "./src/registrationQueue";
 import { APP_NAME, WEB_API_URL } from "./src/config";
 import { userFacingRequestError } from "./src/requestErrors";
 import { REGIONS } from "./src/regions";
@@ -145,22 +146,21 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         return;
       }
 
-      await saveLocalBeneficiary(record);
       if (submitOnline) {
         setSaveStatus("SYNCING");
-        try {
-          const submitted = await submitBeneficiaryToBackend(record);
-          await updateLocalBeneficiary(submitted);
+        const result = await saveAndSyncBeneficiary(record, saveLocalBeneficiary, updateLocalBeneficiary, submitBeneficiaryToBackend);
+        if (!result.error) {
+          const submitted = result.record;
           setSaveStatus("SYNCED");
           Alert.alert(t("synced"), submitted.registrationNumber ? `Registration number: ${submitted.registrationNumber}` : t("synced"));
-        } catch (error) {
-          const message = userFacingRequestError(error, "Submission failed.");
-          await updateLocalBeneficiary({ ...record, syncState: "FAILED", error: message });
+        } else {
+          const message = result.error;
           setSaveStatus("FAILED");
           const displayMessage = message.toLowerCase().includes("already registered") ? duplicatePhoneMessages[locale] ?? duplicatePhoneMessages.en : message;
           Alert.alert(registrationAlertTitles[locale] ?? registrationAlertTitles.en, displayMessage);
         }
       } else {
+        await saveLocalBeneficiary(record);
         setSaveStatus("LOCAL");
         Alert.alert(t("saved"), t("saved"));
       }
