@@ -1,4 +1,5 @@
 import type { BeneficiaryDraft } from "./types";
+import { logRegistrationDiagnostic } from "./registrationDiagnostics.ts";
 
 type RegistrationResponseBody = {
   data?: {
@@ -8,6 +9,7 @@ type RegistrationResponseBody = {
     registration_number?: string;
   };
   error?: string;
+  code?: string;
   errors?: string[];
 };
 
@@ -51,15 +53,24 @@ export async function submitRegistrationRequest(
   endpoint: string,
   options: RegistrationRequestOptions = {},
 ): Promise<BeneficiaryDraft> {
-  const response = await (options.fetcher ?? fetch)(endpoint, {
-    method: "POST",
-    headers: { "X-Client-Change-Id": record.clientChangeId || record.localId },
-    body: createRegistrationFormData(record, options.createPhoto),
-  });
+  const requestHost = new URL(endpoint).origin;
+  logRegistrationDiagnostic("request-start", { localId: record.localId, host: requestHost, clientChangeId: record.clientChangeId || record.localId });
+  let response: Response;
+  try {
+    response = await (options.fetcher ?? fetch)(endpoint, {
+      method: "POST",
+      headers: { "X-Client-Change-Id": record.clientChangeId || record.localId },
+      body: createRegistrationFormData(record, options.createPhoto),
+    });
+  } catch (error) {
+    logRegistrationDiagnostic("request-failed", { localId: record.localId, host: requestHost, errorCategory: "network_error" });
+    throw error;
+  }
   const body = parseBody(await response.json().catch(() => null));
 
   if (!response.ok) {
     const errorText = body?.error ?? body?.errors?.[0] ?? "The server rejected this registration.";
+    logRegistrationDiagnostic("request-failed", { localId: record.localId, host: requestHost, status: response.status, errorCategory: body?.code ?? undefined, message: errorText });
     if (response.status === 409 || errorText.toLowerCase().includes("already registered")) {
       throw new Error("This phone number is already registered. Please use a different number.");
     }
@@ -68,8 +79,10 @@ export async function submitRegistrationRequest(
 
   const serverId = body?.data?.id?.trim();
   if (!serverId) {
+    logRegistrationDiagnostic("request-invalid-response", { localId: record.localId, host: requestHost, status: response.status, hasData: Boolean(body?.data), errorCategory: body ? "missing_remote_id" : "invalid_response" });
     throw new Error("The server response did not confirm a saved beneficiary record.");
   }
+  logRegistrationDiagnostic("request-success", { localId: record.localId, host: requestHost, status: response.status, remoteId: serverId, hasData: Boolean(body?.data) });
 
   return {
     ...record,

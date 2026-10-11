@@ -1,11 +1,15 @@
 import * as SQLite from "expo-sqlite";
 import type { BeneficiaryDraft, SyncState } from "./types";
+import { BENEFICIARY_INSERT_SQL, RECOVER_INTERRUPTED_SYNC_SQL, beneficiaryInsertValues } from "./storageSql";
+import { logRegistrationDiagnostic } from "./registrationDiagnostics.ts";
 
 const dbPromise = SQLite.openDatabaseAsync("agape-mobile.db");
 
 export async function initializeStorage() {
-  const db = await dbPromise;
-  await db.execAsync(`CREATE TABLE IF NOT EXISTS beneficiary_queue (
+  logRegistrationDiagnostic("storage-initialize-start", { operation: "sqlite_schema" });
+  try {
+    const db = await dbPromise;
+    await db.execAsync(`CREATE TABLE IF NOT EXISTS beneficiary_queue (
     local_id TEXT PRIMARY KEY NOT NULL,
     client_change_id TEXT NOT NULL,
     first_name TEXT NOT NULL,
@@ -32,10 +36,10 @@ export async function initializeStorage() {
     sync_state TEXT NOT NULL,
     error TEXT,
     created_at TEXT NOT NULL
-  );`);
-  const columns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(beneficiary_queue)");
-  const existingColumns = new Set(columns.map((column) => column.name));
-  const additions = [
+    );`);
+    const columns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(beneficiary_queue)");
+    const existingColumns = new Set(columns.map((column) => column.name));
+    const additions = [
     ["date_of_birth", "TEXT NOT NULL DEFAULT ''"],
     ["kifle_ketema", "TEXT NOT NULL DEFAULT ''"],
     ["client_change_id", "TEXT NOT NULL DEFAULT ''"],
@@ -51,19 +55,23 @@ export async function initializeStorage() {
     ["photo_url", "TEXT"],
     ["server_id", "TEXT"],
     ["registration_number", "TEXT"],
-  ] as const;
-  for (const [name, definition] of additions) {
-    if (!existingColumns.has(name)) {
-      await db.execAsync(`ALTER TABLE beneficiary_queue ADD COLUMN ${name} ${definition}`);
+    ] as const;
+    for (const [name, definition] of additions) {
+      if (!existingColumns.has(name)) {
+        await db.execAsync(`ALTER TABLE beneficiary_queue ADD COLUMN ${name} ${definition}`);
+      }
     }
+    logRegistrationDiagnostic("storage-initialize-complete", { operation: "sqlite_schema" });
+  } catch (error) {
+    logRegistrationDiagnostic("storage-initialize-failed", { operation: "sqlite_schema", message: error instanceof Error ? error.message : "storage error" });
+    throw error;
   }
 }
 
 export async function recoverInterruptedSyncs() {
   const db = await dbPromise;
-  await db.runAsync(
-    "UPDATE beneficiary_queue SET sync_state = 'PENDING_SYNC', error = NULL WHERE sync_state = 'SYNCING'",
-  );
+  const result = await db.runAsync(RECOVER_INTERRUPTED_SYNC_SQL);
+  logRegistrationDiagnostic("queue-recovery-complete", { operation: "recover_interrupted_syncs", records: result.changes });
 }
 
 export async function listLocalBeneficiaries(): Promise<BeneficiaryDraft[]> {
@@ -74,62 +82,14 @@ export async function listLocalBeneficiaries(): Promise<BeneficiaryDraft[]> {
 
 export async function saveLocalBeneficiary(record: BeneficiaryDraft) {
   const db = await dbPromise;
-  await db.runAsync(
-    `INSERT OR REPLACE INTO beneficiary_queue (
-      local_id,
-      client_change_id,
-      first_name,
-      middle_name,
-      last_name,
-      phone,
-      region,
-      gender,
-      notes,
-      date_of_birth,
-      kifle_ketema,
-      kebele,
-      house_number,
-      disability_type,
-      wheelchair_size,
-      specific_apparatus_need,
-      referral_source,
-      photo_uri,
-      photo_file_name,
-      photo_mime_type,
-      photo_url,
-      server_id,
-      registration_number,
-      sync_state,
-      error,
-      created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    record.localId,
-    record.clientChangeId,
-    record.firstName,
-    record.middleName,
-    record.lastName,
-    record.phone,
-    record.region,
-    record.gender,
-    record.notes,
-    record.dateOfBirth,
-    record.kifleKetema,
-    record.kebele,
-    record.houseNumber,
-    record.disabilityType,
-    record.wheelchairSize ?? "",
-    record.specificApparatusNeed ?? "",
-    record.referralSource,
-    record.photoUri ?? null,
-    record.photoFileName ?? null,
-    record.photoMimeType ?? null,
-    record.photoUrl ?? null,
-    record.serverId ?? null,
-    record.registrationNumber ?? null,
-    record.syncState,
-    record.error ?? null,
-    record.createdAt,
-  );
+  logRegistrationDiagnostic("local-save-start", { localId: record.localId, syncState: record.syncState, operation: "sqlite_upsert" });
+  try {
+    await db.runAsync(BENEFICIARY_INSERT_SQL, ...beneficiaryInsertValues(record));
+    logRegistrationDiagnostic("local-save-complete", { localId: record.localId, syncState: record.syncState, operation: "sqlite_upsert" });
+  } catch (error) {
+    logRegistrationDiagnostic("local-save-failed", { localId: record.localId, syncState: record.syncState, operation: "sqlite_upsert", message: error instanceof Error ? error.message : "storage error" });
+    throw error;
+  }
 }
 
 export async function updateLocalBeneficiary(record: BeneficiaryDraft) {

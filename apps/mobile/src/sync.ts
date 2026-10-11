@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 import { WEB_API_URL } from "./config";
 import { File } from "expo-file-system";
-import { listLocalBeneficiaries, updateLocalBeneficiary } from "./storage";
+import { listLocalBeneficiaries, recoverInterruptedSyncs, updateLocalBeneficiary } from "./storage";
 import { submitRegistrationRequest } from "./registrationResponse";
 import { syncBeneficiaryQueue } from "./registrationQueue";
 import type { BeneficiaryDraft } from "./types";
@@ -31,7 +31,15 @@ export async function submitBeneficiaryToBackend(record: BeneficiaryDraft): Prom
 }
 
 export function syncPendingRecords(): Promise<SyncResult> {
-  if (activeSync) return activeSync;
+  if (activeSync) {
+    return activeSync.then(async (result) => {
+      const records = await listLocalBeneficiaries();
+      if (records.some((record) => record.syncState === "PENDING_SYNC")) {
+        return syncPendingRecords();
+      }
+      return result;
+    });
+  }
   activeSync = syncPendingRecordsOnce().finally(() => {
     activeSync = null;
   });
@@ -39,6 +47,7 @@ export function syncPendingRecords(): Promise<SyncResult> {
 }
 
 async function syncPendingRecordsOnce(): Promise<SyncResult> {
+  await recoverInterruptedSyncs();
   const records = await listLocalBeneficiaries();
   const endpoint = apiUrl("/api/public-registration");
   const result = await syncBeneficiaryQueue(records, updateLocalBeneficiary, submitBeneficiaryToBackend, endpoint);

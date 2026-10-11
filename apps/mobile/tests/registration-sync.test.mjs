@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
 import { createServer } from "node:http";
+import { DatabaseSync } from "node:sqlite";
 import test, { after, before } from "node:test";
 import { saveAndSyncBeneficiary, syncBeneficiaryQueue } from "../src/registrationQueue.ts";
 import { submitRegistrationRequest } from "../src/registrationResponse.ts";
+import { BENEFICIARY_INSERT_SQL, RECOVER_INTERRUPTED_SYNC_SQL, beneficiaryInsertValues } from "../src/storageSql.ts";
 
 const savedByPhone = new Map();
+const savedByChangeId = new Map();
 const requestLog = [];
 let server;
 let endpoint;
@@ -33,7 +36,13 @@ before(async () => {
       const form = await parsed.formData();
       const values = Object.fromEntries([...form.entries()].map(([key, value]) => [key, String(value)]));
       const phone = values.phone;
-      requestLog.push({ method: request.method, url: request.url, changeId: request.headers["x-client-change-id"], values });
+      const changeId = request.headers["x-client-change-id"];
+      requestLog.push({ method: request.method, url: request.url, changeId, values });
+
+      if (changeId && savedByChangeId.has(changeId)) {
+        sendJson(response, 200, { data: savedByChangeId.get(changeId) });
+        return;
+      }
 
       if (savedByPhone.has(phone)) {
         sendJson(response, 409, { error: "This phone number is already registered." });
@@ -46,6 +55,7 @@ before(async () => {
 
       const saved = { id: `test-server-${savedByPhone.size + 1}`, phone, registration_number: `TEST-${savedByPhone.size + 1}` };
       savedByPhone.set(phone, saved);
+      if (changeId) savedByChangeId.set(changeId, saved);
       if (phone === lostResponsePhone) {
         lostResponsePhone = "";
         response.destroy();
@@ -105,6 +115,63 @@ function submit(record) {
   return submitRegistrationRequest(record, endpoint);
 }
 
+test("SQLite queue insert persists all beneficiary fields with matching bindings", () => {
+  const database = new DatabaseSync(":memory:");
+  const columns = BENEFICIARY_INSERT_SQL.match(/beneficiary_queue \(([\s\S]*?)\) VALUES/)?.[1]
+    .split(",")
+    .map((column) => column.trim());
+  assert.ok(columns?.length);
+  database.exec(`CREATE TABLE beneficiary_queue (${columns.map((column) => `${column} TEXT`).join(", ")})`);
+
+  const record = makeRecord("sqlite-save", "5550111", "PENDING_SYNC");
+  const values = beneficiaryInsertValues(record);
+  assert.equal(values.length, columns.length);
+  database.prepare(BENEFICIARY_INSERT_SQL).run(...values);
+
+  const saved = database.prepare("SELECT * FROM beneficiary_queue WHERE local_id = ?").get(record.localId);
+  assert.equal(saved.client_change_id, record.clientChangeId);
+  assert.equal(saved.disability_type, record.disabilityType);
+  assert.equal(saved.wheelchair_size, record.wheelchairSize);
+  assert.equal(saved.specific_apparatus_need, record.specificApparatusNeed);
+  assert.equal(saved.sync_state, record.syncState);
+  database.close();
+});
+
+test("SQLite restart recovery makes interrupted uploads retryable without changing synced records", () => {
+  const database = new DatabaseSync(":memory:");
+  database.exec("CREATE TABLE beneficiary_queue (local_id TEXT PRIMARY KEY, sync_state TEXT, error TEXT)");
+  database.prepare("INSERT INTO beneficiary_queue VALUES (?, ?, ?)").run("interrupted", "SYNCING", "old error");
+  database.prepare("INSERT INTO beneficiary_queue VALUES (?, ?, ?)").run("confirmed", "SYNCED", null);
+
+  database.exec(RECOVER_INTERRUPTED_SYNC_SQL);
+
+  assert.deepEqual(database.prepare("SELECT local_id, sync_state, error FROM beneficiary_queue ORDER BY local_id").all().map((row) => ({ ...row })), [
+    { local_id: "confirmed", sync_state: "SYNCED", error: null },
+    { local_id: "interrupted", sync_state: "PENDING_SYNC", error: null },
+  ]);
+  database.close();
+});
+
+test("a local database write failure is reported before any network submission", async () => {
+  let submitCount = 0;
+  let localSavedCount = 0;
+  const result = await saveAndSyncBeneficiary(
+    makeRecord("local-write-failure", "5550112", "SYNCING"),
+    async () => { throw new Error("isolated SQLite write failure"); },
+    async () => undefined,
+    async (record) => {
+      submitCount += 1;
+      return record;
+    },
+    () => { localSavedCount += 1; },
+  );
+
+  assert.equal(result.localSaved, false);
+  assert.equal(result.record.syncState, "FAILED");
+  assert.equal(submitCount, 0);
+  assert.equal(localSavedCount, 0);
+});
+
 test("single registration sends the expected multipart request and persists the confirmed server ID", async () => {
   const repository = localRepository();
   const record = makeRecord("single", "5550101", "SYNCING");
@@ -114,6 +181,7 @@ test("single registration sends the expected multipart request and persists the 
   assert.equal(requestLog.at(-1).url, "/api/public-registration");
   assert.equal(new URL(endpoint).origin, `http://127.0.0.1:${server.address().port}`);
   assert.equal(requestLog.at(-1).changeId, record.clientChangeId);
+  assert.equal(requestLog.at(-1).values.client_change_id, record.clientChangeId);
   assert.deepEqual(
     Object.fromEntries(["first_name", "last_name", "date_of_birth", "gender", "phone", "region", "kebele", "disability_type", "wheelchair_size", "specific_apparatus_need"].map((key) => [key, requestLog.at(-1).values[key]])),
     {
@@ -159,7 +227,7 @@ test("multiple registration continues after a partial failure and retains mobili
   assert.equal(repository.rows.get("batch-fail").specificApparatusNeed, "Walker");
 });
 
-test("a lost response followed by retry does not insert a duplicate and is not falsely marked synced", async () => {
+test("a lost response followed by retry confirms the original record without a duplicate", async () => {
   const repository = localRepository();
   const record = makeRecord("ambiguous", "5550301");
   const initialSavedCount = savedByPhone.size;
@@ -174,7 +242,8 @@ test("a lost response followed by retry does not insert a duplicate and is not f
 
   const failed = repository.rows.get(record.localId);
   const retry = await syncBeneficiaryQueue([failed], repository.update, submit, endpoint);
-  assert.deepEqual(retry, { synced: 0, failed: 1 });
-  assert.equal(repository.rows.get(record.localId).syncState, "FAILED");
+  assert.deepEqual(retry, { synced: 1, failed: 0 });
+  assert.equal(repository.rows.get(record.localId).syncState, "SYNCED");
+  assert.equal(repository.rows.get(record.localId).serverId, savedByPhone.get(record.phone).id);
   assert.equal(savedByPhone.size, initialSavedCount + 1);
 });

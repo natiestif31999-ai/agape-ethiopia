@@ -6,21 +6,21 @@ import * as ImagePicker from "expo-image-picker";
 import * as SplashScreen from "expo-splash-screen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack";
-import { initializeStorage, listLocalBeneficiaries, recoverInterruptedSyncs, saveLocalBeneficiary, updateLocalBeneficiary } from "./src/storage";
-import { submitBeneficiaryToBackend, syncPendingRecords } from "./src/sync";
-import { saveAndSyncBeneficiary } from "./src/registrationQueue";
+import { initializeStorage, listLocalBeneficiaries, recoverInterruptedSyncs, saveLocalBeneficiary } from "./src/storage";
+import { syncPendingRecords } from "./src/sync";
 import { APP_NAME, WEB_API_URL } from "./src/config";
 import { userFacingRequestError } from "./src/requestErrors";
-import { REGIONS } from "./src/regions";
+import { logRegistrationDiagnostic } from "./src/registrationDiagnostics";
 import PartnershipMobileScreen from "./src/PartnershipScreen";
 import { TranslationProvider, useTranslation } from "./src/i18n";
 import type { BeneficiaryDraft } from "./src/types";
 
 type RootStackParamList = { Home: undefined; Register: { multiple?: boolean } | undefined; Offline: undefined; Partnership: undefined };
-type FormState = { firstName: string; middleName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; region: string; kifleKetema: string; kebele: string; houseNumber: string; disabilityType: string; wheelchairSize: string; specificApparatusNeed: string; referralSource: string; notes: string; photoUri?: string; photoFileName?: string; photoMimeType?: string };
+type FormState = { firstName: string; middleName: string; lastName: string; dateOfBirth: string; gender: string; phone: string; region: string; kifleKetema: string; kebele: string; houseNumber: string; disabilityType: string; otherDisabilityDetail: string; wheelchairSize: string; specificApparatusNeed: string; referralSource: string; notes: string; photoUri?: string; photoFileName?: string; photoMimeType?: string };
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const logo = require("./assets/agape-logo.png");
-const emptyForm: FormState = { firstName: "", middleName: "", lastName: "", dateOfBirth: "", gender: "", phone: "", region: "", kifleKetema: "", kebele: "", houseNumber: "", disabilityType: "", wheelchairSize: "", specificApparatusNeed: "", referralSource: "", notes: "" };
+const DIAGNOSIS_OPTIONS = ["Spinal Cord Injury", "Cerebral Palsy", "Amputation", "Polio", "Muscular Dystrophy", "Multiple Sclerosis", "Stroke", "Arthritis", "Congenital Disability", "Temporary Mobility Impairment", "Other"] as const;
+const emptyForm: FormState = { firstName: "", middleName: "", lastName: "", dateOfBirth: "", gender: "", phone: "", region: "", kifleKetema: "", kebele: "", houseNumber: "", disabilityType: "", otherDisabilityDetail: "", wheelchairSize: "", specificApparatusNeed: "", referralSource: "", notes: "" };
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -95,7 +95,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   async function chooseCameraPhoto() { const permission = await ImagePicker.requestCameraPermissionsAsync(); if (!permission.granted) { Alert.alert(t("cameraPermission"), t("cameraPermissionBody")); return; } const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
   async function chooseLibraryPhoto() { const permission = await ImagePicker.requestMediaLibraryPermissionsAsync(); if (!permission.granted) { Alert.alert(t("galleryPermission"), t("galleryPermissionBody")); return; } const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 }); if (!result.canceled) attachPhoto(result.assets[0]); }
   async function save() {
-    if (!form.firstName.trim() || !form.lastName.trim() || !form.dateOfBirth.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim()) {
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.gender || !form.phone.trim() || !form.region || !form.kebele.trim() || (form.disabilityType === "Other" && !form.otherDisabilityDetail.trim())) {
       Alert.alert(t("missing"), t("requiredBody"));
       return;
     }
@@ -108,6 +108,7 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
       const submitOnline = Boolean(onlineState.isConnected && WEB_API_URL);
       const editingRecord = stagedRecords.find((item) => item.localId === editingRecordId);
       const localId = editingRecord?.localId ?? `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      logRegistrationDiagnostic("save-start", { localId, online: String(Boolean(onlineState.isConnected)), endpoint: WEB_API_URL || undefined, syncState: submitOnline ? "SYNCING" : "PENDING_SYNC" });
       const record: BeneficiaryDraft = {
         localId,
         clientChangeId: editingRecord?.clientChangeId ?? localId,
@@ -122,14 +123,14 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
         kifleKetema: form.kifleKetema.trim(),
         kebele: form.kebele.trim(),
         houseNumber: form.houseNumber.trim(),
-        disabilityType: form.disabilityType.trim(),
+        disabilityType: (form.disabilityType === "Other" ? form.otherDisabilityDetail : form.disabilityType).trim(),
         wheelchairSize: form.wheelchairSize.trim(),
         specificApparatusNeed: form.specificApparatusNeed.trim(),
         referralSource: form.referralSource.trim(),
         photoUri: form.photoUri,
         photoFileName: form.photoFileName,
         photoMimeType: form.photoMimeType,
-        syncState: multiple ? "LOCAL" : submitOnline ? "SYNCING" : "PENDING_SYNC",
+        syncState: multiple ? "LOCAL" : "PENDING_SYNC",
         createdAt: editingRecord?.createdAt ?? new Date().toISOString(),
       };
 
@@ -148,7 +149,20 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
 
       if (submitOnline) {
         setSaveStatus("SYNCING");
-        const result = await saveAndSyncBeneficiary(record, saveLocalBeneficiary, updateLocalBeneficiary, submitBeneficiaryToBackend);
+        logRegistrationDiagnostic("local-save-start", { localId, endpoint: WEB_API_URL || undefined, syncState: record.syncState });
+        try {
+          await saveLocalBeneficiary(record);
+        } catch (error) {
+          logRegistrationDiagnostic("local-save-failed", { localId, syncState: record.syncState, endpoint: WEB_API_URL || undefined, operation: "sqlite_upsert", message: error instanceof Error ? error.message : "storage error" });
+          setSaveStatus("FAILED");
+          Alert.alert(registrationAlertTitles[locale] ?? registrationAlertTitles.en, userFacingRequestError(error, "Local save failed."));
+          return;
+        }
+        logRegistrationDiagnostic("local-save-complete", { localId, syncState: record.syncState, endpoint: WEB_API_URL || undefined });
+        await syncPendingRecords();
+        const syncedRecord = (await listLocalBeneficiaries()).find((item) => item.localId === localId);
+        if (!syncedRecord) throw new Error("Local registration could not be reloaded after saving.");
+        const result = { record: syncedRecord, error: syncedRecord.syncState === "SYNCED" ? undefined : syncedRecord.error ?? "Synchronization is still pending." };
         if (!result.error) {
           const submitted = result.record;
           setSaveStatus("SYNCED");
@@ -160,12 +174,25 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
           Alert.alert(registrationAlertTitles[locale] ?? registrationAlertTitles.en, displayMessage);
         }
       } else {
-        await saveLocalBeneficiary(record);
-        setSaveStatus("LOCAL");
-        Alert.alert(t("saved"), t("saved"));
+        logRegistrationDiagnostic("local-save-start", { localId, endpoint: WEB_API_URL || undefined, syncState: record.syncState });
+        try {
+          await saveLocalBeneficiary(record);
+          logRegistrationDiagnostic("local-save-complete", { localId, syncState: record.syncState, endpoint: WEB_API_URL || undefined });
+          setSaveStatus("LOCAL");
+          Alert.alert(t("saved"), t("saved"));
+        } catch (error) {
+          logRegistrationDiagnostic("local-save-failed", { localId, syncState: record.syncState, endpoint: WEB_API_URL || undefined, operation: "sqlite_upsert", message: error instanceof Error ? error.message : "storage error" });
+          setSaveStatus("FAILED");
+          Alert.alert(registrationAlertTitles[locale] ?? registrationAlertTitles.en, userFacingRequestError(error, "Local save failed."));
+          return;
+        }
       }
       setBatchCount((count) => count + 1);
       setForm({ ...emptyForm });
+    } catch (error) {
+      setSaveStatus("FAILED");
+      logRegistrationDiagnostic("registration-save-failed", { localId: "unassigned", errorCategory: "registration_save" });
+      Alert.alert(registrationAlertTitles[locale] ?? registrationAlertTitles.en, userFacingRequestError(error, t("failedSummary")));
     } finally {
       saveInProgress.current = false;
       setSaving(false);
@@ -173,7 +200,8 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
   }
   function reset() { setForm({ ...emptyForm }); setSaveStatus(null); setEditingRecordId(null); }
   function editStagedRecord(record: BeneficiaryDraft) {
-    setForm({ ...record });
+    const knownDiagnosis = DIAGNOSIS_OPTIONS.some((option) => option !== "Other" && option === record.disabilityType);
+    setForm({ ...emptyForm, ...record, disabilityType: knownDiagnosis ? record.disabilityType : record.disabilityType ? "Other" : "", otherDisabilityDetail: knownDiagnosis ? "" : record.disabilityType });
     setEditingRecordId(record.localId);
     setSaveStatus(null);
   }
@@ -235,17 +263,16 @@ function RegisterScreen({ route, navigation }: NativeStackScreenProps<RootStackP
           </View>
         ) : null}
         <View style={styles.progress}><View style={[styles.progressFill, { width: multiple ? "50%" : "35%" }]} /></View>
-        {([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", `${t("dateOfBirth")} *`], ["phone", `${t("phone")} *`], ["kifleKetema", t("kifleKetema")], ["kebele", `${t("kebele")} *`], ["houseNumber", t("houseNumber")], ["referralSource", t("referral")] ] as const).map(([key, label]) => (
+        {([ ["firstName", `${t("firstName")} *`], ["middleName", t("fatherName")], ["lastName", `${t("grandfatherName")} *`], ["dateOfBirth", t("dateOfBirth")], ["phone", `${t("phone")} *`], ["kifleKetema", t("kifleKetema")], ["kebele", `${t("kebele")} *`], ["houseNumber", t("houseNumber")], ["referralSource", t("referral")] ] as const).map(([key, label]) => (
           <View key={key} style={styles.field}>
             <Text style={styles.label}>{label}</Text>
             <TextInput value={form[key]} onChangeText={(value) => update(key, value)} keyboardType={key === "phone" ? "phone-pad" : "default"} placeholder={label.replace(" *", "")} placeholderTextColor="#87928C" style={styles.input} />
           </View>
         ))}
-        <Text style={styles.label}>{t("region")} *</Text>
-        <View style={styles.chips}>{REGIONS.map((item) => <Pressable key={item.code} onPress={() => update("region", item.label)} style={[styles.chip, form.region === item.label && styles.chipActive]}><Text style={form.region === item.label ? styles.chipTextActive : styles.chipText}>{item.code}</Text></Pressable>)}</View>
+        <View style={styles.field}><Text style={styles.label}>{t("region")} *</Text><TextInput value={form.region} onChangeText={(value) => update("region", value)} autoCapitalize="words" placeholder={t("region")} placeholderTextColor="#87928C" style={styles.input} /></View>
         <Text style={styles.label}>{t("gender")} *</Text>
         <View style={styles.chips}>{["female", "male"].map((item) => <Pressable key={item} onPress={() => update("gender", item)} style={[styles.chip, form.gender === item && styles.chipActive]}><Text style={form.gender === item ? styles.chipTextActive : styles.chipText}>{item === "female" ? t("female") : t("male")}</Text></Pressable>)}</View>
-        <View style={styles.field}><Text style={styles.label}>{t("diagnosis") || "Diagnosis"}</Text><TextInput value={form.disabilityType} onChangeText={(value) => update("disabilityType", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /></View>
+        <View style={styles.field}><Text style={styles.label}>{t("diagnosis") || "Diagnosis"}</Text><View style={styles.chips}>{DIAGNOSIS_OPTIONS.map((item) => <Pressable key={item} onPress={() => { update("disabilityType", item); if (item !== "Other") update("otherDisabilityDetail", ""); }} style={[styles.chip, form.disabilityType === item && styles.chipActive]}><Text style={form.disabilityType === item ? styles.chipTextActive : styles.chipText}>{item}</Text></Pressable>)}</View>{form.disabilityType === "Other" ? <TextInput value={form.otherDisabilityDetail} onChangeText={(value) => update("otherDisabilityDetail", value)} placeholder={t("disabilityPlaceholder")} placeholderTextColor="#87928C" style={styles.input} /> : null}</View>
         <View style={styles.field}><Text style={styles.label}>{t("wheelchairSize") || "Wheelchair Size"}</Text>
           <View style={styles.chips}>{["XL", "Large", "Middle", "Small"].map((item) => <Pressable key={item} onPress={() => update("wheelchairSize", item)} style={[styles.chip, form.wheelchairSize === item && styles.chipActive]}><Text style={form.wheelchairSize === item ? styles.chipTextActive : styles.chipText}>{item}</Text></Pressable>)}</View>
         </View>
@@ -319,10 +346,11 @@ function PartnershipScreen() { const [form, setForm] = useState({ organization_n
 
 export default function App() {
   const [storageReady, setStorageReady] = useState(false);
+  const [storageFailed, setStorageFailed] = useState(false);
 
   useEffect(() => {
     void initializeApp()
-      .catch(() => undefined)
+      .catch(() => setStorageFailed(true))
       .finally(() => {
         setStorageReady(true);
         void SplashScreen.hideAsync().catch(() => undefined);
@@ -330,6 +358,9 @@ export default function App() {
   }, []);
 
   if (!storageReady) return null;
+  if (storageFailed) {
+    return <SafeAreaView style={styles.safe}><View style={styles.container}><Text style={styles.heading}>Local storage is unavailable</Text><Text style={styles.subtitle}>No registration has been saved. Restart the app before trying again.</Text></View></SafeAreaView>;
+  }
 
   return <TranslationProvider><NavigationContainer><Stack.Navigator screenOptions={{ headerShown: false }}><Stack.Screen name="Home" component={HomeScreen} /><Stack.Screen name="Register" component={RegisterScreen} /><Stack.Screen name="Offline" component={OfflineScreen} /><Stack.Screen name="Partnership">{({ navigation }) => <PartnershipMobileScreen onBack={() => navigation.navigate("Home")} />}</Stack.Screen></Stack.Navigator></NavigationContainer></TranslationProvider>;
 }
